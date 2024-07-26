@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "#define GITHASH" \"`git log --pretty=format:'%h'\" -n 1` > githash.h
+

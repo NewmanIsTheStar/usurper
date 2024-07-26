@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="10">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="/weather.shtml">Weather</a>
+    <a href="/addressable_led.shtml">LED strip</a>
+    <a href="/moodlight.shtml">Moodlight</a>  
+    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/units.shtml">Foibles</a>     
+    <a href="/status.shtml">Status</a>   
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>Debug Info</h2>      
+    <p>Git Hash:    <!--#ghsh--></p>
+    <p>Time:        <!--#time--></p>
+    <p>Last reboot: <!--#dogtme--></p> 
+    <br>
+    <p>IP Address: <!--#ipaddr--></p> 
+    <p>Netmask:    <!--#netmsk--></p> 
+    <p>Gateway:    <!--#gway--></p> 
+    <br>            
+    <p>Stack High Water Marks:</p> 
+    <p><!--#stck--></p> 
+    <br>
+    <p>max sockets:                           <!--#msck--></p>  
+    <p>bind failures:                         <!--#bfail--></p>  
+    <p>connect failures:                      <!--#cfail--></p>  
+    <p>syslog transmit failures:              <!--#sfail--></p>  
+    <p>weather station transmit failures:     <!--#wfail--></p>  
+    <p>govee transmit failures:               <!--#gfail--></p>  
+</div>   
+</body>
+</html> 

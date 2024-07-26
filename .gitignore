@@ -1,0 +1,12 @@
+build/
+*.o
+*.a
+*.elf
+*.bin
+*.dis
+*.map
+htmldata.c
+*.hex
+*.uf2
+githash.h
+

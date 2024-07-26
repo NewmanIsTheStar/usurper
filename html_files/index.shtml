@@ -1,0 +1,21 @@
+<!DOCTYPE html> 
+<html> 
+
+<head>
+    <title>Orientation Detection</title>
+</head>
+
+<body onload="load_page();"></body>
+
+<script>
+    function load_page() {
+        if(screen.availHeight > screen.availWidth){
+            window.location = "/portrait.shtml"; 
+        }
+        else {
+            window.location = "<!--#calpge-->";
+        }
+    }
+</script>
+
+</html>
