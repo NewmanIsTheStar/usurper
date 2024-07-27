@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/flash.h"
@@ -85,7 +90,7 @@ int config_initialize(void)
 
     config.timezone_offset = -6*60;
     config.daylightsaving_enable = 1;
-    STRNCPY(config.wifi_country, "USA", sizeof(config.wifi_country));    
+    STRNCPY(config.wifi_country, "World Wide", sizeof(config.wifi_country));    
     STRNCPY(config.daylightsaving_start, "Second Sunday in March", sizeof(config.daylightsaving_start));
     STRNCPY(config.daylightsaving_end, "First Sunday in November", sizeof(config.daylightsaving_end));
     STRNCPY(config.time_server[0], "pool.ntp.org", sizeof(config.time_server[0]));

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
@@ -251,11 +256,12 @@ int establish_socket(char *address_string, struct sockaddr_in *ipv4_address, int
 /*!
  * \brief Send a syslog message
  *
- * \param[in]   format_string + variable parameters printf style  
+ * \param[in]   log_name      name of log file on server
+ * \param[in]   format, ...   variable parameters printf style  
  * 
  * \return num bytes sent or -1 on error
  */
-int send_syslog_message(const char *format, ...)
+int send_syslog_message(char *log_name, const char *format, ...)
 {
     static int syslog_socket = -1;
     static struct sockaddr_in syslog_address;
@@ -279,7 +285,7 @@ int send_syslog_message(const char *format, ...)
             if (!get_timestamp(timestamp, sizeof(timestamp), true))
             {   
                 message_chars_remaining = sizeof(syslog_message);
-                snprintf(syslog_message, message_chars_remaining, "<165>1 %s %s usurper 1 - - %%%% ", timestamp, ip_address_string);
+                snprintf(syslog_message, message_chars_remaining, "<165>1 %s %s %s 1 - - %%%% ", timestamp, ip_address_string, log_name);
 
                 message_chars_remaining = sizeof(syslog_message) - strlen(syslog_message);
                 va_start(args, format);  
@@ -302,6 +308,7 @@ int send_syslog_message(const char *format, ...)
     return(sent_bytes);
 }
 
+
 /*!
  * \brief Log watchdog reset if it occured
  * This function may be called multiple times.  It will do nothing once it has 
@@ -320,7 +327,7 @@ int check_watchdog_reboot(void)
         get_timestamp(web.watchdog_timestring, sizeof(web.watchdog_timestring), false);           
 
         // log watchdog event
-        if (send_syslog_message("REBBOT!") > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
+        if (send_syslog_message("usurper", "REBBOT!") > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
         {
             watchdog_reported = true;
         }

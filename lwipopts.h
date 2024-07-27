@@ -8,8 +8,8 @@
 #define LWIP_SOCKET                 (1)
 //#define LWIP_PROVIDE_ERRNO          (1)    //was commented out
 #define RECV_BUFSIZE_DEFAULT        (256)
-#define DEFAULT_TCP_RECVMBOX_SIZE   (50)   //original 8 used 50 for a while
-#define DEFAULT_UDP_RECVMBOX_SIZE   (50)   //original 8 used 50 for a while
+#define DEFAULT_TCP_RECVMBOX_SIZE   (50)   //original 8 - newman set to 50
+#define DEFAULT_UDP_RECVMBOX_SIZE   (50)   //original 8 - newman set to 50
 #define SNTP_SUPPORT                (1)
 #define SNTP_SERVER_DNS             (1)
 #define SNTP_UPDATE_DELAY           (3600000)
@@ -22,19 +22,6 @@ void setTimeSec(uint32_t sec);
 #define LWIP_HTTPD_SSI              (1)
 #define LWIP_HTTPD_CGI              (1)
 
-//TEST TEST TEST  -- someone on the internet got more that three connections with this - but fails to build
-// #define MEMP_NUM_TCP_PCB 100
-// #define MEMP_NUM_TCP_PCB_LISTEN 100
-// #define MEMP_NUM_NETCONN 100
-
-
-//suggestions for increase max connections from google search
-/*
-    MEMP_NUM_TCP_PCB 100
-    MEMP_NUM_TCP_PCB_LISTEN 100
-    MEMP_NUM_NETCONN 100
-*/
-
 // generic
 #if PICO_CYW43_ARCH_POLL
 #define MEM_LIBC_MALLOC             1
@@ -43,7 +30,7 @@ void setTimeSec(uint32_t sec);
 #define MEM_LIBC_MALLOC             0
 #endif
 #define MEM_ALIGNMENT               4
-#define MEM_SIZE                    4000  // RB changed original to 20000 at one stage
+#define MEM_SIZE                    4000  // newman set to 4000
 #define MEMP_NUM_TCP_SEG            32
 #define MEMP_NUM_ARP_QUEUE          10
 #define PBUF_POOL_SIZE              24
@@ -51,19 +38,18 @@ void setTimeSec(uint32_t sec);
 #define LWIP_ETHERNET               1
 #define LWIP_ICMP                   1
 #define LWIP_RAW                    1
-#define TCP_WND                     (8 * TCP_MSS)   //ORIGINAL
-//#define TCP_WND  16384               // RB changed for TLS testing
+#define TCP_WND                     (8 * TCP_MSS) 
 #define TCP_MSS                     1460
 #define TCP_SND_BUF                 (8 * TCP_MSS)
 #define TCP_SND_QUEUELEN            ((4 * (TCP_SND_BUF) + (TCP_MSS - 1)) / (TCP_MSS))
 #define LWIP_NETIF_STATUS_CALLBACK  1
 #define LWIP_NETIF_LINK_CALLBACK    1
 #define LWIP_NETIF_HOSTNAME         1
-#define LWIP_NETCONN                0   // RB turned on at one stage
-#define MEM_STATS                   0   // RB turned on at one stage
-#define SYS_STATS                   0   // RB turned on at one stage
-#define MEMP_STATS                  0   // RB turned on at one stage
-#define LINK_STATS                  0   // RB turned on at one stage
+#define LWIP_NETCONN                0   
+#define MEM_STATS                   0   
+#define SYS_STATS                   0   
+#define MEMP_STATS                  0   
+#define LINK_STATS                  0   
 // #define ETH_PAD_SIZE                2
 #define LWIP_CHKSUM_ALGORITHM       3
 #define LWIP_DHCP                   1
@@ -75,14 +61,13 @@ void setTimeSec(uint32_t sec);
 #define LWIP_NETIF_TX_SINGLE_PBUF   1
 #define DHCP_DOES_ARP_CHECK         0
 #define LWIP_DHCP_DOES_ACD_CHECK    0
-#define LWIP_IGMP                   1 //RB added this row and enabled
+#define LWIP_IGMP                   1 // Newman added this row and enabled
 
-#define LWIP_ALTCP               0  // RB ADDED for TLS testing
-#define LWIP_ALTCP_TLS           0  // RB ADDED for TLS testing
-#define LWIP_ALTCP_TLS_MBEDTLS   0  // RB ADDED for TLS testing
+#define LWIP_ALTCP               0  // Newman used for TLS testing
+#define LWIP_ALTCP_TLS           0  // Newman used for TLS testing 
+#define LWIP_ALTCP_TLS_MBEDTLS   0  // Newman used for TLS testing
 
-
-#ifndef NDEBUG   //RB FORCED ON at one stage
+#ifndef NDEBUG 
 #define LWIP_DEBUG                  1
 #define LWIP_STATS                  1
 #define LWIP_STATS_DISPLAY          1
@@ -119,12 +104,12 @@ void setTimeSec(uint32_t sec);
 
 
 // HTTP CLIENT TEST
-#define HTTPC_DEBUG LWIP_DBG_ON
+//#define HTTPC_DEBUG LWIP_DBG_ON    // Newman used for httpc testing
 
 
 //****************************************************************
 
-#define TCPIP_THREAD_STACKSIZE 2048  // RB changed original 1024
+#define TCPIP_THREAD_STACKSIZE 2048  // original 1024 -- Newman increased to 2048
 #define DEFAULT_THREAD_STACKSIZE 1024
 #define DEFAULT_RAW_RECVMBOX_SIZE 8
 #define TCPIP_MBOX_SIZE 8

@@ -28,7 +28,9 @@
 			"datetime.h": "c",
 			"pluto.h": "c",
 			"weather.h": "c",
-			"string": "c"
+			"string": "c",
+			"ip4_addr.h": "c",
+			"utility.h": "c"
 		}
 	}
 }

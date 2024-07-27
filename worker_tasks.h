@@ -1,4 +1,9 @@
 
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #ifndef WORKER_TASKS_H
 #define WORKER_TASKS_H
 

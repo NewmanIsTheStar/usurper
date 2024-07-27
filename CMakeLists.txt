@@ -57,38 +57,29 @@ add_executable(usurper
         message.c
         udp.c
         wifi.c
-        )
-
-#pico_set_linker_script(usurper ${CMAKE_CURRENT_LIST_DIR}/memmap_usurper.ld)        
+        )      
 
 target_compile_definitions(usurper PRIVATE
         )
 
 target_include_directories(usurper PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        #${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/
-        #${CMAKE_CURRENT_LIST_DIR}/../../../../../../usurper/
         ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_stdio/include
         )
 target_link_libraries(usurper
-        #pico_cyw43_arch_lwip_threadsafe_background
-        #pico_cyw43_arch_lwip_poll
         pico_cyw43_arch_lwip_sys_freertos
         pico_lwip_freertos
-        pico_lwip_api         #mentioned in documentation
+        pico_lwip_api        
         pico_lwip_sntp
         pico_lwip_http
         pico_stdlib
         pico_rand
-        #pico_lwip_iperf
-        FreeRTOS-Kernel-Heap4 # FreeRTOS kernel and dynamic heap
+        FreeRTOS-Kernel-Heap4
         hardware_rtc
         pico_flash
         hardware_pio
-        #pico_lwip_mbedtls # for tls testing
-        #pico_mbedtls      # for tls testing
         )
 pico_add_extra_outputs(usurper)
 

@@ -1,4 +1,9 @@
 
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #ifndef UTILITY_H
 #define UTILITY_H
 
@@ -23,7 +28,7 @@ uint16_t crc_buffer(char *pbuff, int num_bytes);
 void hex_dump_to_string(const uint8_t *bptr, uint32_t len, char *out_string, int out_len);
 void hex_dump(const uint8_t *bptr, uint32_t len);
 int establish_socket(char *address_string, struct sockaddr_in *ipv4_address, int port, int type);
-int send_syslog_message(const char *format, ...);
+int send_syslog_message(char *log_name, const char *format, ...);
 int check_watchdog_reboot(void);
 int send_govee_command(int on, int red, int green, int blue);
 int establish_multicast_socket(struct sockaddr_in *ipv4_address, int port, int type);

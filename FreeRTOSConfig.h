@@ -60,7 +60,7 @@
 #define configUSE_QUEUE_SETS                    1
 #define configUSE_TIME_SLICING                  1
 #define configUSE_NEWLIB_REENTRANT              0
-#define configENABLE_BACKWARD_COMPATIBILITY     1   // Newman add as apparently required for lwip FreeRTOS sys_arch to compile
+#define configENABLE_BACKWARD_COMPATIBILITY     1   // Newman added as apparently required for lwip FreeRTOS sys_arch to compile
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
 
 /* System */
@@ -110,7 +110,7 @@
 
 
 /* RP2040 specific */
-//#define configSUPPORT_PICO_SYNC_INTEROP 0 //to test issue with incompatibility between SDK spinlocks and FreeRTOS 
+//#define configSUPPORT_PICO_SYNC_INTEROP 0 //to test issue with incompatibility between Pi Pico SDK spinlocks and FreeRTOS 
 #define configSUPPORT_PICO_SYNC_INTEROP         1
 #define configSUPPORT_PICO_TIME_INTEROP         1
 

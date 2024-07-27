@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
@@ -35,7 +40,8 @@
  *
  * \return nothing
  */
-void setTimeSec(uint32_t sec){
+void setTimeSec(uint32_t sec)
+{
 	datetime_t date;
 	struct tm * timeinfo;
 	time_t t;

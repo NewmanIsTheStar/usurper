@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
@@ -89,7 +94,7 @@ void watchdog_task(void *params)
         }
 
 #ifdef DEBUG_DEAD_TASK
-        // keep printing seconds since alive message if worker task dies rather than resetting
+        // keep printing seconds since alive message if worker task dies
         watchdog_update();
 #else
         // update watchdog if task still alive

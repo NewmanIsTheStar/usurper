@@ -1,4 +1,9 @@
 
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -92,11 +97,13 @@ static int live_speed = -1;
 static DOUBLE_BUF_INT remote_pattern;
 static DOUBLE_BUF_INT remote_speed;
 
-/*****************************************************************
-FUNCTION    : msg_loop
-DESCRIPTION : Receive Message Loop.
-******************************************************************/
-//int msg_loop(int iPort)
+/*!
+ * \brief process messages sent to port 6969, format defined in message_defs.h
+ *
+ * \param[in]  params  alive counter that must be incremented periodically to prevent watchdog reset
+ * 
+ * \return nothing
+ */
 void message_task(__unused void *params) 
 {
     char *pcMsg;
@@ -179,12 +186,14 @@ void message_task(__unused void *params)
 
 
 
-/*****************************************************************
-FUNCTION    : check_received_header
-DESCRIPTION : Check message header.
-INPUTS      : Pointer to message packet
-OUTPUTS     : 0 = Header OK
-******************************************************************/
+/*!
+ * \brief validate message header
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of sender
+ * 
+ * \return 0 if valid header, non-zero if invalid
+ */
 int check_received_header(tsMSG_HDR *psMsg, SOCKADDR_IN sDest)
 {
     int iStatus = 0;
@@ -222,10 +231,14 @@ int check_received_header(tsMSG_HDR *psMsg, SOCKADDR_IN sDest)
 }
 
 
-/*****************************************************************
-FUNCTION    : receive_led_strip_request
-DESCRIPTION : Process document registration request.
-******************************************************************/
+/*!
+ * \brief set requested led strip pattern and send confirmation message
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of sender
+ * 
+ * \return 0 on success
+ */
 int receive_led_strip_request(tsLED_STRIP_RQST *psMsg, SOCKADDR_IN sDest)
 {
     int iError = 0;
@@ -244,10 +257,14 @@ int receive_led_strip_request(tsLED_STRIP_RQST *psMsg, SOCKADDR_IN sDest)
     return EXIT_SUCCESS;
 }
 
-/*****************************************************************
-FUNCTION    : receive_led_strip_confirm
-DESCRIPTION : Process document registration request.
-******************************************************************/
+/*!
+ * \brief record confirmed remote led strip pattern in local cache
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of sender
+ * 
+ * \return 0 on success
+ */
 int receive_led_strip_confirm(tsLED_STRIP_CNFM *psMsg, SOCKADDR_IN sDest)
 {
     int iError = 0;
@@ -288,10 +305,14 @@ int receive_led_strip_confirm(tsLED_STRIP_CNFM *psMsg, SOCKADDR_IN sDest)
 
 
 
-/*****************************************************************
-FUNCTION    : send_led_strip_confirm
-DESCRIPTION : Process document registration confirm.
-******************************************************************/
+/*!
+ * \brief send confirmed message with current led pattern
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of requestor
+ * 
+ * \return number of bytes sent
+ */
 int send_led_strip_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction, u_int32_t sequence)
 {
     tsLED_STRIP_CNFM sCnfm;
@@ -310,10 +331,14 @@ int send_led_strip_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction,
 }
 
 
-/*****************************************************************
-FUNCTION    : send_led_strip_request
-DESCRIPTION : Process document registration request.
-******************************************************************/
+/*!
+ * \brief send request to set led pattern
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of requestor
+ * 
+ * \return 0 on success
+ */
 int send_led_strip_request(int strip, int pattern, int speed, SOCKADDR_IN sDest)
 {
     tsLED_STRIP_RQST sRqst;
@@ -349,7 +374,13 @@ int send_led_strip_request(int strip, int pattern, int speed, SOCKADDR_IN sDest)
     return (iError);
 }
 
-
+/*!
+ * \brief set remote led strip pattern -- all remote led strips will be requested to use this pattern
+ *
+ * \param[in]  pattern  index into pattern_table
+ * 
+ * \return nothing
+ */
 void set_led_pattern_remote(int pattern) 
 {
     if (pattern < 0)
@@ -360,6 +391,13 @@ void set_led_pattern_remote(int pattern)
     set_double_buf_integer(&remote_pattern, pattern);
 }
 
+/*!
+ * \brief set remote led strip speed -- all remote led strips will be requested to use this speed
+ *
+ * \param[in]  speed  milliseconds to delay before next step of led sequence
+ * 
+ * \return nothing
+ */
 void set_led_speed_remote(int speed) 
 {
     if (speed < 0)
@@ -371,14 +409,14 @@ void set_led_speed_remote(int speed)
 }
 
 
-
-
 /*!
  * \brief construct address
  *
- * \param none
+ * \param[in]   address_string  hostname or ip 
+ * \param[in]   port            udp port
+ * \param[out]  address         destination address 
  *
- * \return 0
+ * \return 0 on success
  */
 int construct_address(char *address_string, int port, SOCKADDR_IN *address)
 {

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "pico/stdlib.h"
 #include "pico/rand.h"
 

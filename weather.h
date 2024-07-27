@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #ifndef WEATHER_H
 #define WEATHER_H
 
@@ -22,58 +27,60 @@ int invalidate_weather_variables(void);
 
 
 // ecowitt CMD byte
-typedef enum {
-CMD_WRITE_SSID= 0x11, // send SSID and Password to WIFI module
-CMD_BROADCAST= 0x12, // UDP cast for device echo，answer back data size is 2 Bytes
-CMD_READ_ECOWITT= 0x1E, // read aw.net setting
-CMD_WRITE_ECOWITT= 0x1F, //write back awt.net setting
-CMD_READ_WUNDERGROUND= 0x20, // read Wunderground setting
-CMD_WRITE_WUNDERGROUND= 0x21, //write back Wunderground setting
-CMD_READ_WOW= 0x22, // read WeatherObservationsWebsite setting
-CMD_WRITE_WOW= 0x23, // write back WeatherObservationsWebsite setting
-CMD_READ_WEATHERCLOUD= 0x24, // read Weathercloud setting
-CMD_WRITE_WEATHERCLOUD= 0x25, //write back Weathercloud setting
-CMD_READ_SATION_MAC= 0x26, // read MAC address
-CMD_READ_CUSTOMIZED= 0x2A, // read Customized sever setting
-CMD_WRITE_CUSTOMIZED= 0x2B, // write back Customized sever setting
-CMD_WRITE_UPDATE= 0x43, // firmware upgrade
-CMD_READ_FIRMWARE_VERSION= 0x50, // read current firmware version number
-CMD_READ_USR_PATH= 0x51,
-CMD_WRITE_USR_PATH= 0x52,
-// the following command is only valid for GW1000, WH2650 and wn1900 支持：
-CMD_GW1000_LIVEDATA= 0x27, // read current data，reply data size is 2bytes.
-CMD_GET_SOILHUMIAD= 0x28, // read Soilmoisture Sensor calibration parameters
-CMD_SET_SOILHUMIAD= 0x29, // write back Soilmoisture Sensor calibration parameters
-CMD_GET_MulCH_OFFSET= 0x2C, // read multi channel sensor offset value
-CMD_SET_MulCH_OFFSET= 0x2D, // write back multi channel sensor OFFSET value
-CMD_GET_PM25_OFFSET= 0x2E, // read PM2.5OFFSET calibration data
-CMD_SET_PM25_OFFSET= 0x2F, // writeback PM2.5OFFSET calibration data
-CMD_READ_SSSS= 0x30, // read system info
-CMD_WRITE_SSSS= 0x31, // write back system info
-CMD_READ_RAINDATA= 0x34, // read rain data
-CMD_WRITE_RAINDATA= 0x35, // write back rain data
-CMD_READ_GAIN= 0x36, // read rain gainMode: GW1000 V1.0
-CMD_WRITE_GAIN= 0x37, // write back rain gain
-CMD_READ_CALIBRATION= 0x38, // read sensor set offset calibration value
-CMD_WRITE_CALIBRATION= 0x39, // write back sensor set offset value
-CMD_READ_SENSOR_ID= 0x3A, // read Sensors ID
-CMD_WRITE_SENSOR_ID= 0x3B, // write back Sensors ID
-CMD_READ_SENSOR_ID_NEW= 0x3C, //// this is reserved for newly added sensors
-CMD_WRITE_REBOOT= 0x40, // system restart
-CMD_WRITE_RESET= 0x41, // reset to default
-CMD_READ_CUSTOMIZED_PATH= 0x51,
-CMD_WRITE_CUSTOMIZED_PATH= 0x52,
-CMD_GET_CO2_OFFSET= 0x53, //读取 CO2 OFFSET 参数
-CMD_SET_CO2_OFFSET= 0x54, //改写 CO2 OFFSET 参数
-CMD_READ_RSTRAIN_TIME= 0x55, // read rain reset time
-CMD_WRITE_RSTRAIN_TIME= 0x56, // write back rain reset time
-CMD_READ_RAIN= 0x57,
-CMD_WRITE_RAIN= 0x58,
-CMD_LIST_UNKNOW,
-}CMD_LT;
+typedef enum
+{
+  CMD_WRITE_SSID= 0x11, // send SSID and Password to WIFI module
+  CMD_BROADCAST= 0x12, // UDP cast for device echo，answer back data size is 2 Bytes
+  CMD_READ_ECOWITT= 0x1E, // read aw.net setting
+  CMD_WRITE_ECOWITT= 0x1F, //write back awt.net setting
+  CMD_READ_WUNDERGROUND= 0x20, // read Wunderground setting
+  CMD_WRITE_WUNDERGROUND= 0x21, //write back Wunderground setting
+  CMD_READ_WOW= 0x22, // read WeatherObservationsWebsite setting
+  CMD_WRITE_WOW= 0x23, // write back WeatherObservationsWebsite setting
+  CMD_READ_WEATHERCLOUD= 0x24, // read Weathercloud setting
+  CMD_WRITE_WEATHERCLOUD= 0x25, //write back Weathercloud setting
+  CMD_READ_SATION_MAC= 0x26, // read MAC address
+  CMD_READ_CUSTOMIZED= 0x2A, // read Customized sever setting
+  CMD_WRITE_CUSTOMIZED= 0x2B, // write back Customized sever setting
+  CMD_WRITE_UPDATE= 0x43, // firmware upgrade
+  CMD_READ_FIRMWARE_VERSION= 0x50, // read current firmware version number
+  CMD_READ_USR_PATH= 0x51,
+  CMD_WRITE_USR_PATH= 0x52,
+  // the following command is only valid for GW1000, WH2650 and wn1900 支持：
+  CMD_GW1000_LIVEDATA= 0x27, // read current data，reply data size is 2bytes.
+  CMD_GET_SOILHUMIAD= 0x28, // read Soilmoisture Sensor calibration parameters
+  CMD_SET_SOILHUMIAD= 0x29, // write back Soilmoisture Sensor calibration parameters
+  CMD_GET_MulCH_OFFSET= 0x2C, // read multi channel sensor offset value
+  CMD_SET_MulCH_OFFSET= 0x2D, // write back multi channel sensor OFFSET value
+  CMD_GET_PM25_OFFSET= 0x2E, // read PM2.5OFFSET calibration data
+  CMD_SET_PM25_OFFSET= 0x2F, // writeback PM2.5OFFSET calibration data
+  CMD_READ_SSSS= 0x30, // read system info
+  CMD_WRITE_SSSS= 0x31, // write back system info
+  CMD_READ_RAINDATA= 0x34, // read rain data
+  CMD_WRITE_RAINDATA= 0x35, // write back rain data
+  CMD_READ_GAIN= 0x36, // read rain gainMode: GW1000 V1.0
+  CMD_WRITE_GAIN= 0x37, // write back rain gain
+  CMD_READ_CALIBRATION= 0x38, // read sensor set offset calibration value
+  CMD_WRITE_CALIBRATION= 0x39, // write back sensor set offset value
+  CMD_READ_SENSOR_ID= 0x3A, // read Sensors ID
+  CMD_WRITE_SENSOR_ID= 0x3B, // write back Sensors ID
+  CMD_READ_SENSOR_ID_NEW= 0x3C, //// this is reserved for newly added sensors
+  CMD_WRITE_REBOOT= 0x40, // system restart
+  CMD_WRITE_RESET= 0x41, // reset to default
+  CMD_READ_CUSTOMIZED_PATH= 0x51,
+  CMD_WRITE_CUSTOMIZED_PATH= 0x52,
+  CMD_GET_CO2_OFFSET= 0x53, //读取 CO2 OFFSET 参数
+  CMD_SET_CO2_OFFSET= 0x54, //改写 CO2 OFFSET 参数
+  CMD_READ_RSTRAIN_TIME= 0x55, // read rain reset time
+  CMD_WRITE_RSTRAIN_TIME= 0x56, // write back rain reset time
+  CMD_READ_RAIN= 0x57,
+  CMD_WRITE_RAIN= 0x58,
+  CMD_LIST_UNKNOWN,
+} CMD_LT;
 
 //ecowitt parameters
-typedef enum {
+typedef enum
+{
   ITEM_INTEMP  = 0x01, //Indoor Temperature (℃)2
   ITEM_OUTTEMP  = 0x02, //Outdoor Temperature (℃)2
   ITEM_DEWPOINT  = 0x03, //Dew point (℃)2
@@ -165,7 +172,7 @@ typedef enum {
   ITEM_Piezo_Gain10  = 0x87, //2*10
   ITEM_RST_RainTime  = 0x88, //3
 
-  //started appearing after upgrading ecowitt
+  //started appearing after upgrading ecowitt firmware
   ITEM_UNKNOWN_6C = 0x6C,  // guess 4 bytes
 }PARAM_LT;
 

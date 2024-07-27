@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "lwip/apps/httpd.h"
 #include "pico/cyw43_arch.h"
 
@@ -26,7 +31,7 @@ extern NON_VOL_VARIABLES_T config;
   Notes:-
     1. This list is used to create a matching enum and string constant for each SSI tag
     2. Only append to end of list.  Do not insert, delete or reorder the existing items!
-    3. Related items are assumed to be in sequence in the code
+    3. Related items are assumed to be in sequence in the code e.g. days of week
 */
 #define SSI_TAGS \
     x(usurped)   \
@@ -139,21 +144,24 @@ extern NON_VOL_VARIABLES_T config;
     x(gway)    
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
-enum ssi_index {
+enum ssi_index
+{
 #define x(name) SSI_ ## name,
 SSI_TAGS
 #undef x
 };
 
 // array of pointers to SSI string constants
-const char * ssi_tags[] = {
+const char * ssi_tags[] =
+{
 #define x(name) #name,
 SSI_TAGS
 #undef x
 };
 
 
-u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen) {
+u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
+{
     size_t printed;
     char timestamp[50];
     uint32_t us_now;
@@ -751,7 +759,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen) {
     return ((u16_t)printed);
 }
 
-void ssi_init(void) {
+void ssi_init(void)
+{
     // configure SSI handler
     http_set_ssi_handler(ssi_handler, ssi_tags, LWIP_ARRAYSIZE(ssi_tags));
 }

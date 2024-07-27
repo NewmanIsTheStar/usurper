@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #define _GNU_SOURCE
 
 #include "pico/cyw43_arch.h"
@@ -448,7 +454,7 @@ int get_timestamp(char *timestamp, int len, int isoformat)
  * \param[out]  timestamp   pointer to string to store the timestamp 
  * \param[in]   len         max length of timestamp string  
  * 
- * \return number of characters printed
+ * \return number of characters in the timestamp
  */
 int get_local_time_string(char *timestamp, int len)
 {
@@ -495,20 +501,16 @@ int get_local_time_string(char *timestamp, int len)
  */
 SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mow)
 {
-   int dow;
-   int mod;
    int day;      
-   int now_mow;
+   int now_mow = 0;
    int irrigate_now = SCHEDULE_NEVER;
    int candidate_start_mow;
    int candidate_end_mow;
    int lowest_delta = MINUTES_IN_WEEK;
    int delta;
-
-   get_dow_and_mod_local_tz(&dow, &mod);
-    
-   // current minute of week
-   now_mow = dow*HOURS_IN_DAY*MINUTES_IN_HOUR + mod;                         
+   
+   // get current minute of week 
+   get_mow_local_tz(&now_mow);                      
 
     // search for next irrigation period
    for (day = 0; day < DAYS_IN_WEEK; day++)
@@ -609,6 +611,13 @@ int mow_future_delta(int start_mow, int end_mow)
    return(delta);
 }
 
+/*!
+ * \brief Calculate future delta between mow times
+ *
+ * \param[in]  day         0 - 6 day of week, beginning Sunday at midnight
+ * 
+ * \return pointer to string containing name of day
+ */
 const char *day_name(int day)
 {
    int err = 0;

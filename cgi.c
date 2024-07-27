@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "hardware/watchdog.h"
 
 #include "lwip/apps/httpd.h"
@@ -20,6 +25,16 @@ extern WEB_VARIABLES_T web;
 extern char current_calendar_web_page[50];
 
 
+/*!
+ * \brief print all the parameters passed to a cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 void dump_parameters(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -42,6 +57,13 @@ void dump_parameters(int iIndex, int iNumParams, char *pcParam[], char *pcValue[
 }
 
 
+/*!
+ * \brief convert string to integer times ten plus tenths e.g. "78.32" => 783
+ *
+ * \param[in]  value_string index of cgi handler in cgi_handlers table
+ * 
+ * \return integer = value x 10
+ */
 int get_int_with_tenths_from_string(char *value_string)
 {
     int whole_part = 0;
@@ -67,7 +89,16 @@ int get_int_with_tenths_from_string(char *value_string)
     return(new_value);
 }
 
-// CGI handler which is run when a request for /schedule.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_schedule_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     // Check if an request for SCHEDULE has been made (/schedule.cgi?schedule=x)
@@ -84,7 +115,16 @@ const char * cgi_schedule_handler(int iIndex, int iNumParams, char *pcParam[], c
     return "/index.shtml";
 }
 
-// CGI handler which is run when a request for /wed.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_weekday_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     
@@ -98,7 +138,17 @@ const char * cgi_weekday_handler(int iIndex, int iNumParams, char *pcParam[], ch
     return(current_calendar_web_page);
 }
 
-// CGI handler which is run when a request for /wed.cgi is detected
+
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_inc_duration_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -125,7 +175,16 @@ const char * cgi_inc_duration_handler(int iIndex, int iNumParams, char *pcParam[
     return(current_calendar_web_page);
 }
 
-// CGI handler which is run when a request for /wed.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_dec_duration_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -153,7 +212,16 @@ const char * cgi_dec_duration_handler(int iIndex, int iNumParams, char *pcParam[
 }
 
 
-// CGI handler which is run when a request for /wed.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_inc_hour_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -186,7 +254,16 @@ const char * cgi_inc_hour_handler(int iIndex, int iNumParams, char *pcParam[], c
     return(current_calendar_web_page);
 }
 
-// CGI handler which is run when a request for /wed.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_dec_hour_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -219,7 +296,16 @@ const char * cgi_dec_hour_handler(int iIndex, int iNumParams, char *pcParam[], c
     return(current_calendar_web_page);
 }
 
-// CGI handler which is run when a request for /wed.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_inc_minute_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -261,7 +347,16 @@ const char * cgi_inc_minute_handler(int iIndex, int iNumParams, char *pcParam[],
     return(current_calendar_web_page);
 }
 
-// CGI handler which is run when a request for /wed.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_dec_minute_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -304,7 +399,16 @@ const char * cgi_dec_minute_handler(int iIndex, int iNumParams, char *pcParam[],
 }
 
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_time_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -407,7 +511,16 @@ const char * cgi_time_handler(int iIndex, int iNumParams, char *pcParam[], char 
     return "/time.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -497,7 +610,16 @@ const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], ch
 }
 
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -609,7 +731,16 @@ const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], ch
     return "/network.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -701,7 +832,16 @@ const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *
     return "/addressable_led.shtml";
 }
 
-//CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_reboot_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -732,7 +872,16 @@ const char * cgi_reboot_handler(int iIndex, int iNumParams, char *pcParam[], cha
     return "/index.shtml";    
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_portrait_schedule_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -794,7 +943,16 @@ const char * cgi_portrait_schedule_handler(int iIndex, int iNumParams, char *pcP
     return "/portrait.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_day_schedule_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -864,7 +1022,16 @@ const char * cgi_day_schedule_handler(int iIndex, int iNumParams, char *pcParam[
     return "/index.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_mood_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -949,7 +1116,16 @@ const char * cgi_mood_handler(int iIndex, int iNumParams, char *pcParam[], char 
     return "/moodlight.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_syslog_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -1000,7 +1176,16 @@ const char * cgi_syslog_handler(int iIndex, int iNumParams, char *pcParam[], cha
     return "/syslog.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -1094,7 +1279,16 @@ const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char
     return "/units.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_software_load_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -1140,7 +1334,16 @@ const char * cgi_software_load_handler(int iIndex, int iNumParams, char *pcParam
     return "/software_load.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_remote_led_strips(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -1210,7 +1413,16 @@ const char * cgi_remote_led_strips(int iIndex, int iNumParams, char *pcParam[], 
     return "/remote_led_strips.shtml";
 }
 
-// CGI handler which is run when a request for /muppet.cgi is detected
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
 const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
@@ -1260,7 +1472,7 @@ const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[]
     return "/personality.shtml";
 }
 
-// tCGI Struct
+
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
     {"/schedule.cgi",           cgi_schedule_handler},
@@ -1292,6 +1504,11 @@ static const tCGI cgi_handlers[] = {
     {"/personality.cgi",        cgi_personality_handler},                               
 };
 
+/*!
+ * \brief initialize cgi handlers
+ * 
+ * \return nothing
+ */
 void cgi_init(void)
 {
     http_set_cgi_handlers(cgi_handlers, NUM_ROWS(cgi_handlers));

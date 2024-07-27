@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
@@ -388,7 +393,6 @@ int set_realtime_clock(void)
     sntp_init();
 
     //  wait for first sntp server response 
-    //  TODO: the lwip sntp library application randomly stops sending requests if other socket communication occurs prior to receiving a response 
     while (true) 
     {
         sleep_ms(500);
@@ -446,7 +450,7 @@ int monitor_stacks(void)
         {
             if (!spam_throttle)
             {
-                send_syslog_message("LOW STACK WARNING.  %s stack high water mark = %d", worker_tasks[worker].name, worker_tasks[worker].stack_high_water_mark);
+                send_syslog_message("usurper", "LOW STACK WARNING.  %s stack high water mark = %d", worker_tasks[worker].name, worker_tasks[worker].stack_high_water_mark);
                 spam_throttle = 60;
             }
             else

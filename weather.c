@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -203,7 +208,7 @@ void weather_task(void *params)
 
                 if (iNumFailedQueries > 30)
                 {
-                    send_syslog_message("Failed to read from weather station 30 times. ---REBOOT---.");    
+                    send_syslog_message("usurper", "Failed to read from weather station 30 times. ---REBOOT---.");    
 
                     // reboot
                     sleep_ms(1000);
@@ -269,7 +274,7 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
     unsigned char rx_buffer[BUF_SIZE];  
     static int ecowitt_socket = -1;
     static struct sockaddr_in ecowitt_address; 
-    char log_message[200];   
+    char log_message[200];   //TEST TEST TEST
 
     
     // (re)establish socket connection
@@ -310,24 +315,27 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
                         if (!receive_weather_info_from_ecowitt(rx_buffer, read_bytes))
                         {
                             err = WEATHER_NO_CHANGE;
-
+                            sprintf(log_message, "temp [%d, %d] wind [%d, %d] drain [%d, %d] wrain [%d, %d]", *outside_temperature, (short)ntohs(*(s16_t *)raw_outsidetemp), *wind_speed, ntohs(*(u16_t *)raw_windspeed), *daily_rain, ntohl(*(u32_t *)raw_dailyrain), *weekly_rain, ntohl(*(u32_t *)raw_weeklyrain));
                             if (*outside_temperature != (short)ntohs(*(s16_t *)raw_outsidetemp))
                             {
                                 *outside_temperature = (short)ntohs(*(s16_t *)raw_outsidetemp);
                                 CLIP(*outside_temperature, -1000, 600);
                                 err = WEATHER_CHANGED;
+                                STRCAT(log_message, " *T* ");
                             }
                             if (*wind_speed != ntohs(*(u16_t *)raw_windspeed))
                             {
                                 *wind_speed = ntohs(*(u16_t *)raw_windspeed);
                                 CLIP(*wind_speed, 0, 1100);
                                 err = WEATHER_CHANGED;
+                                STRCAT(log_message, " *W* ");
                             }
                             if (*daily_rain != ntohl(*(u32_t *)raw_dailyrain))
                             {
                                 *daily_rain = ntohl(*(u32_t *)raw_dailyrain);
                                 CLIP(*daily_rain, 0, 2000);
                                 err = WEATHER_CHANGED;
+                                STRCAT(log_message, " *DR* ");
                             }
 
                             if (*weekly_rain != ntohl(*(u32_t *)raw_weeklyrain))
@@ -335,7 +343,13 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
                                 *weekly_rain = ntohl(*(u32_t *)raw_weeklyrain);
                                 CLIP(*weekly_rain, 0, 7*2000);
                                 err = WEATHER_CHANGED;
-                            }                                                                                                                                               
+                                STRCAT(log_message, " *WR* ");
+                            } 
+
+                            if (err == WEATHER_CHANGED) 
+                            {
+                                send_syslog_message("debug", "%s", log_message);
+                            }                                                                                                                                             
                             break;
                         }
                     }
@@ -642,7 +656,7 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
     case IRRIGATION_OFF:
         if (irrigation_schedule_status == SCHEDULE_NOW)
         {
-            send_syslog_message("Irrigation commenced according to schedule");
+            send_syslog_message("usurper", "Irrigation commenced according to schedule");
             schedule_change_affecting_active_irrigation(schedule_start_mow, schedule_end_mow, true);  // initiate schedule monitoring
             irrigation_state = IRRIGATION_IN_PROGRESS;
 
@@ -656,14 +670,14 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
         switch(irrigation_schedule_status)
         {
         case SCHEDULE_FUTURE:
-            send_syslog_message("Irrigation ended according to schedule");
+            send_syslog_message("usurper", "Irrigation ended according to schedule");
             snprintf(web.status_message, sizeof(web.status_message), "Next irrigation %s at %02d:%02d", day_name(schedule_start_mow/(24*60)), (schedule_start_mow%(24*60))/60, (schedule_start_mow%(24*60))%60);                                                
             irrigation_state = IRRIGATION_OFF;
             break;
         case SCHEDULE_NOW:
             if (schedule_change_affecting_active_irrigation(schedule_start_mow, schedule_end_mow, false))
             {
-                send_syslog_message("Irrigation disrupted by schedule alteration.\n");
+                send_syslog_message("usurper", "Irrigation disrupted by schedule alteration.\n");
                 irrigation_state = IRRIGATION_DISRUPTED;
                 control_moodlight(LIGHT_DEFAULT, true);
                 control_led_strip(LIGHT_DEFAULT, true);            
@@ -681,7 +695,7 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
     case IRRIGATION_TERMINATED:
         if (irrigation_schedule_status == SCHEDULE_FUTURE)
         {
-            send_syslog_message("Previously terminated irrigation period has now reached its scheduled end");
+            send_syslog_message("usurper", "Previously terminated irrigation period has now reached its scheduled end");
             snprintf(web.status_message, sizeof(web.status_message), "Next irrigation %s at %02d:%02d", day_name(schedule_start_mow/(24*60)), (schedule_start_mow%(24*60))/60, (schedule_start_mow%(24*60))%60);                                                
             irrigation_state = IRRIGATION_OFF;
         }
@@ -1015,12 +1029,12 @@ bool terminate_irrigation_due_to_weather (void)
         switch(config.use_archaic_units)
         {
         case true:
-            send_syslog_message("Irrigation terminated due to weather.  Wind speed is %d.%d ft/s Daily rain is %d.%d inches Seven day rain is %d.%d inches",
+            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed is %d.%d ft/s Daily rain is %d.%d inches Seven day rain is %d.%d inches",
                 wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
             break;            
         default:
         case false:
-            send_syslog_message("Irrigation terminated due to weather.  Wind speed is %d.%d m/s Daily rain is %d.%d mm Seven day rain is %d.%d mm",
+            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed is %d.%d m/s Daily rain is %d.%d mm Seven day rain is %d.%d mm",
                 wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
             break;
         }         
@@ -1072,6 +1086,10 @@ int syslog_report_weather (void)
     int wind_speed = 0;
     int rain_day = 0;
     int rain_week = 0; 
+    static int previous_outside_temp = 0;
+    static int previous_wind_speed = 0;
+    static int previous_rain_day = 0;
+    static int previous_rain_week = 0;     
  
     // convert current measurements to archaic units if necessary
     switch(config.use_archaic_units)
@@ -1092,19 +1110,33 @@ int syslog_report_weather (void)
         break;
     } 
 
-    switch(config.use_archaic_units)
+    // check if anything changed since last message was sent
+    // note: necessary due to different resolution of archaic units e.g. a 1 mm change may result in no change when measured in tenths of an inch
+    if ((outside_temp != previous_outside_temp) ||
+        (wind_speed != previous_wind_speed)     ||
+        (rain_day != previous_rain_day)         ||
+        (rain_week != previous_rain_week))
     {
-    case true:
-        send_syslog_message("Temperature = %d.%d F Wind speed = %d.%d ft/s Daily rain = %d.%d inches Weekly rain = %d.%d inches",
-            outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
-        break;            
-    default:
-    case false:
-        send_syslog_message("Temperature = %d.%d C Wind speed = %d.%d m/s Daily rain = %d.%d mm Weekly rain = %d.%d mm",
-            outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
-        break;
-    }         
-               
+        // remember what we log
+        previous_outside_temp = outside_temp;
+        previous_wind_speed = wind_speed;
+        previous_rain_day = rain_day;
+        previous_rain_week =  rain_week;  
+
+        switch(config.use_archaic_units)
+        {
+        case true:
+            send_syslog_message("usurper", "Temperature = %d.%d F Wind speed = %d.%d ft/s Daily rain = %d.%d inches Weekly rain = %d.%d inches",
+                outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
+            break;            
+        default:
+        case false:
+            send_syslog_message("usurper", "Temperature = %d.%d C Wind speed = %d.%d m/s Daily rain = %d.%d mm Weekly rain = %d.%d mm",
+                outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
+            break;
+        }  
+    }   
+
     return(0);
 }
 

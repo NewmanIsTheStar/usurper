@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2024 NewmanIsTheStar
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "lwip/apps/httpd.h"
 #include "pico/cyw43_arch.h"
 
@@ -72,9 +77,9 @@ WIFI_COUNTRY_T wifi_country[] =
     {CYW43_COUNTRY_THAILAND, "Thailand"},
     {CYW43_COUNTRY_TURKEY, "Turkey"},
     {CYW43_COUNTRY_UK, "UK"},
-   // {CYW43_COUNTRY_UK, "United Kingdom"},    
+ // {CYW43_COUNTRY_UK, "United Kingdom"},    
     {CYW43_COUNTRY_USA, "USA"},
-  //  {CYW43_COUNTRY_USA, "United States of America"},    
+ // {CYW43_COUNTRY_USA, "United States of America"},    
 };
 
 
