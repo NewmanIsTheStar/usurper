@@ -125,7 +125,7 @@ int pluto( void )
 #endif
 
     // initialize boss task
-    xTaskCreate(boss_task, "Boss Task", /*configMINIMAL_STACK_SIZE*/1024, NULL, BOSS_TASK_PRIORITY, &task);
+    xTaskCreate(boss_task, "Boss Task", configMINIMAL_STACK_SIZE, NULL, BOSS_TASK_PRIORITY, &task);
 
     // start boss task
     vTaskStartScheduler();
@@ -230,9 +230,7 @@ void boss_task(__unused void *params)
         sleep_ms(1000);
 
         if (restart_requested)
-        {
-            send_syslog_message("usurper", "Application restart requested");
-           
+        {           
             printf("***REBOOT in 100 ms***\n");
             restart_requested = false;
             cyw43_arch_disable_sta_mode();

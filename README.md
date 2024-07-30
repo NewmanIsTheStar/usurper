@@ -65,24 +65,23 @@ I left on a 3 week vacation during a drought.  3 days after I left, my city anno
 A relay controlled by the Pico W is insertd into the common line that runs from the existing controller to the sprinkler valves.  A 2 minute job.  The existing controller is then configured to run everyday, or even multiple times every day.   The Pico connects / disconnects the common line to control when the sprinklers actually run.
 
 ## Installation
-
+```
 sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
 git clone --recurse-submodules http://github/this_project 
 cd usurper
 mkdir build
 cd build
 cmake ..
-
+```
 Upon completion of a successful build the file usurper.uf2 should be created.  This may be loaded onto the Pico W in the usual manner.
 
 ## Initial Configuration
-The Pico W will initially create a WiFi network with SSID = pluto.  Connect to this WiFi network and then point your web browser to http://192.168.4.1
-
-Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to pluto and correct your mistakes.
+- The Pico W will initially create a WiFi network with SSID = pluto.  Connect to this WiFi network and then point your web browser to http://192.168.4.1
+- Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to pluto and correct your mistakes.
 
 ## Optional Hardware
-Signal Relay Module for Raspberry Pi Pico, SPDT 2Amp / AC120V DC24V (this uses GPIO3)
-ECOWITT Wittboy Weather Station GW2001
-Govee Table Lamp H60511D1
-Additional Pico W to control remote LED strips (up to 6)
+- Signal Relay Module for Raspberry Pi Pico, SPDT 2Amp / AC120V DC24V (this uses GPIO3)
+- ECOWITT Wittboy Weather Station GW2001
+- Govee Table Lamp H60511D1
+- Additional Pico W to control remote LED strips (up to 6)
 
