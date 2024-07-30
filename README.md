@@ -14,6 +14,7 @@ cd usurper
 mkdir build
 cd build
 cmake ..
+make
 ```
 Upon completion of a successful build the file usurper.uf2 should be created.  This may be loaded onto the Pico W in the usual manner.
 
