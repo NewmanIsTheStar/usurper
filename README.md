@@ -1,7 +1,7 @@
 # Sprinkler Usurper
 
 ## Description
-Add Wifi control to an orinary residential sprinkler system using a Raspberry Pi Pico W. This gives you remote control of your sprinkler system.  Optionally read weather information from an Ecowitt weather station (rain, wind, temperature) to control scheduling.  It can also use a Govee Table Lamp or LED strip(s) to indicate operational status.
+Add Wifi control to an ordinary residential sprinkler system using a Raspberry Pi Pico W. This gives you remote control of your sprinkler system.  Optionally read weather information from an Ecowitt weather station (rain, wind, temperature) to control scheduling.  It can also use a Govee Table Lamp or LED strip(s) to indicate operational status.
 
 ## How it works
 A relay controlled by the Pico W is inserted into the common line that runs from the existing controller to the sprinkler valves.  An easy 2 minute job.  The existing controller is then configured to run every day, or even multiple times every day.   The Pico connects / disconnects the common line to control when the sprinklers actually run.
@@ -9,7 +9,7 @@ A relay controlled by the Pico W is inserted into the common line that runs from
 ## Installation
 ```
 sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
-git clone --recurse-submodules http://github/this_project 
+git clone --recurse-submodules https://github.com/NewmanIsTheStar/usurper.git 
 cd usurper
 mkdir build
 cd build
