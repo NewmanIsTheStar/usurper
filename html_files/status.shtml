@@ -66,7 +66,7 @@ body {
     <p><!--#status--></p> 
     <br>
     <p>Local Time: <!--#ltme--></p>
-    <p>Last Usurped Time: <!--#usurped--></p>
+    <p>Last Termination: <!--#usurped--></p>
     <br>
     <p>Temperature: <!--#temp--> &deg;<!--#tmpu--></p>
     <p>Rain today: <!--#rain--> <!--#dstu--></p>

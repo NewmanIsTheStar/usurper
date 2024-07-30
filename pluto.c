@@ -125,7 +125,7 @@ int pluto( void )
 #endif
 
     // initialize boss task
-    xTaskCreate(boss_task, "Boss Task", configMINIMAL_STACK_SIZE, NULL, BOSS_TASK_PRIORITY, &task);
+    xTaskCreate(boss_task, "Boss Task", /*configMINIMAL_STACK_SIZE*/1024, NULL, BOSS_TASK_PRIORITY, &task);
 
     // start boss task
     vTaskStartScheduler();
@@ -160,6 +160,7 @@ void boss_task(__unused void *params)
     while (cyw43_arch_init_with_country(get_wifi_country_code(config.wifi_country)))
     {
          printf("***Failed to initialise wifi***\n");
+         cyw43_arch_deinit();
          sleep_ms(1000);       
     } 	    
 
@@ -230,7 +231,13 @@ void boss_task(__unused void *params)
 
         if (restart_requested)
         {
+            send_syslog_message("usurper", "Application restart requested");
+           
             printf("***REBOOT in 100 ms***\n");
+            restart_requested = false;
+            cyw43_arch_disable_sta_mode();
+            cyw43_arch_deinit();
+
             watchdog_enable(100, 0);
         }        
     }
@@ -310,7 +317,10 @@ int ap_mode(void)
         // reboot if in AP mode for 10 minutes without user altering configuration
         if (ap_idle > 10*60*10)
         {
-            watchdog_enable(1, 1);
+            cyw43_arch_disable_ap_mode();
+            cyw43_arch_deinit();
+
+            watchdog_enable(1, 0);
         }
         else
         {
@@ -323,8 +333,11 @@ int ap_mode(void)
         if (restart_requested)
         {
             printf("***REBOOT in 100 ms***\n");
+            cyw43_arch_disable_ap_mode();
+            cyw43_arch_deinit();
+
             sleep_ms(100);
-            watchdog_enable(1, 1);
+            watchdog_enable(1, 0);
         }
     } 
 

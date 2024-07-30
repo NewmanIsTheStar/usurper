@@ -199,9 +199,9 @@ int establish_socket(char *address_string, struct sockaddr_in *ipv4_address, int
     for (i=0; i<3; i++)
     {
         //watchdog_pulse();
-
+        //cyw43_arch_lwip_begin();
         hp = gethostbyname(address_string);  // blocking call
-
+        //cyw43_arch_lwip_end();
         //watchdog_pulse();
 
         if (!hp)
@@ -232,21 +232,27 @@ int establish_socket(char *address_string, struct sockaddr_in *ipv4_address, int
         //printf("%d.%d.%d.%d\n", ((char *)(ipv4_address->sin_addr.s_addr))[0], ((char *)(ipv4_address->sin_addr.s_addr))[1], ((char *)(ipv4_address->sin_addr.s_addr))[2],((char *)(ipv4_address->sin_addr.s_addr))[3] );
     }
 
-    socket = lwip_socket(AF_INET, type, 0);
+    //cyw43_arch_lwip_begin();
+    socket = socket(AF_INET, type, 0);
+    //cyw43_arch_lwip_end();
 
     printf("socket = %d\n", socket);
 
     if (socket >= 0)
     {
         if (socket > web.socket_max) web.socket_max = socket;
-        
-        if (lwip_connect(socket, (struct sockaddr *)ipv4_address, sizeof(struct sockaddr_in)))
+
+        //cyw43_arch_lwip_begin();        
+        if (connect(socket, (struct sockaddr *)ipv4_address, sizeof(struct sockaddr_in)))
         {
             printf("closing socket due to connect failure\n");
+
             lwip_close(socket); 
+
             socket = -1;
             web.connect_failures++;
         }
+        //cyw43_arch_lwip_end();
     }
 
     return(socket);
@@ -293,12 +299,16 @@ int send_syslog_message(char *log_name, const char *format, ...)
                 va_end(args); 
                 syslog_message[199] = 0;  // ensure string terminated
 
+                //cyw43_arch_lwip_begin();
                 sent_bytes = send(syslog_socket, syslog_message, strlen(syslog_message), 0);
+                //cyw43_arch_lwip_end();
                 //printf("sent %d bytes.  MSG: %s\n", sent_bytes, syslog_message); 
 
                 if (sent_bytes < 0)
                 {
-                    lwip_close(syslog_socket);
+                    //cyw43_arch_lwip_begin();
+                    close(syslog_socket);
+                    //cyw43_arch_lwip_end();
                     syslog_socket = -1;
                     web.syslog_transmit_failures++;
                 }          

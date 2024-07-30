@@ -18,7 +18,6 @@ project(usurper C CXX ASM)
 
 pico_sdk_init()
 
-
 message("Creating githash.h")
 execute_process(COMMAND
         ./create_githash_h
@@ -31,13 +30,6 @@ execute_process(COMMAND
         ./makefsdata.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         )
-
-message("Prepending #include \"lwip/apps/fs.h\" to htmldata.c")
-execute_process(COMMAND
-        fix_htmldata_include
-        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-        )
-
         
 add_executable(usurper
         pluto.c

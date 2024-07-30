@@ -42,9 +42,8 @@
 
 typedef enum
 {
-    WEATHER_NO_CHANGE = 0,
-    WEATHER_CHANGED = 1,
-    WEATHER_READ_FAILED = 3,
+    WEATHER_READ_SUCCESS = 0,
+    WEATHER_READ_FAILED = 1,
 } WEATHER_QUERY_STATUS_T;
 
 typedef enum
@@ -165,7 +164,7 @@ const ECOWITT_PARAMETER_T aEcowittParameters[] =
 void weather_task(void *params)
 {
     IRRIGATION_STATE_T irrigation_state = IRRIGATION_OFF;
-    WEATHER_QUERY_STATUS_T weather_query_status = WEATHER_NO_CHANGE;   
+    WEATHER_QUERY_STATUS_T weather_query_status = WEATHER_READ_SUCCESS;   
     int iNumFailedQueries = 0;    
     char log_message[200];  
     int iStatus = 0;
@@ -187,17 +186,13 @@ void weather_task(void *params)
             weather_query_status = query_weather_station((s16_t *)&web.outside_temperature, (s16_t *)&web.wind_speed, (s32_t *)&web.daily_rain, (s32_t *)&web.weekly_rain);
 
             switch(weather_query_status)
-            {
-            default:
-            case WEATHER_NO_CHANGE:
-                iNumFailedQueries = 0;
-                break; 
-            
-            case WEATHER_CHANGED:
+            {            
+            case WEATHER_READ_SUCCESS:
                 syslog_report_weather();                   
                 iNumFailedQueries = 0;
                 break;
-            
+
+            default:
             case WEATHER_READ_FAILED:
                 iNumFailedQueries++;
 
@@ -211,9 +206,7 @@ void weather_task(void *params)
                     send_syslog_message("usurper", "Failed to read from weather station 30 times. ---REBOOT---.");    
 
                     // reboot
-                    sleep_ms(1000);
-                    watchdog_enable(1, 1);
-                    sleep_ms(2000);
+                    application_restart();
                 }          
                 break;
             }
@@ -259,11 +252,11 @@ void weather_task(void *params)
  * 
  * \param[out]   weekly_rain (global) mm x 10    
  * 
- * \return WEATHER_NO_CHANGE, WEATHER_CHANGED or WEATHER_READ_FAILED
+ * \return WEATHER_READ_SUCCESS or WEATHER_READ_FAILED
  */
 WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *wind_speed, s32_t *daily_rain, s32_t *weekly_rain)
 {
-    int err = WEATHER_NO_CHANGE;
+    int err = WEATHER_READ_SUCCESS;
     int ret;
     int wrote_bytes;
     int read_bytes;
@@ -274,7 +267,6 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
     unsigned char rx_buffer[BUF_SIZE];  
     static int ecowitt_socket = -1;
     static struct sockaddr_in ecowitt_address; 
-    char log_message[200];   //TEST TEST TEST
 
     
     // (re)establish socket connection
@@ -288,7 +280,8 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
                             aEcowittRequests[msg_to_snd%NUM_ROWS(aEcowittRequests)].request_len, 0);
         msg_to_snd++;
 
-        if (wrote_bytes > 0) {
+        if (wrote_bytes > 0)
+        {
             //printf("read live_data\n");                    
             for (retry=0; retry<5; retry++)
             {
@@ -297,71 +290,40 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
                 tv.tv_sec = 2;
                 tv.tv_usec = 500;
 
-                //printf("calling select...\n");
-                //watchdog_pulse();
                 ret = select(ecowitt_socket + 1, &readset, NULL, NULL, &tv);
-                //watchdog_pulse();
-                //perror("select ::");
-                //printf("returned from select with value %d\n", ret);
-                
 
                 if ((ret > 0) && FD_ISSET(ecowitt_socket, &readset))
                 {
-                    //printf("calling recv...\n");
                     read_bytes = recv(ecowitt_socket, rx_buffer, BUF_SIZE, 0);
-                    //printf("...returned from recv with value %d\n", read_bytes);
-                    if (read_bytes > 0) {
+
+                    if (read_bytes > 0)
+                    {
                         //hex_dump(rx_buffer, read_bytes);
                         if (!receive_weather_info_from_ecowitt(rx_buffer, read_bytes))
                         {
-                            err = WEATHER_NO_CHANGE;
-                            sprintf(log_message, "temp [%d, %d] wind [%d, %d] drain [%d, %d] wrain [%d, %d]", *outside_temperature, (short)ntohs(*(s16_t *)raw_outsidetemp), *wind_speed, ntohs(*(u16_t *)raw_windspeed), *daily_rain, ntohl(*(u32_t *)raw_dailyrain), *weekly_rain, ntohl(*(u32_t *)raw_weeklyrain));
-                            if (*outside_temperature != (short)ntohs(*(s16_t *)raw_outsidetemp))
-                            {
-                                *outside_temperature = (short)ntohs(*(s16_t *)raw_outsidetemp);
-                                CLIP(*outside_temperature, -1000, 600);
-                                err = WEATHER_CHANGED;
-                                STRCAT(log_message, " *T* ");
-                            }
-                            if (*wind_speed != ntohs(*(u16_t *)raw_windspeed))
-                            {
-                                *wind_speed = ntohs(*(u16_t *)raw_windspeed);
-                                CLIP(*wind_speed, 0, 1100);
-                                err = WEATHER_CHANGED;
-                                STRCAT(log_message, " *W* ");
-                            }
-                            if (*daily_rain != ntohl(*(u32_t *)raw_dailyrain))
-                            {
-                                *daily_rain = ntohl(*(u32_t *)raw_dailyrain);
-                                CLIP(*daily_rain, 0, 2000);
-                                err = WEATHER_CHANGED;
-                                STRCAT(log_message, " *DR* ");
-                            }
-
-                            if (*weekly_rain != ntohl(*(u32_t *)raw_weeklyrain))
-                            {
-                                *weekly_rain = ntohl(*(u32_t *)raw_weeklyrain);
-                                CLIP(*weekly_rain, 0, 7*2000);
-                                err = WEATHER_CHANGED;
-                                STRCAT(log_message, " *WR* ");
-                            } 
-
-                            if (err == WEATHER_CHANGED) 
-                            {
-                                send_syslog_message("debug", "%s", log_message);
-                            }                                                                                                                                             
+                            err = WEATHER_READ_SUCCESS;
+                            
+                            // store parameters of interest
+                            *outside_temperature = (short)ntohs(*(s16_t *)raw_outsidetemp);                            
+                            *wind_speed = ntohs(*(u16_t *)raw_windspeed);                            
+                            *daily_rain = ntohl(*(u32_t *)raw_dailyrain);                            
+                            *weekly_rain = ntohl(*(u32_t *)raw_weeklyrain);
+                            
+                            // clip parameters to sane ranges
+                            CLIP(*outside_temperature, -1000, 600);
+                            CLIP(*wind_speed, 0, 1100);
+                            CLIP(*daily_rain, 0, 2000);
+                            CLIP(*weekly_rain, 0, 7*2000);                                                                                                                                          
                             break;
                         }
                     }
-                    else {
-                        //perror("READ ERROR = ");
-                        //printf("read returned %d  ||| retry = %d\n", read_bytes, retry);
+                    else
+                    {
                         err = WEATHER_READ_FAILED;
                     }
                 }
                 else
                 {
-                    printf("select returned %d  and FD_ISSET was not set  ||| retry = %d\n", ret, retry);
                     err = WEATHER_READ_FAILED;
                 }  
 
@@ -369,10 +331,8 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
         }
         else
         {
-            //printf("wrote_bytes = %d\n", wrote_bytes);
-
             // close socket
-            lwip_close(ecowitt_socket);
+            close(ecowitt_socket);
             ecowitt_socket = -1;
             err = WEATHER_READ_FAILED;
         }
@@ -656,7 +616,8 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
     case IRRIGATION_OFF:
         if (irrigation_schedule_status == SCHEDULE_NOW)
         {
-            send_syslog_message("usurper", "Irrigation commenced according to schedule");
+            send_syslog_message("usurper", "Irrigation commenced according to schedule");            
+            snprintf(web.status_message, sizeof(web.status_message), "Irrigation in progress");            
             schedule_change_affecting_active_irrigation(schedule_start_mow, schedule_end_mow, true);  // initiate schedule monitoring
             irrigation_state = IRRIGATION_IN_PROGRESS;
 
@@ -677,14 +638,15 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
         case SCHEDULE_NOW:
             if (schedule_change_affecting_active_irrigation(schedule_start_mow, schedule_end_mow, false))
             {
-                send_syslog_message("usurper", "Irrigation disrupted by schedule alteration.\n");
+                send_syslog_message("usurper", "Irrigation disrupted by schedule alteration\n");
                 irrigation_state = IRRIGATION_DISRUPTED;
                 control_moodlight(LIGHT_DEFAULT, true);
                 control_led_strip(LIGHT_DEFAULT, true);            
             }
             break;
         default:
-        case SCHEDULE_NEVER: // no irrigation scheduled   
+        case SCHEDULE_NEVER: // no irrigation scheduled
+            snprintf(web.status_message, sizeof(web.status_message), "No irrigation scheduled");    
             break;
         } 
         if (terminate_irrigation_due_to_weather())

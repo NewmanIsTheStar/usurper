@@ -1,1 +1,1 @@
-#define GITHASH "de44eff"
+#define GITHASH "6520af5"

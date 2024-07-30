@@ -867,8 +867,6 @@ const char * cgi_reboot_handler(int iIndex, int iNumParams, char *pcParam[], cha
     //request reboot
     application_restart();
 
-    //return "/status.shtml";
-
     return "/index.shtml";    
 }
 
