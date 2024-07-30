@@ -30,7 +30,7 @@ I bought this stuff on Amazon and it is available elsewhere.  The relay module i
 - Additional Pico W boards to control remote LED strips
 
 ## Why add Wifi to a "dumb" sprinkler?
-I went on a 3 week vacation during a drought.  3 days after I left, my city announced a ban on all irrigation and a $2000 fine!  That fine was cumulative per day!!!  Luckily my neighbor was able to turn off the water for me on that occasion.  I needed a solution for remote access. In additona, I later discovered that when the wind was blowing stongly my lawn sprinklers would spray onto my carniverous plant bog -- that can kill them as they need rain water or distilled water.  So, by checking the wind speed the Pico W avoids running the sprinklers when the wind is too high. 
+I went on a 3 week vacation during a drought.  3 days after I left, my city announced a ban on all irrigation and a $2000 fine!  That fine was cumulative per day!!!  Luckily my neighbor was able to turn off the water for me on that occasion.  I needed a solution for remote access. In additon, I later discovered that when the wind was blowing stongly my lawn sprinklers would spray onto my carniverous plant bog -- that can kill them as they need rain water or distilled water.  So, by checking the wind speed the Pico W avoids running the sprinklers when the wind is too high. 
 
 ## Licenses
 - SPDX-License-Identifier: BSD-3-Clause
