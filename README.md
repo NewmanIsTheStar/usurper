@@ -6,9 +6,9 @@ Add Wifi control to an ordinary residential sprinkler system using a Raspberry P
 ## How it works
 A relay controlled by the Pico W is inserted into the common line that runs from the existing controller to the sprinkler valves.  An easy 2 minute job.  The existing controller is then configured to run every day, or even multiple times every day.   The Pico connects / disconnects the common line to control when the sprinklers actually run.
 
-## Installation
+## Installation on Ubuntu Linux
 ```
-sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+sudo apt install git build-essential cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
 git clone --recurse-submodules https://github.com/NewmanIsTheStar/usurper.git 
 cd usurper
 mkdir build
