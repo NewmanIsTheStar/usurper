@@ -151,7 +151,7 @@ void boss_task(__unused void *params)
     int worker = 0;
 
     // start watchdog
-    xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
+    //xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
 
     // get configuration from flash
     config_read();    
@@ -204,12 +204,12 @@ void boss_task(__unused void *params)
     cgi_init();
     
     // start worker tasks
-    printf("Starting worker tasks\n");       
-    for(worker=0; worker_tasks[worker].functionptr != NULL; worker++)
-    {
-        xTaskCreate(worker_tasks[worker].functionptr, worker_tasks[worker].name, worker_tasks[worker].stack_size, &(worker_tasks[worker].watchdog_alive_indicator), worker_tasks[worker].priority, &(worker_tasks[worker].task_handle));
-        sleep_ms(1000);
-    }    
+    // printf("Starting worker tasks\n");       
+    // for(worker=0; worker_tasks[worker].functionptr != NULL; worker++)
+    // {
+    //     xTaskCreate(worker_tasks[worker].functionptr, worker_tasks[worker].name, worker_tasks[worker].stack_size, &(worker_tasks[worker].watchdog_alive_indicator), worker_tasks[worker].priority, &(worker_tasks[worker].task_handle));
+    //     sleep_ms(1000);
+    // }    
      
     // flash the led for attention while doing no actual work (like a boss!)
     while(true) 
@@ -233,10 +233,12 @@ void boss_task(__unused void *params)
         {           
             printf("***REBOOT in 100 ms***\n");
             restart_requested = false;
-            cyw43_arch_disable_sta_mode();
-            cyw43_arch_deinit();
+            //cyw43_arch_disable_sta_mode();
+            //cyw43_arch_deinit();
 
-            watchdog_enable(100, 0);
+            watchdog_enable(100, 1);
+
+            sleep_ms(1000);
         }        
     }
 }

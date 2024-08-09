@@ -63,6 +63,9 @@ void watchdog_task(void *params)
     int worker = 0;
     int reset_required = false;
 
+
+    sleep_ms(100000);
+    
     // start the watchdog
     watchdog_enable(5000, 1);
 

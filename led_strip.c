@@ -55,22 +55,22 @@
 #endif
 
 // prototypes
-static inline void put_pixel(uint32_t pixel_grb);
+static inline void put_pixel(int sm, uint32_t pixel_grb);
 static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b);
-void pattern_blank(uint len, uint t);
-void pattern_scan(uint len, uint t);
-void pattern_snakes(uint len, uint t);
-void pattern_random(uint len, uint t);
-void pattern_sparkle(uint len, uint t);
-void pattern_greys(uint len, uint t);
-void pattern_police(uint len, uint t);
-void pattern_breath(uint len, uint t);
+void pattern_blank(int sm, uint len, uint t);
+void pattern_scan(int sm, uint len, uint t);
+void pattern_snakes(int sm, uint len, uint t);
+void pattern_random(int sm, uint len, uint t);
+void pattern_sparkle(int sm, uint len, uint t);
+void pattern_greys(int sm, uint len, uint t);
+void pattern_police(int sm, uint len, uint t);
+void pattern_breath(int sm, uint len, uint t);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
 
 // types
-typedef void (*pattern)(uint len, uint t);
+typedef void (*pattern)(int sm, uint len, uint t);
 
 // constants
 const struct {
@@ -104,7 +104,9 @@ static DOUBLE_BUF_INT local_speed;
  * \return nothing
  */
 void led_strip_task(void *params) 
-{    
+{
+    int err = 0;
+
     printf("led_strip_task started\n");
     //printf("Using pin %d at flash address %x\n", WS2812_PIN, &led_strip_task);    
 
@@ -112,40 +114,70 @@ void led_strip_task(void *params)
     {
         if (config.led_pin && config.led_speed)
         {
-            // todo get free sm
             PIO pio = pio0;
             int sm = 0;
-            uint offset = pio_add_program(pio, &ws2812_program);
-
-            ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
-
-            set_led_pattern_local(config.led_pattern); 
-
-            CLIP(config.led_pattern , 0, count_of(pattern_table));
-            CLIP(config.led_speed, 0, 30000);
-            CLIP(live_pattern, 0, count_of(pattern_table));
-
-            int t = 0;
-            while (1) 
+            uint offset = 0;
+            
+            if (pio_can_add_program(pio, &ws2812_program))
             {
-                int dir = (rand() >> 30) & 1 ? 1 : -1;
+                offset = pio_add_program(pio, &ws2812_program);
 
-                for (int i = 0; i < 1000; ++i) 
+                sm = pio_claim_unused_sm(pio, false);
+
+                if (sm >= 0)
                 {
-                    live_pattern = get_double_buf_integer(&local_pattern, 0);
-                    CLIP(live_pattern, 0, count_of(pattern_table));
-                    
-                    pattern_table[live_pattern].pat(NUM_PIXELS, t);
+                    ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
+                    err = 0;
+                }
+                else
+                {
+                    printf("*ERROR* Cannot obtain PIO state machine\n");
+                    send_syslog_message("usurper", "*ERROR* Cannot obtain PIO state machine");
+                    sleep_ms(10000);
+                    err = 1;                    
+                }
+            }
+            else
+            {
+                printf("*ERROR* Cannot add PIO program\n");
+                send_syslog_message("usurper", "*ERROR* Cannot add PIO program");
+                sleep_ms(10000);
+                err = 2;
 
-                    live_speed = get_double_buf_integer(&local_speed, 0);
-                    CLIP(live_speed, 0, 3000);
-                    
-                    sleep_ms(config.led_speed);
+                send_syslog_message("usurper", "Clearing PIO program instruction memory");
+                pio_clear_instruction_memory(pio);
+            }
 
-                    t += dir;
+            if (!err)
+            {
+                set_led_pattern_local(config.led_pattern); 
 
-                    watchdog_pulse((int *)params);                    
-                }                
+                CLIP(config.led_pattern , 0, count_of(pattern_table));
+                CLIP(config.led_speed, 0, 30000);
+                CLIP(live_pattern, 0, count_of(pattern_table));
+
+                int t = 0;
+                while (1) 
+                {
+                    int dir = (rand() >> 30) & 1 ? 1 : -1;
+
+                    for (int i = 0; i < 1000; ++i) 
+                    {
+                        live_pattern = get_double_buf_integer(&local_pattern, 0);
+                        CLIP(live_pattern, 0, count_of(pattern_table));
+                        
+                        pattern_table[live_pattern].pat(sm, NUM_PIXELS, t);
+
+                        live_speed = get_double_buf_integer(&local_speed, 0);
+                        CLIP(live_speed, 0, 3000);
+                        
+                        sleep_ms(config.led_speed);
+
+                        t += dir;
+
+                        watchdog_pulse((int *)params);                    
+                    }                
+                }
             }
         }
 
@@ -200,8 +232,8 @@ void set_led_speed_local(int speed)
  * 
  * \return nothing
  */
-static inline void put_pixel(uint32_t pixel_grb) {
-    pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
+static inline void put_pixel(int sm, uint32_t pixel_grb) {
+    pio_sm_put_blocking(pio0, sm, pixel_grb << 8u);
 }
 
 /*!
@@ -228,9 +260,9 @@ static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
  * 
  * \return nothing
  */
-void pattern_blank(uint len, uint t) {
+void pattern_blank(int sm, uint len, uint t) {
     for (int i = 0; i < len; ++i)
-        put_pixel(urgb_u32(0, 0, 0));;
+        put_pixel(sm, urgb_u32(0, 0, 0));;
 }
 
 
@@ -242,7 +274,7 @@ void pattern_blank(uint len, uint t) {
  * 
  * \return nothing
  */
-void pattern_scan(uint len, uint t) {
+void pattern_scan(int sm, uint len, uint t) {
     static uint position = 0;
     static uint direction = 0;
     static uint color = 0;
@@ -255,13 +287,13 @@ void pattern_scan(uint len, uint t) {
             switch(color%3)
             {
                 case 0:
-                    put_pixel(urgb_u32(0xff, 0, 0));
+                    put_pixel(sm, urgb_u32(0xff, 0, 0));
                     break;
                 case 1:
-                    put_pixel(urgb_u32(0, 0xff, 0));
+                    put_pixel(sm, urgb_u32(0, 0xff, 0));
                     break;
                 case 2:
-                    put_pixel(urgb_u32(0, 0, 0xff));
+                    put_pixel(sm, urgb_u32(0, 0, 0xff));
                     break;
                 default:
                     break;  //FUBAR
@@ -269,7 +301,7 @@ void pattern_scan(uint len, uint t) {
         }
         else
         {
-            put_pixel(0);
+            put_pixel(sm, 0);
         }
     }
     
@@ -303,17 +335,17 @@ void pattern_scan(uint len, uint t) {
  * 
  * \return nothing
  */
-void pattern_snakes(uint len, uint t) {
+void pattern_snakes(int sm, uint len, uint t) {
     for (uint i = 0; i < len; ++i) {
         uint x = (i + (t >> 1)) % 64;
         if (x < 10)
-            put_pixel(urgb_u32(0xff, 0, 0));
+            put_pixel(sm, urgb_u32(0xff, 0, 0));
         else if (x >= 15 && x < 25)
-            put_pixel(urgb_u32(0, 0xff, 0));
+            put_pixel(sm, urgb_u32(0, 0xff, 0));
         else if (x >= 30 && x < 40)
-            put_pixel(urgb_u32(0, 0, 0xff));
+            put_pixel(sm, urgb_u32(0, 0, 0xff));
         else
-            put_pixel(0);
+            put_pixel(sm, 0);
     }
 }
 
@@ -325,11 +357,11 @@ void pattern_snakes(uint len, uint t) {
  * 
  * \return nothing
  */
-void pattern_random(uint len, uint t) {
+void pattern_random(int sm, uint len, uint t) {
     if (t % 8)
         return;
     for (int i = 0; i < len; ++i)
-        put_pixel(rand());
+        put_pixel(sm,rand());
 }
 
 /*!
@@ -340,11 +372,11 @@ void pattern_random(uint len, uint t) {
  * 
  * \return nothing
  */
-void pattern_sparkle(uint len, uint t) {
+void pattern_sparkle(int sm, uint len, uint t) {
     if (t % 8)
         return;
     for (int i = 0; i < len; ++i)
-        put_pixel(rand() % 16 ? 0 : 0xffffffff);
+        put_pixel(sm, rand() % 16 ? 0 : 0xffffffff);
 }
 
 /*!
@@ -355,11 +387,11 @@ void pattern_sparkle(uint len, uint t) {
  * 
  * \return nothing
  */
-void pattern_greys(uint len, uint t) {
+void pattern_greys(int sm, uint len, uint t) {
     int max = 100; // let's not draw too much current!
     t %= max;
     for (int i = 0; i < len; ++i) {
-        put_pixel(t * 0x10101);
+        put_pixel(sm, t * 0x10101);
         if (++t >= max) t = 0;
     }
 }
@@ -372,7 +404,7 @@ void pattern_greys(uint len, uint t) {
  * 
  * \return nothing
  */
-void pattern_police(uint len, uint t) {
+void pattern_police(int sm, uint len, uint t) {
     static int state = 0;
     int i;
 
@@ -384,17 +416,17 @@ void pattern_police(uint len, uint t) {
                 if ((i >= len/6*1) && (i < len/6*2) ||
                     (i >= len/6*4) && (i < len/6*5))
                 {
-                    put_pixel(urgb_u32(0, 0, 0));   // off
+                    put_pixel(sm, urgb_u32(0, 0, 0));   // off
                 }
                 else
                 {
                     if (i < len/2)
                     {
-                        put_pixel(urgb_u32(0xff, 0, 0)); // red
+                        put_pixel(sm, urgb_u32(0xff, 0, 0)); // red
                     }
                     else
                     {
-                        put_pixel(urgb_u32(0, 0, 0xff)); // blue
+                        put_pixel(sm, urgb_u32(0, 0, 0xff)); // blue
                     }                    
                 }
             }
@@ -408,16 +440,16 @@ void pattern_police(uint len, uint t) {
                 {
                     if (i < len/2)
                     {
-                        put_pixel(urgb_u32(0xff, 0, 0)); // red
+                        put_pixel(sm, urgb_u32(0xff, 0, 0)); // red
                     }
                     else
                     {
-                        put_pixel(urgb_u32(0, 0, 0xff)); // blue
+                        put_pixel(sm, urgb_u32(0, 0, 0xff)); // blue
                     }
                 }
                 else
                 {
-                    put_pixel(urgb_u32(0, 0, 0));   // off
+                    put_pixel(sm, urgb_u32(0, 0, 0));   // off
                 }
             }
             state = 0;
@@ -434,7 +466,7 @@ void pattern_police(uint len, uint t) {
  * 
  * \return nothing
  */
-void pattern_breath(uint len, uint t) {
+void pattern_breath(int sm, uint len, uint t) {
     static uint8_t brightness = 0;
     static uint8_t pause = 0;
     static int state = 0;
@@ -443,7 +475,7 @@ void pattern_breath(uint len, uint t) {
 
     for (i=0; i<len; i++)
     {
-        put_pixel(urgb_u32(0, brightness, 0)); // shade of green
+        put_pixel(sm, urgb_u32(0, brightness, 0)); // shade of green
     }
 
     // crude attempt to compensate for non-linear perceived brightness

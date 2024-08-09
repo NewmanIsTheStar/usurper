@@ -4,7 +4,7 @@
 Add Wifi control to an ordinary residential sprinkler system using a Raspberry Pi Pico W. This gives you remote control of your sprinkler system.  Optionally read weather information from an Ecowitt weather station (rain, wind, temperature) to control scheduling.  It can also use a Govee Table Lamp or LED strip(s) to indicate operational status.
 
 ## How it works
-A relay controlled by the Pico W is inserted into the common line that runs from the existing controller to the sprinkler valves.  An easy 2 minute job.  The existing controller is then configured to run every day, or even multiple times every day.   The Pico connects / disconnects the common line to control when the sprinklers actually run.
+A relay controlled by the Pico W is inserted into the common line that runs from the existing controller to the sprinkler valves.  An easy 2 minute job.  The existing irrigation controller is then configured to run the sprinklers every day, or even multiple times every day.   The Pico connects / disconnects the common line to control when the sprinklers actually run.
 
 ## Installation on Ubuntu Linux
 ```
@@ -20,10 +20,10 @@ Upon completion of a successful build the file usurper.uf2 should be created.  T
 
 ## Initial Configuration
 - The Pico W will initially create a WiFi network with SSID = pluto.  Connect to this WiFi network and then point your web browser to http://192.168.4.1
-- Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to pluto and correct your mistakes.
+- Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to the pluto network and correct your mistakes.
 
 ## Optional Hardware
-I bought this stuff on Amazon and it is available elsewhere.  The relay module is especially convenient for this project.
+I bought this stuff on Amazon and it is available elsewhere.  The relay module is especially convenient for this project. 
 - Signal Relay Module for Raspberry Pi Pico, SPDT 2Amp / AC120V DC24V
 - ECOWITT Wittboy Weather Station GW2001
 - Govee Table Lamp H60511D1
