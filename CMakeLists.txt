@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.13..3.27)
 
 #set(CMAKE_BUILD_TYPE "Release")
 
@@ -11,12 +11,24 @@ set(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel)
 set(PICO_BOARD pico_w CACHE STRING "Board type")
 add_compile_definitions(PCIO_BOARD pico_w)
 
-include(pico_sdk_import.cmake)
-include(FreeRTOS_Kernel_import.cmake)
+# initialize pico-sdk from submodule
+# note: this must happen before project()
+include(pico-sdk/pico_sdk_init.cmake)
 
 project(usurper C CXX ASM)
 
+# initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
+
+# what I used with previous sdk
+# include(pico_sdk_import.cmake)
+# include(FreeRTOS_Kernel_import.cmake)
+
+# pico_sdk_init()
+
+include(FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
+
+
 
 message("Creating githash.h")
 execute_process(COMMAND
@@ -57,6 +69,7 @@ target_compile_definitions(usurper PRIVATE
 target_include_directories(usurper PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
         ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_stdio/include
         )
