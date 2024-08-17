@@ -271,12 +271,13 @@ int send_syslog_message(char *log_name, const char *format, ...)
 {
     static int syslog_socket = -1;
     static struct sockaddr_in syslog_address;
-    static char ip_address_string[50] = "";    
+    static char ip_address_string[50] = "";  
+    int message_chars_remaining = 0;
+    int sent_bytes = -1;  
     va_list args;
     char timestamp[50];
     char syslog_message[200];
-    int message_chars_remaining = 0;
-    int sent_bytes = -1;
+
 
     if (config.syslog_enable)
     {
@@ -330,16 +331,22 @@ int send_syslog_message(char *log_name, const char *format, ...)
 int check_watchdog_reboot(void)
 {
     static bool watchdog_reported;
+    int sb = 0;
 
     if (!watchdog_reported && watchdog_caused_reboot())
     {
-        // update web page (SSI)
+        // update web page
         get_timestamp(web.watchdog_timestring, sizeof(web.watchdog_timestring), false);           
 
         // log watchdog event
-        if (send_syslog_message("usurper", "REBBOT!") > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
+        if ((sb = send_syslog_message("usurper", "REBBOT @ %s", web.watchdog_timestring)) > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
         {
+            printf("sent byes = %d\n", sb);
             watchdog_reported = true;
+        }
+        else
+        {
+            printf("Failed to report reboot. Will retry.\n");
         }
     }
 

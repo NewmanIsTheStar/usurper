@@ -236,7 +236,7 @@ void weather_task(void *params)
         }
         
         // tell watchdog task that we are still alive
-        watchdog_pulse((int *)params);            
+        watchdog_pulse((int *)params);               
     }
 }
 

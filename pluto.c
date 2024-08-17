@@ -88,7 +88,7 @@ int __attribute__((__section__(".applet_entry"))) main(void)
  *
  * \return 0 if scheduler stops (should never happen)
  */
-int pluto( void )
+int pluto(void)
 {
     const char *rtos_name;
     TaskHandle_t task;
@@ -125,7 +125,7 @@ int pluto( void )
 #endif
 
     // initialize boss task
-    xTaskCreate(boss_task, "Boss Task", configMINIMAL_STACK_SIZE, NULL, BOSS_TASK_PRIORITY, &task);
+    xTaskCreate(boss_task, "Boss Task", 1024, NULL, BOSS_TASK_PRIORITY, &task);
 
     // start boss task
     vTaskStartScheduler();
@@ -151,7 +151,7 @@ void boss_task(__unused void *params)
     int worker = 0;
 
     // start watchdog
-    //xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
+    xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
 
     // get configuration from flash
     config_read();    
@@ -202,7 +202,7 @@ void boss_task(__unused void *params)
     httpd_init();
     ssi_init();
     cgi_init();
-    
+
     // start worker tasks
     printf("Starting worker tasks\n");       
     for(worker=0; worker_tasks[worker].functionptr != NULL; worker++)
@@ -210,13 +210,10 @@ void boss_task(__unused void *params)
         xTaskCreate(worker_tasks[worker].functionptr, worker_tasks[worker].name, worker_tasks[worker].stack_size, &(worker_tasks[worker].watchdog_alive_indicator), worker_tasks[worker].priority, &(worker_tasks[worker].task_handle));
         sleep_ms(1000);
     }    
-     
+
     // flash the led for attention while doing no actual work (like a boss!)
     while(true) 
     {
-        // report watchdog reboot to syslog server
-        check_watchdog_reboot();
-
         // toggle led
         cyw43_arch_gpio_put(0, led_on);
         led_on = !led_on;
@@ -227,16 +224,19 @@ void boss_task(__unused void *params)
         // check stack high water mark for each worker task
         monitor_stacks();
 
+        // report watchdog reboot to syslog server
+        check_watchdog_reboot();        
+
         sleep_ms(1000);
 
         if (restart_requested)
         {           
             printf("***REBOOT in 100 ms***\n");
             restart_requested = false;
-            //cyw43_arch_disable_sta_mode();
-            //cyw43_arch_deinit();
+            cyw43_arch_disable_sta_mode();
+            cyw43_arch_deinit();
 
-            watchdog_enable(100, 1);
+            watchdog_enable(100, 0);
 
             sleep_ms(1000);
         }        

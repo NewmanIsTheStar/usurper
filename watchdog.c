@@ -62,9 +62,6 @@ void watchdog_task(void *params)
 {
     int worker = 0;
     int reset_required = false;
-
-
-    sleep_ms(100000);
     
     // start the watchdog
     watchdog_enable(5000, 1);
@@ -83,7 +80,7 @@ void watchdog_task(void *params)
             else
             {
                 worker_tasks[worker].watchdog_seconds_since_alive++;
-                if (worker_tasks[worker].watchdog_seconds_since_alive > 60)
+                if (worker_tasks[worker].watchdog_seconds_since_alive > 90)
                 {
 
                     printf("%s seconds_since_alive == %d\n", worker_tasks[worker].name, worker_tasks[worker].watchdog_seconds_since_alive);
