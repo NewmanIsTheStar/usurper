@@ -591,6 +591,7 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
     char log_message[200];
     int schedule_start_mow = 0;
     int schedule_end_mow = 0;
+    int mins_till_irrigation = 0;
 
     // get time in local time zone
     get_dow_and_mod_local_tz(&weekday, &min_now);
@@ -600,11 +601,11 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
     web.trailing_seven_days_rain = accumulate_trailing_seven_day_total_rain(web.daily_rain, weekday);
 
     // find next irrigation period
-    irrigation_schedule_status = find_next_irrigation_period(&schedule_start_mow, &schedule_end_mow);
+    irrigation_schedule_status = find_next_irrigation_period(&schedule_start_mow, &schedule_end_mow, &mins_till_irrigation);
 
     if (irrigation_schedule_status == SCHEDULE_FUTURE)
     {
-        printf("Current Minute of Week = %d.  Next Irrigation begins at Minute of Week = %d.   [%d minutes from now]\n", mow_now, schedule_start_mow, schedule_start_mow - mow_now);
+        printf("Current Minute of Week = %d.  Next Irrigation begins at Minute of Week = %d.   [%d minutes from now]\n", mow_now, schedule_start_mow, mins_till_irrigation);
     }
 
     switch(irrigation_state)

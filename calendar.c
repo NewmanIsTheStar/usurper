@@ -496,10 +496,11 @@ int get_local_time_string(char *timestamp, int len)
  *
  * \param[out]  start_mow   0 - 10079 minute of week, beginning Sunday at midnight
  * \param[out]  end_mow     0 - 10079 minute of week, beginning Sunday at midnight
+ * \param[out]  delay_mins  0 - 10079 minutes from now until next irrigation period
  * 
  * \return -1 on error, 0 on success, 1 if currently in irrigation period
  */
-SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mow)
+SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mow, int *delay_mins)
 {
    int day;      
    int now_mow = 0;
@@ -534,8 +535,10 @@ SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mo
          if (delta < lowest_delta)
          {
             lowest_delta = delta;
+            
             *start_mow = candidate_start_mow;
             *end_mow = candidate_end_mow;
+            *delay_mins = delta;
             irrigate_now = SCHEDULE_FUTURE;
          }
       }   
