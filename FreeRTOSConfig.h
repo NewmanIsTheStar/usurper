@@ -102,7 +102,7 @@
 /* SMP port only */
 #define configNUM_CORES                         2  // older versions of FreeRTOS use this name
 #define configNUMBER_OF_CORES                   2  // v11 FreeRTOS uses this name -- Aaaaaarghhh!!
-#define PICO_FLASH_ASSUME_CORE1_SAFE            1  // Newman used when setting configNUMBER_OF_CORES to 1 to achieve long term stability
+//#define PICO_FLASH_ASSUME_CORE1_SAFE            1  // Newman used when setting configNUMBER_OF_CORES to 1 to achieve long term stability
 #define configTICK_CORE                         0
 #define configRUN_MULTIPLE_PRIORITIES           1  // Newman set to 1 based on older file
 #define configUSE_CORE_AFFINITY                 1  // Newman added based on core count
