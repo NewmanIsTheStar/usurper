@@ -69,7 +69,7 @@ body {
       <input type="text" id="gvea" name="gvea" value="<!--#gvea-->"><br><br> 
       <label for="gvee">Irrigation in progress <!--#colour--> (r.g.b)</label><br>   
       <input type="text" id="gvei" name="gvei" value="<!--#gvei-->"><br><br>
-      <label for="gvee">Irrigation usurped <!--#colour-->  (r.g.b)</label><br>   
+      <label for="gvee">Irrigation terminated <!--#colour-->  (r.g.b)</label><br>   
       <input type="text" id="gveu" name="gveu" value="<!--#gveu-->"><br><br> 
       <label for="gvee">Sustain status <!--#colour--> after scheduled irrigation (in minutes)</label><br>   
       <input type="text" id="gves" name="gves" value="<!--#gves-->"><br><br>                                                             

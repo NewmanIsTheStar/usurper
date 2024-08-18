@@ -330,25 +330,31 @@ int send_syslog_message(char *log_name, const char *format, ...)
  */
 int check_watchdog_reboot(void)
 {
-    static bool watchdog_reported;
-    int sb = 0;
+    static int watchdog_reset = -1;
+    static bool syslog_sent = false;
+    static bool web_page_updated = false;
 
-    if (!watchdog_reported && watchdog_caused_reboot())
+    if (watchdog_reset < 0)
+    {
+        // cache watchdog reset status
+        watchdog_reset = watchdog_caused_reboot();
+    }
+
+    if (watchdog_reset && !web_page_updated)
     {
         // update web page
-        get_timestamp(web.watchdog_timestring, sizeof(web.watchdog_timestring), false);           
-
-        // log watchdog event
-        if ((sb = send_syslog_message("usurper", "REBBOT @ %s", web.watchdog_timestring)) > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
-        {
-            printf("sent byes = %d\n", sb);
-            watchdog_reported = true;
-        }
-        else
-        {
-            printf("Failed to report reboot. Will retry.\n");
-        }
+        get_timestamp(web.watchdog_timestring, sizeof(web.watchdog_timestring), false); 
+        web_page_updated = true;  
     }
+
+    if (watchdog_reset && config.syslog_enable && !syslog_sent)
+    {
+        // log watchdog event
+        if ((send_syslog_message("usurper", "REBBOT @ %s", web.watchdog_timestring)) > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
+        {
+            syslog_sent = true;
+        }
+    }    
 
     return(0);
 }
