@@ -133,7 +133,7 @@ const char * cgi_weekday_handler(int iIndex, int iNumParams, char *pcParam[], ch
     //toggle the state (assumes index 1-7 used in cgi_handlers[] for weekdays)
     config.day_schedule_enable[iIndex-1] = !config.day_schedule_enable[iIndex-1];
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return(current_calendar_web_page);
 }
@@ -170,7 +170,7 @@ const char * cgi_inc_duration_handler(int iIndex, int iNumParams, char *pcParam[
     //toggle the state (assumes index 1-7 used in cgi_handlers[] for weekdays)
     config.day_duration[i]++;
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return(current_calendar_web_page);
 }
@@ -206,7 +206,7 @@ const char * cgi_dec_duration_handler(int iIndex, int iNumParams, char *pcParam[
     //toggle the state (assumes index 1-7 used in cgi_handlers[] for weekdays)
     if(config.day_duration[i] > 0) config.day_duration[i]--;
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return(current_calendar_web_page);
 }
@@ -249,7 +249,7 @@ const char * cgi_inc_hour_handler(int iIndex, int iNumParams, char *pcParam[], c
         config.day_start[i] -= (24*60);
     }
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return(current_calendar_web_page);
 }
@@ -291,7 +291,7 @@ const char * cgi_dec_hour_handler(int iIndex, int iNumParams, char *pcParam[], c
         config.day_start[i] += (24*60);
     }
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return(current_calendar_web_page);
 }
@@ -342,7 +342,7 @@ const char * cgi_inc_minute_handler(int iIndex, int iNumParams, char *pcParam[],
     // set adjusted minute, while retaining original hour
     config.day_start[i] = hour*60 + minute;
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return(current_calendar_web_page);
 }
@@ -393,7 +393,7 @@ const char * cgi_dec_minute_handler(int iIndex, int iNumParams, char *pcParam[],
     // set adjusted minute, while retaining original hour
     config.day_start[i] = hour*60 + minute;
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return(current_calendar_web_page);
 }
@@ -506,7 +506,7 @@ const char * cgi_time_handler(int iIndex, int iNumParams, char *pcParam[], char 
     }
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/time.shtml";
 }
@@ -604,7 +604,7 @@ const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], ch
 
     config.relay_normally_open = new_relay_normally_open;
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/weather.shtml";
 }
@@ -726,7 +726,7 @@ const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], ch
     }
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/network.shtml";
 }
@@ -827,7 +827,7 @@ const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *
     }
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/addressable_led.shtml";
 }
@@ -936,7 +936,7 @@ const char * cgi_portrait_schedule_handler(int iIndex, int iNumParams, char *pcP
     }
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/portrait.shtml";
 }
@@ -1109,7 +1109,7 @@ const char * cgi_mood_handler(int iIndex, int iNumParams, char *pcParam[], char 
     }
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/moodlight.shtml";
 }
@@ -1169,7 +1169,7 @@ const char * cgi_syslog_handler(int iIndex, int iNumParams, char *pcParam[], cha
     }
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/syslog.shtml";
 }
@@ -1272,7 +1272,7 @@ const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char
     }     
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/units.shtml";
 }
@@ -1327,7 +1327,7 @@ const char * cgi_software_load_handler(int iIndex, int iNumParams, char *pcParam
     }
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/software_load.shtml";
 }
@@ -1406,7 +1406,7 @@ const char * cgi_remote_led_strips(int iIndex, int iNumParams, char *pcParam[], 
         i++;
     }
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/remote_led_strips.shtml";
 }
@@ -1465,9 +1465,75 @@ const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[]
     }
 
 
-    // Send the index page back to the user
+    // Send the next page back to the user
     config_changed();
     return "/personality.shtml";
+}
+
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int new_relay_normally_open = 0;  
+    int new_gpio = 0;  
+
+    // despicable but necessary as we only receive parameter when checked
+    config.weather_station_enable = 0;
+       
+    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+ 
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            //printf("Parameter: %s has Value: %s\n", param, value);  
+
+            if (strcasecmp("rly", param) == 0)
+            {
+                if (value[0])
+                {
+                    new_relay_normally_open = 1;
+                } 
+                else
+                {
+                    new_relay_normally_open = 0;  // this should never happen, since the parameter is only passed if "on"
+                }   
+            }
+
+            if (strcasecmp("gpio", param) == 0)
+            {
+                new_gpio = atoi(value);
+                if (!initialize_relay_gpio_(new_gpio))
+                {
+                    gpio_put(new_gpio, config.relay_normally_open?0:1); 
+                    config.gpio_number = new_gpio; 
+                }                                
+            }                                     
+        }
+
+        i++;
+    }
+
+    config.relay_normally_open = new_relay_normally_open;
+
+    // Send the next page back to the user
+    config_changed();
+    return "/relay.shtml";
 }
 
 
@@ -1499,7 +1565,8 @@ static const tCGI cgi_handlers[] = {
     {"/units.cgi",              cgi_units_handler},   
     {"/swload.cgi",             cgi_software_load_handler},     
     {"/remote_led_strips.cgi",  cgi_remote_led_strips},  
-    {"/personality.cgi",        cgi_personality_handler},                               
+    {"/personality.cgi",        cgi_personality_handler},   
+    {"/relay.cgi",              cgi_relay_handler},                              
 };
 
 /*!

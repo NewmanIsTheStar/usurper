@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="10">
 <style>
 body {
   font-family: "Lato", sans-serif;
@@ -63,22 +62,17 @@ body {
   </div>
 
 <div class="main">
-  <h2>Status</h2>      
-    <p><!--#status--></p> 
+  <h2>Relay Settings</h2>      
+  <form action="/relay.cgi">             
+    <label for="wind">Relay normally open</label>
+    <input type="checkbox" id="rly" name="rly" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#rly-->><br><br>
+    <label for="wind">Relay controlled by GPIO:</label>
+    <input type="text" id="gpio" name="gpio" value="<!--#gpio-->"><br><br>  
     <br>
-    <p>Local Time: <!--#ltme--></p>
-    <p>Last Termination: <!--#usurped--></p>
-    <br>
-    <p>Temperature: <!--#temp--> &deg;<!--#tmpu--></p>
-    <p>Rain today: <!--#rain--> <!--#dstu--></p>
-    <p>Rain last 7 days: <!--#lstsvn--> <!--#dstu--></p>
-    <p>Wind Speed: <!--#wind--> <!--#spdu--></p>      
-    <br>   
-    <p>Network Time: <!--#time--></p>
-    <p>Last Ecowitt response: <!--#lstpck--></p>
-    <p>Last reboot: <!--#dogtme--></p>
-    <br> 
-    <p>Version: <!--#ghsh--></p> 
-</div>   
+    <input type="submit" value="Save" style="font-size: 25px;">
+  </form>    
+</div>
+   
 </body>
 </html> 
+  

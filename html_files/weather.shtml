@@ -51,9 +51,10 @@ body {
   <div class="sidenav">
     <a href="/network.shtml">Network</a>   
     <a href="/time.shtml">Time</a>
+    <a href="/relay.shtml">Relay</a>
     <a href="/weather.shtml">Weather</a>
+    <a href="/moodlight.shtml">Moodlight</a>     
     <a href="/addressable_led.shtml">LED strip</a>
-    <a href="/moodlight.shtml">Moodlight</a>  
     <a href="/syslog.shtml">Syslog</a>    
     <a href="/units.shtml">Foibles</a>     
     <a href="/status.shtml">Status</a>   
@@ -63,7 +64,7 @@ body {
 <div class="main">
   <h2>Weather Station Settings</h2>      
   <form action="/ecowitt.cgi">
-    <label for="gvee">Use Weather Station to constrain irrigation</label>
+    <label for="gvee">Use Ecowitt weather station to constrain irrigation</label>
     <input type="checkbox" id="wse" name="wse" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#wse-->><br><br>    
     <label for="ecoip">Weather Station Address</label>
     <input type="text" id="ecoip" name="ecoip" value="<!--#ecoip-->"><br><br> 
@@ -73,10 +74,6 @@ body {
     <input type="text" id="dyrn" name="dyrn" value="<!--#dyrn-->"><br><br>
     <label for="wind">Skip if wind speed exceeds (<!--#spdu-->):</label>
     <input type="text" id="wndt" name="wndt" value="<!--#wndt-->"><br><br>                
-    <label for="wind">Relay normally open</label>
-    <input type="checkbox" id="rly" name="rly" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#rly-->><br><br>
-    <label for="wind">Relay controlled by GPIO:</label>
-    <input type="text" id="gpio" name="gpio" value="<!--#gpio-->"><br><br>  
     <br>
     <input type="submit" value="Save" style="font-size: 25px;">
   </form>    
