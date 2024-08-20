@@ -525,9 +525,7 @@ const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], ch
 {
     int i = 0;
     char *param = NULL;
-    char *value = NULL;
-    int new_relay_normally_open = 0;  
-    int new_gpio = 0;  
+    char *value = NULL; 
 
     // despicable but necessary as we only receive parameter when checked
     config.weather_station_enable = 0;
@@ -574,35 +572,11 @@ const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], ch
             if (strcasecmp("wndt", param) == 0)
             {
                 config.wind_threshold = get_int_with_tenths_from_string(value);                
-            }   
-
-            if (strcasecmp("rly", param) == 0)
-            {
-                if (value[0])
-                {
-                    new_relay_normally_open = 1;
-                } 
-                else
-                {
-                    new_relay_normally_open = 0;  // this should never happen, since the parameter is only passed if "on"
-                }   
-            }
-
-            if (strcasecmp("gpio", param) == 0)
-            {
-                new_gpio = atoi(value);
-                if (!initialize_relay_gpio_(new_gpio))
-                {
-                    gpio_put(new_gpio, config.relay_normally_open?0:1); 
-                    config.gpio_number = new_gpio; 
-                }                                
             }                                     
         }
 
         i++;
     }
-
-    config.relay_normally_open = new_relay_normally_open;
 
     // Send the next page back to the user
     config_changed();
@@ -1487,9 +1461,6 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
     char *value = NULL;
     int new_relay_normally_open = 0;  
     int new_gpio = 0;  
-
-    // despicable but necessary as we only receive parameter when checked
-    config.weather_station_enable = 0;
        
     dump_parameters(iIndex, iNumParams, pcParam, pcValue);
  
