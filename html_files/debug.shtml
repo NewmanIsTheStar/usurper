@@ -64,7 +64,7 @@ body {
 
 <div class="main">
   <h2>Debug Info</h2>      
-    <p>Git Hash:    <!--#ghsh--></p>
+    <p>Version:     <!--#ghsh--></p>
     <p>Time:        <!--#time--></p>
     <p>Last reboot: <!--#dogtme--></p> 
     <br>

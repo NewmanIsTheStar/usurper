@@ -35,6 +35,8 @@
 #include "utility.h"
 #include "config.h"
 
+//#define IRRIGATION_TEST (1)
+
 #define MINUTES_IN_WEEK (10080)
 #define MINUTES_IN_DAY (1440)
 #define MINUTES_IN_HOUR (60)
@@ -508,11 +510,36 @@ SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mo
    int candidate_start_mow;
    int candidate_end_mow;
    int lowest_delta = MINUTES_IN_WEEK;
-   int delta;
+   int delta = 0;
+   static int test_start_mow = -1;
    
    // get current minute of week 
    get_mow_local_tz(&now_mow);                      
 
+#ifdef IRRIGATION_TEST
+   if (test_start_mow == -1)
+   {
+      test_start_mow = now_mow;
+   }
+
+   if (now_mow > (test_start_mow+1))
+   {
+      test_start_mow = now_mow+1;
+      *start_mow = test_start_mow;
+      *end_mow = test_start_mow+1;
+      *delay_mins = 1;
+      irrigate_now = SCHEDULE_FUTURE;      
+   }
+   else if (now_mow > test_start_mow)
+   {
+      irrigate_now = SCHEDULE_NOW;
+      *start_mow = test_start_mow;
+      *end_mow = test_start_mow+1;  
+      *delay_mins = 0;    
+   }
+
+
+#else
     // search for next irrigation period
    for (day = 0; day < DAYS_IN_WEEK; day++)
    {
@@ -527,6 +554,7 @@ SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mo
             irrigate_now = SCHEDULE_NOW;
             *start_mow = candidate_start_mow;
             *end_mow = candidate_end_mow;
+            *delay_mins = 0;
             break;
          }
 
@@ -543,6 +571,7 @@ SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mo
          }
       }   
    }
+#endif
 
     return (irrigate_now);
 }

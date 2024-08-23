@@ -8,8 +8,8 @@
 #define LWIP_SOCKET                 (1)
 //#define LWIP_PROVIDE_ERRNO          (1)    //was commented out
 #define RECV_BUFSIZE_DEFAULT        (256)
-#define DEFAULT_TCP_RECVMBOX_SIZE   (50)   //original 8 - newman set to 50
-#define DEFAULT_UDP_RECVMBOX_SIZE   (50)   //original 8 - newman set to 50
+#define DEFAULT_TCP_RECVMBOX_SIZE   (8)   //original 8 - newman set to 50
+#define DEFAULT_UDP_RECVMBOX_SIZE   (8)   //original 8 - newman set to 50
 #define SNTP_SUPPORT                (1)
 #define SNTP_SERVER_DNS             (1)
 #define SNTP_UPDATE_DELAY           (3600000)
@@ -21,6 +21,7 @@ void setTimeSec(uint32_t sec);
 #define LWIP_HTTPD_SSI_INCLUDE_TAG  (0)
 #define LWIP_HTTPD_SSI              (1)
 #define LWIP_HTTPD_CGI              (1)
+#define DNS_TABLE_SIZE              (16)   // newman added
 
 // generic
 #if PICO_CYW43_ARCH_POLL
@@ -33,7 +34,8 @@ void setTimeSec(uint32_t sec);
 #define MEM_SIZE                    4000  // newman set to 4000
 #define MEMP_NUM_TCP_SEG            32
 #define MEMP_NUM_ARP_QUEUE          10
-#define PBUF_POOL_SIZE              24
+#define MEMP_NUM_UDP_PCB            (16)  // newman added
+#define PBUF_POOL_SIZE              48    // original 24
 #define LWIP_ARP                    1
 #define LWIP_ETHERNET               1
 #define LWIP_ICMP                   1
@@ -101,7 +103,7 @@ void setTimeSec(uint32_t sec);
 #define PPP_DEBUG                   LWIP_DBG_OFF
 #define SLIP_DEBUG                  LWIP_DBG_OFF
 #define DHCP_DEBUG                  LWIP_DBG_OFF
-
+#define DNS_DEBUG                   LWIP_DBG_OFF
 
 // HTTP CLIENT TEST
 //#define HTTPC_DEBUG LWIP_DBG_ON    // Newman used for httpc testing

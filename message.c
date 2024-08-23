@@ -408,7 +408,7 @@ void set_led_speed_remote(int speed)
     set_double_buf_integer(&remote_speed, speed);
 }
 
-
+#ifdef USE_GETHOSTBYNAME
 /*!
  * \brief construct address
  *
@@ -467,7 +467,71 @@ int construct_address(char *address_string, int port, SOCKADDR_IN *address)
 
     return(err);
 }
+#else
+/*!
+ * \brief construct address
+ *
+ * \param[in]   address_string  hostname or ip 
+ * \param[in]   port            udp port
+ * \param[out]  address         destination address 
+ *
+ * \return 0 on success
+ */
+int construct_address(char *address_string, int port, SOCKADDR_IN *address)
+{
+    struct hostent *hp;
+    int err = -1;
+    static char pattern = 0;
+    int i;
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int socket, s, j;
+    size_t len;
+    ssize_t nread;
+    //char buf[BUF_SIZE];
+    char port_string[12];
+    int type;
 
+    sprintf(port_string, "%d", port);
+    type = SOCK_DGRAM;    
+    socket = -1;
+
+    /* Obtain address(es) matching host/port */
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;      /* Allow IPv4 only */
+    hints.ai_socktype = type;       /* Stream or Datagram socket */
+    hints.ai_flags = 0;
+    hints.ai_protocol = 0;          /* Any protocol */
+
+    s = getaddrinfo(address_string, port_string, &hints, &result);
+    if (s != 0)
+    {
+        printf("error returned from getaddrinfo [%s, %s, %d]\n", address_string, port_string, type);
+    }
+    else
+    {
+        if (result)
+        {
+            // use first dns result to construct address
+            memset(address, 0, sizeof(struct sockaddr_in));
+            address->sin_len = sizeof(address);
+            address->sin_family = AF_INET;
+            address->sin_addr.s_addr = INADDR_ANY;
+            address->sin_port = PP_HTONS(port);
+            
+            // copy address from dns result 
+            address->sin_addr = ((struct sockaddr_in *)(result->ai_addr))->sin_addr;
+
+            err = 0;
+
+            // delete linked list of dns results
+            freeaddrinfo(result);
+        } 
+    }   
+
+    return(err);
+}
+#endif
 
 /*!
  * \brief Initialize remote LED strip state variables
@@ -493,7 +557,10 @@ void initialize_remote_led_strips(void)
         remote_led_strip_state[strip].confirmed_pattern = 0;
         remote_led_strip_state[strip].confirmed_speed = 0;
 
-        construct_address(config.led_strip_remote_ip[strip], 6969, &(remote_led_strip_state[strip].resolved_address));
+        if (config.led_strip_remote_ip[strip][0])
+        {
+            construct_address(config.led_strip_remote_ip[strip], 6969, &(remote_led_strip_state[strip].resolved_address));
+        }
     }
 }
 

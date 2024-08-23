@@ -39,7 +39,7 @@
 
 //prototype
 //void establish_socket_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg);
-
+int get_socket(char *address_string, int port, int type);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -175,89 +175,6 @@ void hex_dump(const uint8_t *bptr, uint32_t len) {
 
 
 
-/*!
- * \brief Create a TCP or UDP socket
- *
- * \param[in]   address_string         IPv4 address in ascii e.g. "192.168.1.1"  
- * \param[in]   port                   Port, 0 - 65535 
- * 
- * \return socket or -1 on error
- */
-int establish_socket(char *address_string, struct sockaddr_in *ipv4_address, int port, int type)
-{
-    int socket = -1;
-    struct hostent *hp;
-    int err;
-    int i;
-    char tempaddrstring[50];
-
-
-    //memset(&dns_cache_response.addr, 0, sizeof(ip_addr_t));
-
-    printf("Attempting to create socket for %s port %d\n", address_string, port);
-
-    for (i=0; i<3; i++)
-    {
-        //watchdog_pulse();
-        //cyw43_arch_lwip_begin();
-        hp = gethostbyname(address_string);  // blocking call
-        //cyw43_arch_lwip_end();
-        //watchdog_pulse();
-
-        if (!hp)
-        {
-            printf("gethostbyname() returned NULL [looking up %s]\n", address_string);
-        }
-        else
-        {
-            //printf("Got IP!\n");
-            break;
-        }
-        sleep_ms(1000);
-    }
-
-    memset(ipv4_address, 0, sizeof(struct sockaddr_in));
-    ipv4_address->sin_len = sizeof(ipv4_address);
-    ipv4_address->sin_family = AF_INET;
-    ipv4_address->sin_port = PP_HTONS(port);
-
-    if(!hp)
-    {
-        ipv4_address->sin_addr.s_addr = inet_addr(address_string);  // string with numerical IP address only
-    }
-    else
-    {
-        ipv4_address->sin_addr.s_addr = *((u32_t *)(hp->h_addr)); //string with either hostname or numerical IP address   
-
-        //printf("%d.%d.%d.%d\n", ((char *)(ipv4_address->sin_addr.s_addr))[0], ((char *)(ipv4_address->sin_addr.s_addr))[1], ((char *)(ipv4_address->sin_addr.s_addr))[2],((char *)(ipv4_address->sin_addr.s_addr))[3] );
-    }
-
-    //cyw43_arch_lwip_begin();
-    socket = socket(AF_INET, type, 0);
-    //cyw43_arch_lwip_end();
-
-    printf("socket = %d\n", socket);
-
-    if (socket >= 0)
-    {
-        if (socket > web.socket_max) web.socket_max = socket;
-
-        //cyw43_arch_lwip_begin();        
-        if (connect(socket, (struct sockaddr *)ipv4_address, sizeof(struct sockaddr_in)))
-        {
-            printf("closing socket due to connect failure\n");
-
-            lwip_close(socket); 
-
-            socket = -1;
-            web.connect_failures++;
-        }
-        //cyw43_arch_lwip_end();
-    }
-
-    return(socket);
-}
-
 
 /*!
  * \brief Send a syslog message
@@ -285,7 +202,7 @@ int send_syslog_message(char *log_name, const char *format, ...)
         if (!*ip_address_string) STRNCPY(ip_address_string, ipaddr_ntoa(netif_ip4_addr(&cyw43_state.netif[0])), sizeof(ip_address_string));
 
         // (re)establish socket connection
-        if (syslog_socket < 0) syslog_socket = establish_socket(config.syslog_server_ip, &syslog_address, 514, SOCK_DGRAM);    
+        if (syslog_socket < 0) syslog_socket = establish_socket(config.syslog_server_ip, /*&syslog_address,*/ 514, SOCK_DGRAM);    
 
         if (syslog_socket >= 0)
         {
@@ -385,7 +302,7 @@ int send_govee_command(int on, int red, int green, int blue)
     int p;
 
     // (re)establish socket connection
-    if (govee_socket < 0) govee_socket = establish_socket(config.govee_light_ip, &govee_address, 4003, SOCK_DGRAM);
+    if (govee_socket < 0) govee_socket = establish_socket(config.govee_light_ip, /*&govee_address,*/ 4003, SOCK_DGRAM);
     //if (govee_multicast_socket < 0) govee_multicast_socket = establish_multicast_socket(&govee_multicast_address, 4002, SOCK_DGRAM);    
 
 
@@ -491,7 +408,7 @@ int check_govee_state(void)
     static struct sockaddr_in govee_address;
 
     // (re)establish socket connection
-    if (govee_socket < 0) govee_socket = establish_socket(config.govee_light_ip, &govee_address, 4003, SOCK_DGRAM);
+    if (govee_socket < 0) govee_socket = establish_socket(config.govee_light_ip, /*&govee_address,*/ 4003, SOCK_DGRAM);
 
     if (govee_socket >= 0)
     {
@@ -623,7 +540,7 @@ int send_pluto_message(char *message)
 
 
     // (re)establish socket connection
-    if (pluto_socket < 0) pluto_socket = establish_socket("127.0.0.1", &pluto_address, 6969, SOCK_DGRAM);
+    if (pluto_socket < 0) pluto_socket = establish_socket("127.0.0.1", /*&pluto_address,*/ 6969, SOCK_DGRAM);
 
     if (pluto_socket >= 0)
     {
@@ -854,3 +771,181 @@ int indent(int num_spaces)
     return(0);
 }
 
+
+#ifdef USE_GETHOSTBYNAME
+/*!
+ * \brief Create a TCP or UDP socket
+ *
+ * \param[in]   address_string         IPv4 address in ascii e.g. "192.168.1.1"  
+ * \param[in]   port                   Port, 0 - 65535 
+ * 
+ * \return socket or -1 on error
+ */
+int establish_socket(char *address_string, /*struct sockaddr_in *ipv4_address,*/ int port, int type)
+{
+    int socket = -1;
+    struct hostent *hp;
+    int err;
+    int i;
+    char tempaddrstring[50];
+
+
+    //memset(&dns_cache_response.addr, 0, sizeof(ip_addr_t));
+
+    printf("Attempting to create socket for %s port %d\n", address_string, port);
+
+    for (i=0; i<10; i++)
+    {
+        //watchdog_pulse();
+        //cyw43_arch_lwip_begin();
+        hp = gethostbyname(address_string);  // blocking call
+        //cyw43_arch_lwip_end();
+        //watchdog_pulse();
+
+        if (!hp)
+        {
+            printf("gethostbyname() returned NULL [looking up %s]\n", address_string);
+        }
+        else
+        {
+            //printf("Got IP!\n");
+            break;
+        }
+        sleep_ms(1000);
+    }
+
+    memset(ipv4_address, 0, sizeof(struct sockaddr_in));
+    ipv4_address->sin_len = sizeof(ipv4_address);
+    ipv4_address->sin_family = AF_INET;
+    ipv4_address->sin_port = PP_HTONS(port);
+
+    if(!hp)
+    {
+        ipv4_address->sin_addr.s_addr = inet_addr(address_string);  // string with numerical IP address only
+    }
+    else
+    {
+        ipv4_address->sin_addr.s_addr = *((u32_t *)(hp->h_addr)); //string with either hostname or numerical IP address   
+
+        //printf("%d.%d.%d.%d\n", ((char *)(ipv4_address->sin_addr.s_addr))[0], ((char *)(ipv4_address->sin_addr.s_addr))[1], ((char *)(ipv4_address->sin_addr.s_addr))[2],((char *)(ipv4_address->sin_addr.s_addr))[3] );
+    }
+
+    //cyw43_arch_lwip_begin();
+    socket = socket(AF_INET, type, 0);
+    //cyw43_arch_lwip_end();
+
+    socket = get_socket(address_string, port, type);
+
+    printf("socket = %d for %s : %d\n", socket, address_string, port);
+
+    if (socket >= 0)
+    {
+        if (socket > web.socket_max) web.socket_max = socket;
+
+        //cyw43_arch_lwip_begin();        
+        if (connect(socket, (struct sockaddr *)ipv4_address, sizeof(struct sockaddr_in)))
+        {
+            printf("closing socket due to connect failure [%s, %d, %d]\n", address_string, port, type);
+
+            close(socket); 
+
+            socket = -1;
+            web.connect_failures++;
+        }
+        //cyw43_arch_lwip_end();
+    }
+
+    return(socket);
+}
+#else
+/*!
+ * \brief get_address from IPv4 address or hostname in ascii
+ *
+ * \param[in]   address_string         IPv4 address or hostname in ascii e.g. "192.168.1.1" or "google.com"   
+ * \param[in]   port                   Port, 0 - 65535 
+ * \param[in]   type                   STREAM or DATAGRAM 
+ * 
+ * \return socket or -1 on error
+ */
+int establish_socket(char *address_string, /*struct sockaddr_in *ipv4_address,*/ int port, int type)
+{
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int socket, s, j;
+    size_t len;
+    ssize_t nread;
+    //char buf[BUF_SIZE];
+    char port_string[12];
+
+    sprintf(port_string, "%d", port);
+    socket = -1;
+
+    /* Obtain address(es) matching host/port */
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;      /* Allow IPv4 only */
+    hints.ai_socktype = type;       /* Stream or Datagram socket */
+    hints.ai_flags = 0;
+    hints.ai_protocol = 0;          /* Any protocol */
+
+    s = getaddrinfo(address_string, port_string, &hints, &result);
+    if (s != 0)
+    {
+        printf("error returned from getaddrinfo [%s, %s, %d]\n", address_string, port_string, type);
+    }
+    else
+    {
+        for (rp = result; rp != NULL; rp = rp->ai_next)
+        {
+            printf("Trying to open socket with family = %d socktype = %d protocol = %d [%s, %s, %d]\n", rp->ai_family, rp->ai_socktype, rp->ai_protocol, address_string, port_string, type);
+            socket = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+            if (socket >= 0)
+            {
+                printf("Got socket [%s, %s, %d]\n", address_string, port_string, type);
+                if (socket > web.socket_max) web.socket_max = socket;
+    
+                if (!connect(socket, rp->ai_addr, rp->ai_addrlen))
+                {
+                    // successfully connected socket
+                    printf("socket conntected [%s, %d, %d]\n", address_string, port, type);
+                    break;
+                } 
+                else
+                {
+                    // failed to connect so try next address returned by DNS
+                    printf("connect failed -- closing socket[%s, %d, %d]\n", address_string, port, type);
+
+                    close(socket); 
+
+                    socket = -1;
+                    web.connect_failures++;
+                }
+            }
+            else
+            {
+                printf("socket error = %d\n", socket);
+            }
+        }
+
+        // delete linked list of dns results
+        freeaddrinfo(result);
+    }
+
+    return(socket);
+}
+#endif
+   /* getaddrinfo() returns a list of address structures.
+       Try each address until we successfully connect(2).
+       If socket(2) (or connect(2)) fails, we (close the socket
+       and) try the next address. */
+
+//    for (rp = result; rp != NULL; rp = rp->ai_next) {
+//         sfd = socket(rp->ai_family, rp->ai_socktype,
+//                      rp->ai_protocol);
+//         if (sfd == -1)
+//             continue;
+
+//        if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+//             break;                  /* Success */
+
+//        close(sfd);
+//     }

@@ -1038,11 +1038,11 @@ const char * cgi_mood_handler(int iIndex, int iNumParams, char *pcParam[], char 
             {
                 if (value[0])
                 {
-                    config.govee_enable = 1;
+                    config.use_govee_to_indicate_irrigation_status = 1;
                 } 
                 else
                 {
-                    config.govee_enable = 0;
+                    config.use_govee_to_indicate_irrigation_status = 0;
                 }                             
             } 
 

@@ -219,9 +219,15 @@ void weather_task(void *params)
 
             if (irrigation_state != IRRIGATION_DISRUPTED)
             {
-                // control the moodlight and led strip
-                control_moodlight(irrigation_state, false);
-                control_led_strip(irrigation_state, false);
+                if (config.use_govee_to_indicate_irrigation_status)
+                {
+                    control_moodlight(irrigation_state, false);
+                }
+
+                if (config.use_led_strip_to_indicate_irrigation_status)
+                {
+                    control_led_strip(irrigation_state, false);
+                }
 
                 // sleep until start of next minute
                 delay_seconds = (60 - get_seconds_of_minute());
@@ -270,7 +276,7 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
 
     
     // (re)establish socket connection
-    if (ecowitt_socket < 0) ecowitt_socket = establish_socket(config.weather_station_ip, &ecowitt_address, 45000, SOCK_STREAM);
+    if (ecowitt_socket < 0) ecowitt_socket = establish_socket(config.weather_station_ip, /*&ecowitt_address,*/ 45000, SOCK_STREAM);
 
     
     if(ecowitt_socket >= 0)

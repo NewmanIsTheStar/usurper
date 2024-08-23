@@ -66,7 +66,7 @@ typedef struct NON_VOL_VARIABLES
     int led_strip_remote_enable;  
     char led_strip_remote_ip[6][32];  
     char govee_light_ip[32]; 
-    int govee_enable;
+    int use_govee_to_indicate_irrigation_status;
     int govee_irrigation_active_red;
     int govee_irrigation_active_green; 
     int govee_irrigation_active_blue;    

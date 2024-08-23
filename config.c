@@ -125,7 +125,7 @@ int config_initialize(void)
     config.led_pin = 7;
 
     // moodlight settings
-    config.govee_enable = 0;
+    config.use_govee_to_indicate_irrigation_status = 0;
     config.govee_irrigation_active_red = 50;
     config.govee_irrigation_active_green = 200; 
     config.govee_irrigation_active_blue = 50;    

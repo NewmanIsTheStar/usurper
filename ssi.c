@@ -497,7 +497,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;
         case SSI_gvee: //gvee
         {
-            printed = snprintf(pcInsert, iInsertLen, "%s", config.govee_enable?"checked":""); 
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.use_govee_to_indicate_irrigation_status?"checked":""); 
         }
         break;
         case SSI_gvei: //gvei
