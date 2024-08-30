@@ -17,6 +17,9 @@
 #define NUM_ROWS(x) (sizeof(x)/sizeof(x[0]))
 #define MASKED_WRITE(dest,src,mask) {(dest) = (((dest) & (~(mask))) | ((src) & (mask)));}
 #define CLIP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+//#define SLEEP_MS(x) {printf("vTaskDelay %d ticks\n", ((x)/portTICK_PERIOD_MS)); vTaskDelay((x)/portTICK_PERIOD_MS);}
+//#define SLEEP_MS(x) (vTaskDelay((x)/portTICK_PERIOD_MS));
+#define SLEEP_MS(x) (vTaskDelay(x));
 
 //int applet_entry_point(void);
 void hex_dump(const uint8_t *bptr, uint32_t len);

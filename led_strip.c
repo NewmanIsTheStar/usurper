@@ -132,7 +132,7 @@ void led_strip_task(void *params)
                 {
                     printf("*ERROR* Cannot obtain PIO state machine\n");
                     send_syslog_message("usurper", "*ERROR* Cannot obtain PIO state machine");
-                    sleep_ms(10000);
+                    SLEEP_MS(10000);
                     err = 1;                    
                 }
             }
@@ -140,7 +140,7 @@ void led_strip_task(void *params)
             {
                 printf("*ERROR* Cannot add PIO program\n");
                 send_syslog_message("usurper", "*ERROR* Cannot add PIO program");
-                sleep_ms(10000);
+                SLEEP_MS(10000);
                 err = 2;
 
                 send_syslog_message("usurper", "Clearing PIO program instruction memory");
@@ -170,7 +170,7 @@ void led_strip_task(void *params)
                         live_speed = get_double_buf_integer(&local_speed, 0);
                         CLIP(live_speed, 0, 3000);
                         
-                        sleep_ms(config.led_speed);
+                        SLEEP_MS(config.led_speed);
 
                         t += dir;
 
@@ -180,7 +180,7 @@ void led_strip_task(void *params)
             }
         }
 
-        sleep_ms(15000);
+        SLEEP_MS(15000);
 
         watchdog_pulse((int *)params);
     }

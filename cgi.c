@@ -10,6 +10,11 @@
 
 #include "lwip/sockets.h"
 
+#include "time.h"
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "task.h"
+
 #include "flash.h"
 #include "weather.h"
 #include "calendar.h"
@@ -827,12 +832,12 @@ const char * cgi_reboot_handler(int iIndex, int iNumParams, char *pcParam[], cha
        
     printf("REBOOT requested\n");
     
-    sleep_ms(1000);
+    SLEEP_MS(1000);
 
     while (config_dirty(false))
     {
         printf("Waiting for config to be written to flash before rebooting (%d seconds)\n", i++*5);
-        sleep_ms(5000);
+        SLEEP_MS(5000);
 
         //escape
         if (i>12) break;

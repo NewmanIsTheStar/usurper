@@ -33,6 +33,7 @@
 #include "config.h"
 #include "watchdog.h"
 #include "worker_tasks.h"
+#include "pluto.h"
 
 // external variables
 extern WORKER_TASK_T worker_tasks[];
@@ -103,6 +104,6 @@ void watchdog_task(void *params)
             watchdog_update();
         }
 #endif
-        sleep_ms(1000);
+        SLEEP_MS(1000);
     }
 }

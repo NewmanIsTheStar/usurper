@@ -74,7 +74,7 @@
 #define configAPPLICATION_ALLOCATED_HEAP        0
 
 /* Hook function related definitions. */
-#define configCHECK_FOR_STACK_OVERFLOW          0 // Newman set to 0 based on older file and linker error (was 2)
+#define configCHECK_FOR_STACK_OVERFLOW          2 // Newman set to 0 based on older file and linker error (was 2)
 #define configUSE_MALLOC_FAILED_HOOK            0 // Newman set to 0 based on older file and linker error
 #define configUSE_DAEMON_TASK_STARTUP_HOOK      0
 

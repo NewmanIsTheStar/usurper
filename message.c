@@ -56,7 +56,7 @@
 #include "message_defs.h"
 
 
-#define DEBUG_UDP_MESSAGES
+//#define DEBUG_UDP_MESSAGES
 
 #define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 
@@ -449,7 +449,7 @@ int construct_address(char *address_string, int port, SOCKADDR_IN *address)
                 //printf("gethostbyname() returned IP\n");
                 break;
             }
-            sleep_ms(1000);
+            SLEEP_MS(1000);
         }
 
         //TODO: check if we can remove this because gethostbyname or its replacement works for numeric IP

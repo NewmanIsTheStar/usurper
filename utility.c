@@ -385,7 +385,7 @@ int send_govee_command(int on, int red, int green, int blue)
         //     govee_socket = -1;
         //     err = -1;
         // }
-        //sleep_ms(100);
+        //SLEEP_MS(100);
         //} // for p -- debug loop
     }
 
@@ -466,7 +466,7 @@ int establish_multicast_socket(struct sockaddr_in *ipv4_address, int port, int t
     //         printf("Got IP!\n");
     //         break;
     //     }
-    //     sleep_ms(1000);
+    //     SLEEP_MS(1000);
     // }
 
     memset(ipv4_address, 0, sizeof(struct sockaddr_in));
@@ -811,7 +811,7 @@ int establish_socket(char *address_string, /*struct sockaddr_in *ipv4_address,*/
             //printf("Got IP!\n");
             break;
         }
-        sleep_ms(1000);
+        SLEEP_MS(1000);
     }
 
     memset(ipv4_address, 0, sizeof(struct sockaddr_in));

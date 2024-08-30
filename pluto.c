@@ -156,14 +156,14 @@ void boss_task(__unused void *params)
     // get configuration from flash
     config_read();    
 
-    // initialise wifi
+    //initialise wifi
     while (cyw43_arch_init_with_country(get_wifi_country_code(config.wifi_country)))
     {
          printf("***Failed to initialise wifi***\n");
          cyw43_arch_deinit();
-         sleep_ms(1000);       
+         SLEEP_MS(1000);       
     } 	    
-
+    
     // enable wifi station mode
     cyw43_arch_enable_sta_mode();
 
@@ -179,7 +179,8 @@ void boss_task(__unused void *params)
     if (!cyw43_arch_wifi_connect_timeout_ms(config.wifi_ssid, config.wifi_password, CYW43_AUTH_WPA2_AES_PSK, 30000))
     {
         printf("Connected.\n");
-    } else
+    } 
+    else
     {
         printf("failed to connect to network.\n");
 
@@ -195,7 +196,7 @@ void boss_task(__unused void *params)
     printf("Pico W gateway = %s\n", web.gateway_string);
 
     // initialize the clock -- this will wait until a response is received from the time server
-    set_realtime_clock();
+    set_realtime_clock(); 
 
     // start web server
     init_web_variables();
@@ -208,7 +209,7 @@ void boss_task(__unused void *params)
     for(worker=0; worker_tasks[worker].functionptr != NULL; worker++)
     {
         xTaskCreate(worker_tasks[worker].functionptr, worker_tasks[worker].name, worker_tasks[worker].stack_size, &(worker_tasks[worker].watchdog_alive_indicator), worker_tasks[worker].priority, &(worker_tasks[worker].task_handle));
-        sleep_ms(1000);
+        SLEEP_MS(1000);
     }    
 
     // flash the led for attention while doing no actual work (like a boss!)
@@ -227,7 +228,7 @@ void boss_task(__unused void *params)
         // report watchdog reboot to syslog server
         check_watchdog_reboot();        
 
-        sleep_ms(1000);
+        SLEEP_MS(1000);
 
         if (restart_requested)
         {           
@@ -238,7 +239,7 @@ void boss_task(__unused void *params)
 
             watchdog_enable(100, 0);
 
-            sleep_ms(1000);
+            SLEEP_MS(1000);
         }        
     }
 }
@@ -328,7 +329,7 @@ int ap_mode(void)
             //watchdog_update();
         }
         
-        sleep_ms(100);
+        SLEEP_MS(100);
 
         if (restart_requested)
         {
@@ -336,7 +337,12 @@ int ap_mode(void)
             cyw43_arch_disable_ap_mode();
             cyw43_arch_deinit();
 
-            sleep_ms(100);
+            SLEEP_MS(100);
+
+            while(true)
+            {
+                printf("AP mode restart requwsted\n");
+            }            
             watchdog_enable(1, 0);
         }
     } 
@@ -408,7 +414,7 @@ int set_realtime_clock(void)
     //  wait for first sntp server response 
     while (true) 
     {
-        sleep_ms(500);
+        SLEEP_MS(500);
         if (rtc_get_datetime(&date))
         {
             // set day of week since ntp does not provide this        
@@ -475,3 +481,12 @@ int monitor_stacks(void)
 
     return(0);
 }
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName) 
+{
+    while(true)
+    {
+        printf("stack overflow\n");
+    }
+}
+

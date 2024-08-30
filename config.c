@@ -207,7 +207,7 @@ int config_write(void)
         // wait for 5 second period with no config changes
         do 
         {
-            sleep_ms(5000);
+            SLEEP_MS(5000);
         } while (config_dirty(true));
 
         flash_write_non_volatile_variables();

@@ -233,12 +233,12 @@ void weather_task(void *params)
                 delay_seconds = (60 - get_seconds_of_minute());
                 CLIP(delay_seconds, 1, 60);
                 //printf("weather task sleeping %d seconds\n", delay_seconds);
-                sleep_ms(delay_seconds*1000); 
+                SLEEP_MS(delay_seconds*1000); 
             }
         }
         else
         {
-            sleep_ms(60000); 
+            SLEEP_MS(60000); 
         }
         
         // tell watchdog task that we are still alive
