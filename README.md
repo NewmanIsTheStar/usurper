@@ -5,6 +5,8 @@ Add Wifi control to an ordinary residential sprinkler system using a Raspberry P
 
 ## How it works
 A relay controlled by the Pico W is inserted into the common line that runs from the existing controller to the sprinkler valves.  An easy 2 minute job.  The existing irrigation controller is then configured to run the sprinklers every day, or even multiple times every day.   The Pico connects / disconnects the common line to control when the sprinklers actually run.
+![usurper-system](https://github.com/user-attachments/assets/6ff725fb-f210-417a-a9da-73a56ac723e8)
+
 
 ## Installation on Ubuntu Linux
 ```
@@ -37,18 +39,22 @@ I went on a 3 week vacation during a drought.  3 days after I left, my city anno
 - SPDX-License-Identifier: BSD-3-Clause
 - SPDX-License-Identifier: MIT 
 
-## Configuration Screens
-### Schedule
+## Screenshots
+
 ![schedule](https://github.com/user-attachments/assets/0682428a-7491-4e82-b969-fff4b6c39950)
-### Network
-![network](https://github.com/user-attachments/assets/19809422-0752-45fb-92e2-891b4f614d1d)
-### Time
-![time](https://github.com/user-attachments/assets/b8215030-1da2-4547-8c82-3486c7bf5ef7)
-### Weather
-![weather](https://github.com/user-attachments/assets/b73436c7-60dc-419b-8058-5618ca926965)
-### Mood Light
-![moodlight](https://github.com/user-attachments/assets/2aae15ea-5ef0-47c6-b069-1d75b27b8df9)
-### LED Strip
-![ledstrip](https://github.com/user-attachments/assets/a59f18f3-6d6d-49de-9398-d42ca36b78b4)
-### Syslog
-![syslog](https://github.com/user-attachments/assets/cf595d06-1d2e-4dd3-8308-c8a0ba1b9baa)
+
+![network](https://github.com/user-attachments/assets/de2f43b7-ac39-487d-975e-9b18a4d62cdb)
+
+![time](https://github.com/user-attachments/assets/db8c4fc2-173f-42f5-a087-f842b5bf5d0c)
+
+![relay](https://github.com/user-attachments/assets/5dcc214c-c489-49dc-a0e0-8403f558d47d)
+
+![weather](https://github.com/user-attachments/assets/c6e6339f-38b1-43f3-ae55-52f9e34f4af6)
+
+![moodlight](https://github.com/user-attachments/assets/af4e9aa5-c000-47bc-941d-0be7298ba6c5)
+
+![ledstrip](https://github.com/user-attachments/assets/a92cf77c-305f-4e33-8d1b-388441cda62a)
+
+![syslog](https://github.com/user-attachments/assets/f7dfe161-d2d1-4564-a7a5-84dbc8a9fbcd)
+
+
