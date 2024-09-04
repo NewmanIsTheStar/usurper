@@ -106,8 +106,9 @@ int get_int_with_tenths_from_string(char *value_string)
  */
 const char * cgi_schedule_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-    // Check if an request for SCHEDULE has been made (/schedule.cgi?schedule=x)
-    if (strcmp(pcParam[0] , "schedule") == 0){
+    // Check if a request for SCHEDULE has been made (/schedule.cgi?schedule=x)
+    if (strcmp(pcParam[0] , "schedule") == 0)
+    {
         // Look at the argument to check if schedule is to be turned on (x=1) or off (x=0)
         if(strcmp(pcValue[0], "0") == 0)
             config.irrigation_enable = 0;
@@ -423,7 +424,7 @@ const char * cgi_time_handler(int iIndex, int iNumParams, char *pcParam[], char 
     char *value = NULL;
     int new_value = 0;
        
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     //force daylight saving off -- I really hate that this is how it works!  We only get passed the parameter when checkbox is "on"
     config.daylightsaving_enable = 0;
@@ -535,7 +536,7 @@ const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], ch
     // despicable but necessary as we only receive parameter when checked
     config.weather_station_enable = 0;
        
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
  
     i = 0;
     while (i < iNumParams)
@@ -574,6 +575,11 @@ const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], ch
                 config.rain_day_threshold = get_int_with_tenths_from_string(value); 
             }
 
+            if (strcasecmp("soilt1", param) == 0)
+            {
+                sscanf(value, "%d", &config.soil_moisture_threshold[0]); 
+            }                                     
+    
             if (strcasecmp("wndt", param) == 0)
             {
                 config.wind_threshold = get_int_with_tenths_from_string(value);                
@@ -608,7 +614,7 @@ const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], ch
     char *value = NULL;
     int new_value = 0;
        
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     //force dhcp_enable off -- I really hate that this is how it works!  We only get passed the parameter when checkbox is "on"
     config.dhcp_enable = 0;
@@ -635,13 +641,7 @@ const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], ch
                 {
                     STRNCPY(config.wifi_password, value, sizeof(config.wifi_password));
                 }
-            }
-
-            if (strcasecmp("wific", param) == 0)
-            {
-                STRNCPY(config.wifi_country, value, sizeof(config.wifi_country));
-                deplus_string(config.wifi_country, sizeof(config.wifi_country));             
-            }            
+            }        
 
             if (strcasecmp("ipad", param) == 0)
             {
@@ -731,7 +731,7 @@ const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *
 
     config.use_led_strip_to_indicate_irrigation_status = 0;       
 
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     i = 0;
     while (i < iNumParams)
@@ -868,7 +868,7 @@ const char * cgi_portrait_schedule_handler(int iIndex, int iNumParams, char *pcP
     char *value = NULL;
     int new_value = 0;
        
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     i = 0;
     while (i < iNumParams)
@@ -944,7 +944,7 @@ const char * cgi_day_schedule_handler(int iIndex, int iNumParams, char *pcParam[
     int start_minute = -1;
     int duration = -1;
            
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     i = 0;
     while (i < iNumParams)
@@ -1021,7 +1021,7 @@ const char * cgi_mood_handler(int iIndex, int iNumParams, char *pcParam[], char 
     int green = -1;
     int blue = -1;
        
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     i = 0;
     while (i < iNumParams)
@@ -1115,7 +1115,7 @@ const char * cgi_syslog_handler(int iIndex, int iNumParams, char *pcParam[], cha
     // vile design caused by web browser not sending unchecked parameters, they must be presumed unchecked
     config.syslog_enable = 0;       
 
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     i = 0;
     while (i < iNumParams)
@@ -1174,7 +1174,7 @@ const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char
     config.use_simplified_english  = 0; 
     config.use_monday_as_week_start = 0; 
 
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
  
     i = 0;
     while (i < iNumParams)
@@ -1275,7 +1275,7 @@ const char * cgi_software_load_handler(int iIndex, int iNumParams, char *pcParam
     char *value = NULL;
     int new_value = 0;
 
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     i = 0;
     while (i < iNumParams)
@@ -1329,7 +1329,7 @@ const char * cgi_remote_led_strips(int iIndex, int iNumParams, char *pcParam[], 
     char *param = NULL;
     char *value = NULL;
        
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     // set off by default
     config.led_strip_remote_enable  = 0; 
@@ -1409,7 +1409,7 @@ const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[]
     char *value = NULL;
     PERSONALITY_E new_personality = NO_PERSONALITY;
        
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
     i = 0;
     while (i < iNumParams)
@@ -1467,7 +1467,7 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
     int new_relay_normally_open = 0;  
     int new_gpio = 0;  
        
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
  
     i = 0;
     while (i < iNumParams)
@@ -1513,6 +1513,53 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
 }
 
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_wificountry_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    int whole_part = 0;
+    int tenths_part = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int new_value = 0;
+       
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            //printf("Parameter: %s has Value: %s\n", param, value);
+
+            if (strcasecmp("wific", param) == 0)
+            {
+                STRNCPY(config.wifi_country, value, sizeof(config.wifi_country));
+                deplus_string(config.wifi_country, sizeof(config.wifi_country));             
+            }                                                         
+        }
+
+        i++;
+    }
+
+
+    // Send the next page back to the user
+    config_changed();
+    return "/network.shtml";
+}
+
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
     {"/schedule.cgi",           cgi_schedule_handler},
@@ -1542,7 +1589,9 @@ static const tCGI cgi_handlers[] = {
     {"/swload.cgi",             cgi_software_load_handler},     
     {"/remote_led_strips.cgi",  cgi_remote_led_strips},  
     {"/personality.cgi",        cgi_personality_handler},   
-    {"/relay.cgi",              cgi_relay_handler},                              
+    {"/relay.cgi",              cgi_relay_handler}, 
+    {"/wificountry.cgi",        cgi_wificountry_handler},     
+                                 
 };
 
 /*!

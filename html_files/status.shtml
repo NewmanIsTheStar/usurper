@@ -72,6 +72,7 @@ body {
     <p>Temperature: <!--#temp--> &deg;<!--#tmpu--></p>
     <p>Rain today: <!--#rain--> <!--#dstu--></p>
     <p>Rain last 7 days: <!--#lstsvn--> <!--#dstu--></p>
+    <p>Soil Moisture: <!--#soilm1--> %</p>       
     <p>Wind Speed: <!--#wind--> <!--#spdu--></p>      
     <br>   
     <p>Network Time: <!--#time--></p>

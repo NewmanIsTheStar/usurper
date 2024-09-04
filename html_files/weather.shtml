@@ -72,6 +72,8 @@ body {
     <input type="text" id="wkrn" name="wkrn" value="<!--#wkrn-->"><br><br>
     <label for="dyrn">Skip if rain today exceeds (<!--#dstu-->):</label>
     <input type="text" id="dyrn" name="dyrn" value="<!--#dyrn-->"><br><br>
+    <label for="soil">Skip if soil moisture exceeds (%):</label>
+    <input type="text" id="soilt1" name="soilt1" value="<!--#soilt1-->"><br><br>      
     <label for="wind">Skip if wind speed exceeds (<!--#spdu-->):</label>
     <input type="text" id="wndt" name="wndt" value="<!--#wndt-->"><br><br>                
     <br>

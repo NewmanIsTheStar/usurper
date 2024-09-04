@@ -22,50 +22,30 @@
 
 #define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 
+
+int config_validate(void);
+void config_v1_to_v2(void);
+
+
 NON_VOL_VARIABLES_T config;
 static int config_dirty_flag = 0;
-
-
-/*!
- * \brief Record that configuration copy in RAM was altered and may now differ from the flash copy
- */
-void config_changed(void)
+static NON_VOL_CONVERSION_T config_info[] =
 {
-    config_dirty_flag = 1;
-}
+    {1,      offsetof(NON_VOL_VARIABLES_T_VERSION_1, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_1, crc),   &config_blank_to_v1},
+    {2,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v1_to_v2}, 
+};
+
 
 /*!
- * \brief Check if RAM copy of configuration differs from flash copy.  Optionally clear the status flag.
- * 
- * \param[in]    clear_flag Set the dirty flag to false after returning its value
- * 
- * \return true if config in RAM differs from config in flash, otherwise flase
- */
-bool config_dirty(bool clear_flag)
-{
-    int dirty = false;
-
-    if (config_dirty_flag)
-    {
-        dirty = true;
-
-        if (clear_flag)
-        {
-            config_dirty_flag = 0;
-        }
-    }
-
-    return (dirty);
-}
-
-/*!
- * \brief Set default values for configuration
+ * \brief Set default values for configuration v1
  * 
  * \return 0 on success, -1 on error
  */
-int config_initialize(void)
+void config_blank_to_v1(void)
 {
     int i;
+
+    printf("Initializing configuration version 1\n");
 
     // set initial values in ram buffer
     config.version = 1;
@@ -139,28 +119,59 @@ int config_initialize(void)
     config.use_simplified_english = 1;
     config.use_monday_as_week_start = 0;
     
-    return(0);
 }
 
 /*!
- * \brief Set a default time server in config if all four time server entries are blank
+ * \brief Convert configuration from v1 to v2 and set default values for new parameters
  * 
  * \return 0 on success, -1 on error
  */
-int config_timeserver_failsafe(void)
+void config_v1_to_v2(void)
 {
-    // failsafe - if no timeserver configured try pool.ntp.org
-    if ((config.time_server[0][0] == 0) &&
-        (config.time_server[1][0] == 0) &&
-        (config.time_server[2][0] == 0) &&
-        (config.time_server[3][0] == 0))
-    {
-        STRNCPY(config.time_server[0], "pool.ntp.org", sizeof(config.time_server[0]));
-    }
+    int i = 0;
 
-    return(0);
+    printf("Converting configuration from version 1 to version 2\n");
+    config.version = 2;
+    
+    for(i = 0; i < NUM_ROWS(config.soil_moisture_threshold); i++)
+    {
+        config.soil_moisture_threshold[i] = 0; 
+    }
 }
 
+
+
+/*!
+ * \brief Record that configuration copy in RAM was altered and may now differ from the flash copy
+ */
+void config_changed(void)
+{
+    config_dirty_flag = 1;
+}
+
+/*!
+ * \brief Check if RAM copy of configuration differs from flash copy.  Optionally clear the dirty flag.
+ * 
+ * \param[in]    clear_flag Set the dirty flag to false after returning its value
+ * 
+ * \return true if config in RAM differs from config in flash, otherwise flase
+ */
+bool config_dirty(bool clear_flag)
+{
+    int dirty = false;
+
+    if (config_dirty_flag)
+    {
+        dirty = true;
+
+        if (clear_flag)
+        {
+            config_dirty_flag = 0;
+        }
+    }
+
+    return (dirty);
+}
 
 /*!
  * \brief Copy the configuation from flash into RAM.  Set default values if flash is corrupt.
@@ -171,23 +182,11 @@ int config_read(void)
 {
     int err = 0;
 
-    // initialize configuration
+    // read configuration from flash
     flash_read_non_volatile_variables(); 
 
-    if (flash_corrupt())
-    {
-        flash_initialize_non_volatile_variables();
-
-        if(flash_corrupt())
-        {
-            printf("FUBAR!  Flash still corrupt after initialization\n");
-            err = 1;
-        }
-        else
-        {
-            flash_read_non_volatile_variables();
-        }
-    }
+    // check and correct configuration
+    config_validate();
 
     return(err);
 }
@@ -210,8 +209,147 @@ int config_write(void)
             SLEEP_MS(5000);
         } while (config_dirty(true));
 
-        flash_write_non_volatile_variables();
+        // update crc
+        config.crc = crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, crc));  
+
+        // compare ram and flash copies
+        if (memcmp((char *)(XIP_BASE +  FLASH_TARGET_OFFSET), ((char *)&config), sizeof(config)))
+        {
+            printf("Writing configuration to flash\n");
+            //config.crc = 55;  //TEST TEST TEST
+            flash_write_non_volatile_variables();
+        }
+        else
+        {
+            printf("Refusing to write configuration to flash as RAM and flash copies are identical\n");
+        }
+
+        // check for collision
+        if (config.crc != crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, crc)))
+        {
+            // config was updated by another task after we computed the crc and possibly before we wrote to flash
+            printf("Config update occured while writing to flash, will retry\n");
+
+            // printf("config.crc = %d\n", config.crc);
+            // printf("calculated crc = %d\n", crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, crc)));
+            
+            config_changed();
+        }          
     }  
 
     return(err);
+}
+
+/*!
+ * \brief Compare flash and RAM copies of configuration
+ * 
+ * \return 0 = no difference, 1 = difference
+ */
+bool config_compare_flash_ram(void)
+{
+    NON_VOL_VARIABLES_T *non_vol;
+    int i;
+    int len;
+    uint16_t ram_crc;
+    uint16_t flash_crc;    
+    bool difference_found = false;
+
+    // length of configuration excluding crc
+    len = offsetof(NON_VOL_VARIABLES_T, crc);  
+
+    // compute ram crc and store in ram copy of configuration  
+    ram_crc = crc_buffer((uint8_t *)&config, len);
+
+    // compute flash crc
+    non_vol = (NON_VOL_VARIABLES_T *)(XIP_BASE +  FLASH_TARGET_OFFSET);    
+    flash_crc = crc_buffer((uint8_t *)non_vol, len);
+
+    if (ram_crc != flash_crc)
+    {
+        difference_found = true;
+    }
+    else
+    {
+        difference_found = false;
+
+        // crc matches, 1/65536 random chance of a false match so check byte by byte
+        for (i=0; i<sizeof(config); i++)
+        {
+            if (((char *)(XIP_BASE +  FLASH_TARGET_OFFSET))[i] != ((char *)&config)[i])
+            {
+                printf("Found byte difference at offset %d so will write flash even though CRC matches\n", i);
+                difference_found = true;
+                break;
+            }
+        }
+    }
+
+    return(difference_found);
+}
+
+/*!
+ * \brief Check configuration is valid and upgrade if necessary 
+ * 
+ * \return 0 on success, -1 on error
+ */
+int config_validate(void)
+{
+    int err = 0;
+    int i = 0;
+    int version_from_flash = 0;
+    uint16_t crc_from_flash = 0;
+    uint16_t calculated_crc = 0;
+    int latest_valid_config_version = 0;
+
+    // read configuration into RAM
+    flash_read_non_volatile_variables(); 
+
+
+    // check for valid configuration
+    for(i=0; i < NUM_ROWS(config_info); i++)
+    {
+        version_from_flash = *((int *)((void *)&config + config_info[i].version_offset));
+        crc_from_flash = *((uint16_t *)((void *)&config + config_info[i].crc_offset));
+        calculated_crc = crc_buffer((uint8_t *)&config, config_info[i].crc_offset);        
+
+        // printf("version read from flash = %d\n", version_from_flash);
+        // printf("crc read from flash = %d\n", crc_from_flash);
+        // printf("crc calculated = %d\n", calculated_crc);
+
+        if ((version_from_flash == config_info[i].version) && (crc_from_flash == calculated_crc))
+        {
+            printf("Found valid configuration version %d\n", version_from_flash);
+            latest_valid_config_version = version_from_flash;
+        }
+    }
+
+    // upgrade configuration sequentially to latest version 
+    for(i=0; i < NUM_ROWS(config_info); i++)
+    {
+        if (latest_valid_config_version < config_info[i].version)
+        {
+            config_info[i].upgrade_function();
+        }
+    }
+
+    return(err);
+}
+
+/*!
+ * \brief Set a default time server in config if all four time server entries are blank
+ * 
+ * \return 0 on success, -1 on error
+ */
+int config_timeserver_failsafe(void)
+{
+    // failsafe - if no timeserver configured try pool.ntp.org
+    if ((config.time_server[0][0] == 0) &&
+        (config.time_server[1][0] == 0) &&
+        (config.time_server[2][0] == 0) &&
+        (config.time_server[3][0] == 0))
+    {
+        STRNCPY(config.time_server[0], "pool.ntp.org", sizeof(config.time_server[0]));
+    }
+
+    return(0);
 }

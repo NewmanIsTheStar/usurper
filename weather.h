@@ -46,7 +46,7 @@ typedef enum
   CMD_READ_FIRMWARE_VERSION= 0x50, // read current firmware version number
   CMD_READ_USR_PATH= 0x51,
   CMD_WRITE_USR_PATH= 0x52,
-  // the following command is only valid for GW1000, WH2650 and wn1900 支持：
+
   CMD_GW1000_LIVEDATA= 0x27, // read current data，reply data size is 2bytes.
   CMD_GET_SOILHUMIAD= 0x28, // read Soilmoisture Sensor calibration parameters
   CMD_SET_SOILHUMIAD= 0x29, // write back Soilmoisture Sensor calibration parameters
@@ -69,8 +69,8 @@ typedef enum
   CMD_WRITE_RESET= 0x41, // reset to default
   CMD_READ_CUSTOMIZED_PATH= 0x51,
   CMD_WRITE_CUSTOMIZED_PATH= 0x52,
-  CMD_GET_CO2_OFFSET= 0x53, //读取 CO2 OFFSET 参数
-  CMD_SET_CO2_OFFSET= 0x54, //改写 CO2 OFFSET 参数
+  CMD_GET_CO2_OFFSET= 0x53, // CO2 OFFSET
+  CMD_SET_CO2_OFFSET= 0x54, // CO2 OFFSET
   CMD_READ_RSTRAIN_TIME= 0x55, // read rain reset time
   CMD_WRITE_RSTRAIN_TIME= 0x56, // write back rain reset time
   CMD_READ_RAIN= 0x57,
@@ -184,6 +184,7 @@ typedef struct WEB_VARIABLES
   int daily_rain;
   int weekly_rain;                  // this comes from weather station based on calendar weeks and is not useful for irrigation decisions
   int trailing_seven_days_rain;     // this is accumulated from the daily totals as it is more relevant to irrigation decision
+  uint8_t soil_moisture[16];
   char watchdog_timestring[50];
   uint32_t us_last_rx_packet;
   char status_message[50];

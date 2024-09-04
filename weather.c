@@ -36,7 +36,7 @@
 #include "message.h"
 #include "pluto.h"
 
-#define BUF_SIZE (100)
+#define BUF_SIZE (900)
 #define RELAY_GPIO_PIN (3)
 #define MAX_WINDSPEED (50)
 
@@ -64,7 +64,7 @@ typedef enum
 
 // prototypes
 //WEATHER_QUERY_STATUS_T query_weather_station(int *outside_temperature, int *wind_speed, int *daily_rain, int *weekly_rain);
-WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *wind_speed, s32_t *daily_rain, s32_t *weekly_rain);
+WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *wind_speed, s32_t *daily_rain, s32_t *weekly_rain, u8_t *soil_moisture);
 int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len);
 void hex_dump_to_string(const uint8_t *bptr, uint32_t len, char *out_string, int out_len);
 int accumulate_trailing_seven_day_total_rain(int daily_rain, int weekday);
@@ -92,6 +92,7 @@ bool govee_sustain_in_progress = false;
 const unsigned char request_live_data[] = {0xff, 0xff, CMD_GW1000_LIVEDATA, 0x03, 0x2a};
 const unsigned char request_rain_data[] = {0xff, 0xff, CMD_READ_RAIN,       0x03, 0x5a};
 
+
 typedef struct ECOWITT_REQUEST_STRUCT
 {
     const unsigned char *request;
@@ -101,7 +102,7 @@ typedef struct ECOWITT_REQUEST_STRUCT
 const ECOWITT_REQUEST_T aEcowittRequests[] =
 {
     {request_live_data, sizeof(request_live_data)},
-    {request_rain_data, sizeof(request_rain_data)}
+    {request_rain_data, sizeof(request_rain_data)}    
 };
 
 
@@ -115,22 +116,22 @@ typedef struct ECOWITTT_PARAMETER_STUCT
 } ECOWITT_PARAMETER_T;
 
 // raw bytes of relevant parameters extracted from received packets
-static unsigned char raw_outsidetemp[2] = {0,0};
-static unsigned char raw_windspeed[2] =   {0,0};
-static unsigned char raw_dailyrain[4] =   {0,0,0,0};
-static unsigned char raw_weeklyrain[4] =  {0,0,0,0};
-static unsigned char raw_monthlyrain[4] = {0,0,0,0};
-
+static unsigned char raw_outsidetemp[2]     = {0,0};
+static unsigned char raw_windspeed[2]       = {0,0};
+static unsigned char raw_dailyrain[4]       = {0,0,0,0};
+static unsigned char raw_weeklyrain[4]      = {0,0,0,0};
+static unsigned char raw_monthlyrain[4]     = {0,0,0,0};
+static unsigned char raw_soilmoisture1[16]  = {0};
 
 const ECOWITT_PARAMETER_T aEcowittParameters[] =
 {
     //item tag                 name                            units              num_bytes    store
     {ITEM_INTEMP,              "Inside Temperature",           "C x 10",          2,           NULL},
-    {ITEM_INHUMI,              "Inside Humidity",              "%",               1,           NULL},
+    {ITEM_INHUMI,              "Inside Humidity",              "%%",               1,           NULL},
     {ITEM_ABSBARO,             "Absolute Pressure",            "hpa",             2,           NULL},
     {ITEM_RELBARO,             "Relative Pressure",            "hpa",             2,           NULL},
     {ITEM_OUTTEMP,             "Outside Temperature",           "C x 10",         2,           raw_outsidetemp},
-    {ITEM_OUTHUMI,             "Outside Humidity",              "%",              1,           NULL},        
+    {ITEM_OUTHUMI,             "Outside Humidity",              "%%",              1,           NULL},        
     {ITEM_WINDDIRECTION,       "Wind Direction",                "360°",           2,           NULL},
     {ITEM_WINDSPEED,           "Wind Speed",                    "m/s",            2,           raw_windspeed},    
     {ITEM_GUSTSPEED,           "Gust Speed",                    "m/s",            2,           NULL},  
@@ -149,7 +150,8 @@ const ECOWITT_PARAMETER_T aEcowittParameters[] =
     {ITEM_RST_RainTime,        "Rain Time",                     "units",          3,           NULL},   
     {0x7a,                     "Rain Unknown1",                 "units",          1,           NULL},
     {0x7b,                     "Rain Unknown2",                 "units",          1,           NULL},  
-    {0x6c,                     "Unknown",                       "units",          4,           NULL},  // len 4 is guess        
+    {0x6c,                     "Unknown",                       "units",          4,           NULL},  // len 4 is guess  
+    {ITEM_SOILMOISTURE1,       "Soil Moisture 1",               "%%",             1,           raw_soilmoisture1},      
 };
 
 
@@ -183,7 +185,11 @@ void weather_task(void *params)
         if ((config.personality == SPRINKLER_USURPER) && config.weather_station_enable)
         {
             // get weather info
-            weather_query_status = query_weather_station((s16_t *)&web.outside_temperature, (s16_t *)&web.wind_speed, (s32_t *)&web.daily_rain, (s32_t *)&web.weekly_rain);
+            weather_query_status = query_weather_station((s16_t *)&web.outside_temperature,
+                                                         (s16_t *)&web.wind_speed,
+                                                         (s32_t *)&web.daily_rain,
+                                                         (s32_t *)&web.weekly_rain,
+                                                         (u8_t *)&web.soil_moisture[0]);
 
             switch(weather_query_status)
             {            
@@ -260,7 +266,7 @@ void weather_task(void *params)
  * 
  * \return WEATHER_READ_SUCCESS or WEATHER_READ_FAILED
  */
-WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *wind_speed, s32_t *daily_rain, s32_t *weekly_rain)
+WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *wind_speed, s32_t *daily_rain, s32_t *weekly_rain, u8_t *soil_moisture)
 {
     int err = WEATHER_READ_SUCCESS;
     int ret;
@@ -314,6 +320,7 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
                             *wind_speed = ntohs(*(u16_t *)raw_windspeed);                            
                             *daily_rain = ntohl(*(u32_t *)raw_dailyrain);                            
                             *weekly_rain = ntohl(*(u32_t *)raw_weeklyrain);
+                            *soil_moisture = raw_soilmoisture1[0];
                             
                             // clip parameters to sane ranges
                             CLIP(*outside_temperature, -1000, 600);
@@ -377,15 +384,15 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
     {
         if ((rx_bytes[0] == 0xff) && (rx_bytes[1] == 0xff))
         {
-           //printf("Receieved header 0xff 0xff\n"); 
+           printf("Receieved header 0xff 0xff\n"); 
         }
 
         ecowitt_msg_len = rx_bytes[3]*256 + rx_bytes[4]; //try shifting <<8 instead
-        //printf("Receieved ecowitt message length %d  [bytes %x %x]\n", ecowitt_msg_len, rx_bytes[3], rx_bytes[4]);
+        printf("Receieved ecowitt message length %d  [bytes %x %x]\n", ecowitt_msg_len, rx_bytes[3], rx_bytes[4]);
 
         if (rx_len >= ecowitt_msg_len+2)
         {
-            //printf("Read bytes conatin complete Ecowitt message.  ecowitt_len = %d  read_bytes = %d\n", ecowitt_msg_len, rx_len); 
+            printf("Read bytes conatin complete Ecowitt message.  ecowitt_len = %d  read_bytes = %d\n", ecowitt_msg_len, rx_len); 
             complete_msg_received = 1;
 
             //compute checksum and compare
@@ -425,7 +432,7 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
                 {
                     found_id = 1;
 
-                    //printf("Parameter: %s ", aEcowittParameters[j].name);
+                    printf("Parameter: %s \n", aEcowittParameters[j].name);
 
 
                     // check sufficient bytes remain in buffer to extract valid parameter value
@@ -538,7 +545,8 @@ int init_web_variables(void)
     web.daily_rain = 0;
     web.weekly_rain = 0;
     web.trailing_seven_days_rain = 0;
-    web.us_last_rx_packet = 0;    
+    web.us_last_rx_packet = 0;  
+    web.soil_moisture[0] = 0;  
 
     STRNCPY(web.last_usurped_timestring,"never", sizeof(web.last_usurped_timestring));
     STRNCPY(web.watchdog_timestring,"never", sizeof(web.watchdog_timestring));
@@ -577,6 +585,7 @@ int invalidate_weather_variables(void)
     web.daily_rain = 0;
     web.weekly_rain = 0;
     //web.trailing_seven_days_rain = 0;  // actually might be useful to use for a few days if comms lost to weather station
+    web.soil_moisture[0] = 0;
 
     return(0);
 }
@@ -968,7 +977,6 @@ bool terminate_irrigation_due_to_weather (void)
     int wind_speed = 0;
     int rain_day = 0;
     int rain_week = 0; 
- 
 
     // convert current measurements to archaic units if necessary
     switch(config.use_archaic_units)
@@ -983,15 +991,15 @@ bool terminate_irrigation_due_to_weather (void)
     case false:
         wind_speed = web.wind_speed;                      // m/s
         rain_week = web.trailing_seven_days_rain;         // mm   
-        rain_day = web.daily_rain;                        // mm
+        rain_day = web.daily_rain;                        // mm      
         break;
     } 
 
     // check if we should terminate irrigation due to weather
     if ((wind_speed > config.wind_threshold)      ||
         (rain_day > config.rain_day_threshold)    ||
-        (rain_week  > config.rain_week_threshold)                        
-        )                   
+        (rain_week  > config.rain_week_threshold) ||     
+        (web.soil_moisture[0]  > config.soil_moisture_threshold[0]))                   
     {
         terminate_irrigation = true;
 

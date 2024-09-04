@@ -304,9 +304,9 @@ int ap_mode(void)
         // tell watchdog task that we are alive
         //watchdog_pulse();
 
-        if (config_dirty(true))
+        if (config_dirty(false))
         {
-            flash_write_non_volatile_variables();
+            config_write();
             
             //user is changing configuration
             ap_idle = 0;
@@ -333,16 +333,14 @@ int ap_mode(void)
 
         if (restart_requested)
         {
+            config_write();
+            
             printf("***REBOOT in 100 ms***\n");
             cyw43_arch_disable_ap_mode();
             cyw43_arch_deinit();
 
             SLEEP_MS(100);
-
-            while(true)
-            {
-                printf("AP mode restart requwsted\n");
-            }            
+            
             watchdog_enable(1, 0);
         }
     } 

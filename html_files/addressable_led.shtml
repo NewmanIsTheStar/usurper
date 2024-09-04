@@ -67,7 +67,7 @@ body {
     <input type="checkbox" id="lie" name="lie" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#lie-->><br><br>       
     <label for="lednum">LED strip pattern when irrigation active</label>
     <input type="text" id="lia" name="lia" value="<!--#lia-->"><br><br>
-    <label for="lednum">LED strip pattern when irrigation usurped</label>
+    <label for="lednum">LED strip pattern when irrigation skipped</label>
     <input type="text" id="liu" name="liu" value="<!--#liu-->"><br><br>     
     <label for="lednum">Sustain LED pattern after irrigation (minutes)</label>
     <input type="text" id="lis" name="lis" value="<!--#lis-->"><br><br>  

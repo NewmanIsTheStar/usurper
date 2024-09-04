@@ -59,56 +59,57 @@ void flash_write_shim(void *ptr)
  */
 int flash_write_non_volatile_variables(void)
 {
-    NON_VOL_VARIABLES_T *non_vol;
+    // NON_VOL_VARIABLES_T *non_vol;
     int i;
-    int len;
-    uint16_t crc;
-    int write_to_flash;
+    // int len;
+    // uint16_t crc;
+    // int write_to_flash;
 
-    // compute ram crc and store in ram copy of configuration
-    len = offsetof(struct NON_VOL_VARIABLES, crc);
-    config.crc = crc_buffer((uint8_t *)&config, len);
+    // // compute ram crc and store in ram copy of configuration
+    // //len = offsetof(struct NON_VOL_VARIABLES, crc);
+    // len = offsetof(NON_VOL_VARIABLES_T, crc);    
+    // config.crc = crc_buffer((uint8_t *)&config, len);
 
-    // compute flash crc
-    non_vol = (NON_VOL_VARIABLES_T *)(XIP_BASE +  FLASH_TARGET_OFFSET);
-    crc = crc_buffer((uint8_t *)non_vol, len);
+    // // compute flash crc
+    // non_vol = (NON_VOL_VARIABLES_T *)(XIP_BASE +  FLASH_TARGET_OFFSET);
+    // crc = crc_buffer((uint8_t *)non_vol, len);
 
-    if (config.crc != crc)
-    {
-        write_to_flash = 1;
-    }
-    else
-    {
-        write_to_flash = 0;
+    // if (config.crc != crc)
+    // {
+    //     write_to_flash = 1;
+    // }
+    // else
+    // {
+    //     write_to_flash = 0;
 
-        // crc matches, 1/65536 random chance of a false match so check byte by byte
-        for (i=0; i<sizeof(config); i++)
-        {
-            if (((char *)(XIP_BASE +  FLASH_TARGET_OFFSET))[i] != ((char *)&config)[i])
-            {
-                printf("Found byte difference at offset %d so will write flash even though CRC matches\n", i);
-                write_to_flash = 1;
-                break;
-            }
-        }
-    }
+    //     // crc matches, 1/65536 random chance of a false match so check byte by byte
+    //     for (i=0; i<sizeof(config); i++)
+    //     {
+    //         if (((char *)(XIP_BASE +  FLASH_TARGET_OFFSET))[i] != ((char *)&config)[i])
+    //         {
+    //             printf("Found byte difference at offset %d so will write flash even though CRC matches\n", i);
+    //             write_to_flash = 1;
+    //             break;
+    //         }
+    //     }
+    // }
 
-    if (write_to_flash)
-    {
-        printf("Writing non-vol variables to flash.  CRC = %d\n", non_vol->crc);
+    // if (write_to_flash)
+    // {
+    //     printf("Writing non-vol variables to flash.  CRC = %d\n", non_vol->crc);
 
-        i = flash_safe_execute(flash_write_shim, NULL, 500);
+    //     i = flash_safe_execute(flash_write_shim, NULL, 500);
 
-        printf("Finished writing flash with status %d\n", i);        
-    }
-    else
-    {
-        printf("Refusing to write to flash since no changes detected\n");
-    }
+    //     printf("Finished writing flash with status %d\n", i);        
+    // }
+    // else
+    // {
+    //     printf("Refusing to write to flash since no changes detected\n");
+    // }
 
+    i = flash_safe_execute(flash_write_shim, NULL, 500);
 
-
-    return(0);
+    return(i);
 }
 
 /*!
@@ -125,10 +126,11 @@ int flash_corrupt(void)
 
     non_vol = (NON_VOL_VARIABLES_T *)(XIP_BASE +  FLASH_TARGET_OFFSET);
 
-    len = offsetof(struct NON_VOL_VARIABLES, crc);
+    //len = offsetof(struct NON_VOL_VARIABLES, crc);
+    len = offsetof(NON_VOL_VARIABLES_T, crc);     
     
     crc = crc_buffer((uint8_t *)non_vol, len);
-
+ printf("Flash Configuration Parameters: calculated crc = %d  vs. stored crc = %d\n", crc, non_vol->crc);
     if (crc != non_vol->crc)
     {
         printf("Flash Configuration Parameters: calculated crc = %d  vs. stored crc = %d\n", crc, non_vol->crc);
@@ -144,15 +146,15 @@ int flash_corrupt(void)
  */
 int flash_initialize_non_volatile_variables(void)
 {
-    int i;
-
+    printf("initialize non-vol --DISABLED--\n");
+#ifdef CONFIDENT
     // zero the configuration
     memset((void *)&config, 0, sizeof(config));
 
     config_initialize();
     
     flash_write_non_volatile_variables();
-
+#endif
     return(0);
 }
 
