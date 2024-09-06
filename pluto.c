@@ -48,10 +48,9 @@
 #define RUN_FREERTOS_ON_CORE 0
 #endif
 
-#define WEATHER_TASK_PRIORITY           ( 0 + 3UL )
 #define BOSS_TASK_PRIORITY              ( 0 + 2UL )
 #define WATCHDOG_TASK_PRIORITY          ( 0 + 1UL )
-
+#define PAUSE_FOR_INITIAL_SNTP_RESPONSE (1)
 
 
 // external variables
@@ -66,7 +65,7 @@ static bool restart_requested = false;
 int pluto(void);
 void boss_task(__unused void *params);
 int ap_mode(void);
-int set_ip_network_info(void);
+int set_web_ip_network_info(void);
 int set_realtime_clock(void);
 int monitor_stacks(void);
 
@@ -149,6 +148,9 @@ void boss_task(__unused void *params)
 {
     bool led_on = false;
     int worker = 0;
+    ip_addr_t ip = {0};
+    ip_addr_t nm = {0};
+    ip_addr_t gw = {0};
 
     // start watchdog
     xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
@@ -168,11 +170,8 @@ void boss_task(__unused void *params)
     cyw43_arch_enable_sta_mode();
 
     // set hostname
-    cyw43_arch_lwip_begin();
     struct netif *n = &cyw43_state.netif[CYW43_ITF_STA];
     netif_set_hostname(n, "usurper");
-    netif_set_up(n);
-    cyw43_arch_lwip_end();
 
     //connect to wifi network
     printf("Connecting to Wi-Fi...\n");
@@ -188,14 +187,24 @@ void boss_task(__unused void *params)
         ap_mode();
     }
 
+    // handle static ip config
+    if (!config.dhcp_enable)
+    {
+        printf("Using static IP settings\n");
+        inet_pton(AF_INET, config.ip_address, &ip);
+        inet_pton(AF_INET, config.network_mask, &nm);
+        inet_pton(AF_INET, config.gateway, &gw);
+        netif_set_addr(netif_default, &(ip), &(nm), &(gw));
+    }
+
     // initialize the ip info used in the web interface
-    set_ip_network_info();
+    set_web_ip_network_info();
 
     printf("Pico W address = %s\n", web.ip_address_string);  
     printf("Pico W netmask = %s\n", web.network_mask_string);
     printf("Pico W gateway = %s\n", web.gateway_string);
 
-    // initialize the clock -- this will wait until a response is received from the time server
+    // initialize the clock 
     set_realtime_clock(); 
 
     // start web server
@@ -357,27 +366,21 @@ int ap_mode(void)
  *
  * \return 0
  */
-int set_ip_network_info(void)
+int set_web_ip_network_info(void)
 {
+    // copy ip, netmask and gateway assigned by DHCP into web interface variables
+    STRNCPY(web.ip_address_string, ipaddr_ntoa(netif_ip4_addr(&cyw43_state.netif[0])), sizeof(web.ip_address_string));   
+    STRNCPY(web.network_mask_string, ipaddr_ntoa(netif_ip4_netmask(&cyw43_state.netif[0])), sizeof(web.network_mask_string)); 
+    STRNCPY(web.gateway_string, ipaddr_ntoa(netif_ip4_gw(&cyw43_state.netif[0])), sizeof(web.gateway_string)); 
+
     if (config.dhcp_enable)
     {
-        // copy ip, netmask and gateway assigned by DHCP into web interface variables
-        STRNCPY(web.ip_address_string, ipaddr_ntoa(netif_ip4_addr(&cyw43_state.netif[0])), sizeof(web.ip_address_string));   
-        STRNCPY(web.network_mask_string, ipaddr_ntoa(netif_ip4_netmask(&cyw43_state.netif[0])), sizeof(web.network_mask_string)); 
-        STRNCPY(web.gateway_string, ipaddr_ntoa(netif_ip4_gw(&cyw43_state.netif[0])), sizeof(web.gateway_string));  
-
         // set the static network config to match current DHCP assignments
         STRNCPY(config.ip_address, web.ip_address_string, sizeof(config.ip_address));
         STRNCPY(config.network_mask, web.network_mask_string, sizeof(config.network_mask));        
         STRNCPY(config.gateway, web.gateway_string, sizeof(config.gateway));    
     }
-    else
-    {
-        // copy ip, netmask and gateway from the configuation into web interface variables
-        STRNCPY(web.ip_address_string, config.ip_address, sizeof(web.ip_address_string));
-        STRNCPY(web.network_mask_string,config.network_mask,  sizeof(web.network_mask_string));        
-        STRNCPY(web.gateway_string, config.gateway, sizeof(web.gateway_string));        
-    }
+
     return(0);
 }
 
@@ -392,7 +395,8 @@ int set_ip_network_info(void)
 int set_realtime_clock(void)
 {
     datetime_t date;
-    char buffer[256];    
+    char buffer[256]; 
+    int i;   
 
     // initialize realtime clock
     rtc_init();
@@ -409,8 +413,9 @@ int set_realtime_clock(void)
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_init();
 
-    //  wait for first sntp server response 
-    while (true) 
+#ifdef PAUSE_FOR_INITIAL_SNTP_RESPONSE
+    //  wait up to 10 seconds for first sntp server response 
+    for(i=0; i < 2*10; i++)
     {
         SLEEP_MS(500);
         if (rtc_get_datetime(&date))
@@ -425,6 +430,7 @@ int set_realtime_clock(void)
         if (date.year != 1970) break;
     }
     printf("\n");
+#endif    
 }
 
 

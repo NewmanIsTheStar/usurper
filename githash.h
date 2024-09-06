@@ -1,1 +1,1 @@
-#define GITHASH "8ce417a"
+#define GITHASH "c924841"

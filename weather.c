@@ -377,6 +377,7 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
     int complete_msg_received = 0;
     int error = 0;
     char log_message[200];
+    bool rx_header = false;
 
 
     // check if we have recieved an entire well formed message (simplistic approach -- assume one msg per buffer)
@@ -384,15 +385,16 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
     {
         if ((rx_bytes[0] == 0xff) && (rx_bytes[1] == 0xff))
         {
-           printf("Receieved header 0xff 0xff\n"); 
+           //printf("Receieved header 0xff 0xff\n"); 
+           rx_header = true;
         }
 
         ecowitt_msg_len = rx_bytes[3]*256 + rx_bytes[4]; //try shifting <<8 instead
-        printf("Receieved ecowitt message length %d  [bytes %x %x]\n", ecowitt_msg_len, rx_bytes[3], rx_bytes[4]);
+        //printf("Receieved ecowitt message length %d  [bytes %x %x]\n", ecowitt_msg_len, rx_bytes[3], rx_bytes[4]);
 
-        if (rx_len >= ecowitt_msg_len+2)
+        if (rx_header && (rx_len >= ecowitt_msg_len+2))
         {
-            printf("Read bytes conatin complete Ecowitt message.  ecowitt_len = %d  read_bytes = %d\n", ecowitt_msg_len, rx_len); 
+            //printf("Read bytes conatin complete Ecowitt message.  ecowitt_len = %d  read_bytes = %d\n", ecowitt_msg_len, rx_len); 
             complete_msg_received = 1;
 
             //compute checksum and compare
@@ -432,7 +434,7 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
                 {
                     found_id = 1;
 
-                    printf("Parameter: %s \n", aEcowittParameters[j].name);
+                    //printf("Parameter: %s \n", aEcowittParameters[j].name);
 
 
                     // check sufficient bytes remain in buffer to extract valid parameter value
