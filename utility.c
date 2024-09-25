@@ -95,7 +95,7 @@ static const uint16_t awFcsTab[256]={
  * 
  * \return CRC16
  */
-uint16_t crc_buffer(char *pbuff, int num_bytes)
+uint16_t crc_buffer(uint8_t *pbuff, int num_bytes)
 {
     int i;
     uint16_t wResult;
@@ -142,7 +142,7 @@ void hex_dump_to_string(const uint8_t *bptr, uint32_t len, char *out_string, int
 void hex_dump(const uint8_t *bptr, uint32_t len) {
     unsigned int i = 0;
 
-    printf("dump_bytes %d", len);
+    printf("dump_bytes %lu", len);
     for (i = 0; i < len;i++) {
         if ((i & 0x0f) == 0) {
             printf("\n");
@@ -187,7 +187,7 @@ void hex_dump(const uint8_t *bptr, uint32_t len) {
 int send_syslog_message(char *log_name, const char *format, ...)
 {
     static int syslog_socket = -1;
-    static struct sockaddr_in syslog_address;
+    //tatic struct sockaddr_in syslog_address;
     static char ip_address_string[50] = "";  
     int message_chars_remaining = 0;
     int sent_bytes = -1;  
@@ -285,21 +285,20 @@ int check_watchdog_reboot(void)
  */
 int send_govee_command(int on, int red, int green, int blue)
 {
-    int err = 0;
-    char timestamp[50];
+    //char timestamp[50];
     char log_message[200];
     int sent_bytes = -1;
     static int govee_socket = -1;
-    static struct sockaddr_in govee_address;
-    static int govee_multicast_socket = -1;
-    static struct sockaddr_in govee_multicast_address;    
-    fd_set readset;
-    struct timeval tv;  
-    int retry = 0;
-    int ret = 0;
-    int read_bytes = 0;
-    unsigned char rx_buffer[128];  
-    int p;
+    //static struct sockaddr_in govee_address;
+    //static int govee_multicast_socket = -1;
+    //static struct sockaddr_in govee_multicast_address;    
+    //fd_set readset;
+    //struct timeval tv;  
+    //int retry = 0;
+    //int ret = 0;
+    //int read_bytes = 0;
+    //unsigned char rx_buffer[128];  
+    //int p;
 
     // (re)establish socket connection
     if (govee_socket < 0) govee_socket = establish_socket(config.govee_light_ip, /*&govee_address,*/ 4003, SOCK_DGRAM);
@@ -312,11 +311,10 @@ int send_govee_command(int on, int red, int green, int blue)
         //printf("Sending govee: %s\n", log_message);
         sent_bytes = send(govee_socket, log_message, strlen(log_message), 0);              
 
-        if (sent_bytes < 0)
+        if (sent_bytes == 0)
         {
             lwip_close(govee_socket);
             govee_socket = -1;
-            err = 1;
             web.govee_transmit_failures++;
         }  
 
@@ -401,11 +399,11 @@ int send_govee_command(int on, int red, int green, int blue)
  */
 int check_govee_state(void)
 {
-    char timestamp[50];
+    //char timestamp[50];
     char log_message[200];
     int sent_bytes = -1;
     static int govee_socket = -1;
-    static struct sockaddr_in govee_address;
+    //static struct sockaddr_in govee_address;
 
     // (re)establish socket connection
     if (govee_socket < 0) govee_socket = establish_socket(config.govee_light_ip, /*&govee_address,*/ 4003, SOCK_DGRAM);
@@ -439,10 +437,10 @@ int check_govee_state(void)
 int establish_multicast_socket(struct sockaddr_in *ipv4_address, int port, int type)
 {
     int socket = -1;
-    struct hostent *hp;
-    int err;
-    int i;
-    char tempaddrstring[50];
+    //struct hostent *hp;
+    //int err;
+    //int i;
+    //char tempaddrstring[50];
 
 
     //memset(&dns_cache_response.addr, 0, sizeof(ip_addr_t));
@@ -530,12 +528,11 @@ int JoinGroup(int sock, const char* join_ip, const char* local_ip)
  */
 int send_pluto_message(char *message)
 {
-    int err = 0;
-    char timestamp[50];
+    //char timestamp[50];
     char tx_buffer[200];
     int sent_bytes = -1;
     static int pluto_socket = -1;
-    static struct sockaddr_in pluto_address;
+    //static struct sockaddr_in pluto_address;
 
 
 
@@ -552,7 +549,6 @@ int send_pluto_message(char *message)
         {
             lwip_close(pluto_socket);
             pluto_socket = -1;
-            err = 1;
             web.pluto_transmit_failures++;
         }  
 
@@ -618,10 +614,9 @@ int get_double_buf_integer(DOUBLE_BUF_INT *integer, int retry)
  * 
  * \return 0 on success, non-zero on failure
  */
-int initialize_relay_gpio_(int gpio_number)
+int initialize_relay_gpio(int gpio_number)
 {
     int err = -1;
-    static int current_gpio_number = -1;
 
     switch(gpio_number)
     {
@@ -651,25 +646,64 @@ int initialize_relay_gpio_(int gpio_number)
     case 26:
     case 27:
     case 28:
-        if (gpio_number != current_gpio_number)
-        {
-            if (current_gpio_number >=0)
-            {
-                gpio_deinit(current_gpio_number);
-            }
-            gpio_init(gpio_number);
-            gpio_set_dir(gpio_number, GPIO_OUT);
-            current_gpio_number = gpio_number;    
-            err = 0;  
-        }
+        gpio_init(gpio_number);
+        gpio_set_dir(gpio_number, GPIO_OUT); 
+        err = 0;  
         break;
     default:
-        printf("Relay GPIO setting is invalid (%d).\n", gpio_number);
+        printf("Rejected attempt to initialize invalid GPIO (%d).\n", gpio_number);
         err = -2;
         break;
     }
     return(err);
 }
+
+/*!
+ * \brief Check if GPIO is valid
+ * 
+ * \return true if valid
+ */
+bool gpio_valid(int gpio_number)
+{
+    bool valid = false;
+
+    switch(gpio_number)
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 26:
+    case 27:
+    case 28: 
+        valid = true;  
+        break;
+    default:
+        valid = false;
+        break;
+    }
+    return(valid);
+}
+
 
 
 /*!
@@ -706,7 +740,7 @@ int deplus_string(char *string, int max_len)
  */
 int print_printable_text(char *contaminated_string)  
 {
-    int i = 0;
+    unsigned int i = 0;
     int num_spaces = 0;
 
     if (contaminated_string != NULL)
@@ -871,9 +905,9 @@ int establish_socket(char *address_string, /*struct sockaddr_in *ipv4_address,*/
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
-    int socket, s, j;
-    size_t len;
-    ssize_t nread;
+    int socket, s;
+    //size_t len;
+    //ssize_t nread;
     //char buf[BUF_SIZE];
     char port_string[12];
 

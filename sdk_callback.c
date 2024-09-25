@@ -3,10 +3,12 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+
 #include "pico/cyw43_arch.h"
+#include "pico/types.h"
 #include "pico/stdlib.h"
-#include "pico/util/datetime.h"
 #include "hardware/rtc.h"
+#include "pico/util/datetime.h"
 #include "hardware/watchdog.h"
 
 #include "lwip/netif.h"

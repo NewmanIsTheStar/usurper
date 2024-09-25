@@ -69,7 +69,7 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len);
 void hex_dump_to_string(const uint8_t *bptr, uint32_t len, char *out_string, int out_len);
 int accumulate_trailing_seven_day_total_rain(int daily_rain, int weekday);
 bool terminate_irrigation_due_to_weather (void);
-IRRIGATION_STATE_T control_irrigation_relay(void);
+IRRIGATION_STATE_T control_irrigation_relays(void);
 int control_moodlight(IRRIGATION_STATE_T irrigation_state, bool reset);
 int control_led_strip(IRRIGATION_STATE_T irrigation_state, bool reset);
 int schedule_change_affecting_active_irrigation(int start_mow, int end_mow, bool reset);
@@ -86,6 +86,7 @@ int led_strip_sustain_until_mow = 0;
 bool led_strip_sustain_in_progress = false;
 int govee_sustain_until_mow = 0;
 bool govee_sustain_in_progress = false;
+bool anti_moron_protection_active = true;
 
 
 //ecowitt request messages                 HDR   HDR   CMD                  LEN   CHECKSUM
@@ -168,16 +169,23 @@ void weather_task(void *params)
     IRRIGATION_STATE_T irrigation_state = IRRIGATION_OFF;
     WEATHER_QUERY_STATUS_T weather_query_status = WEATHER_READ_SUCCESS;   
     int iNumFailedQueries = 0;    
-    char log_message[200];  
-    int iStatus = 0;
+    //char log_message[200];  
+    //int iStatus = 0;
     int delay_seconds = 0;
+    int zone = 0;
 
     printf("weather_task started\n");
 
-    // initialize irigation relay gpio pin
-    if (!initialize_relay_gpio_(config.gpio_number))
+    // initialize irigation relay gpio pins
+    for (zone = 0; zone < 16; zone++)
     {
-        gpio_put(config.gpio_number, config.relay_normally_open?0:1);  
+        if (gpio_valid(config.zone_gpio[zone]))
+        {
+            if (!initialize_relay_gpio(config.zone_gpio[zone]))
+            {
+                gpio_put(config.zone_gpio[zone], config.relay_normally_open?0:1);
+            }  
+        }
     }
 
     while (true)
@@ -218,10 +226,10 @@ void weather_task(void *params)
             }
         }
 
-        if (config.personality == SPRINKLER_USURPER)
+        if ((config.personality == SPRINKLER_USURPER) || (config.personality == SPRINKLER_CONTROLLER))
         {
             // control the irrigation relay
-            irrigation_state = control_irrigation_relay();
+            irrigation_state = control_irrigation_relays();
 
             if (irrigation_state != IRRIGATION_DISRUPTED)
             {
@@ -236,9 +244,8 @@ void weather_task(void *params)
                 }
 
                 // sleep until start of next minute
-                delay_seconds = (60 - get_seconds_of_minute());
+                delay_seconds = (60 - get_real_time_clock_seconds());
                 CLIP(delay_seconds, 1, 60);
-                //printf("weather task sleeping %d seconds\n", delay_seconds);
                 SLEEP_MS(delay_seconds*1000); 
             }
         }
@@ -278,7 +285,7 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
     struct timeval tv;  
     unsigned char rx_buffer[BUF_SIZE];  
     static int ecowitt_socket = -1;
-    static struct sockaddr_in ecowitt_address; 
+    //static struct sockaddr_in ecowitt_address; 
 
     
     // (re)establish socket connection
@@ -376,7 +383,7 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
     int found_id;
     int complete_msg_received = 0;
     int error = 0;
-    char log_message[200];
+    //char log_message[200];
     bool rx_header = false;
 
 
@@ -496,7 +503,7 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
 int accumulate_trailing_seven_day_total_rain(int daily_rain, int weekday)
 {
     static int day = 0;
-    static int max_daily_rain = 0;
+    //static int max_daily_rain = 0;
     static int daily_rain_accumulator[7] = {0,0,0,0,0,0,0};
     static int current_weekday = 0;
     int seven_day_rain_total = 0;
@@ -565,6 +572,10 @@ int init_web_variables(void)
     web.bind_failures = 0;
     web.connect_failures = 0;   
 
+    web.led_current_pattern = 0;
+    web.led_current_transition_delay = 0;
+    web.led_last_request_ip[0] = 0;
+
     STRNCPY(web.software_server,"psycho.badnet", sizeof(web.software_server));
     STRNCPY(web.software_url,"fileserver.psycho", sizeof(web.software_url));
     STRNCPY(web.software_file,"/pluto.bin", sizeof(web.software_file));        
@@ -586,7 +597,7 @@ int invalidate_weather_variables(void)
     web.wind_speed = 0;
     web.daily_rain = 0;
     web.weekly_rain = 0;
-    //web.trailing_seven_days_rain = 0;  // actually might be useful to use for a few days if comms lost to weather station
+    //web.trailing_seven_days_rain = 0;  // useful for a few days if comms lost to weather station
     web.soil_moisture[0] = 0;
 
     return(0);
@@ -597,18 +608,21 @@ int invalidate_weather_variables(void)
  * 
  * \return 0 irrigation off, 1 irrigation on, 1 irrigation usurped
  */
-IRRIGATION_STATE_T control_irrigation_relay(void)
+IRRIGATION_STATE_T control_irrigation_relays(void)
 {
     static IRRIGATION_STATE_T irrigation_state = IRRIGATION_OFF;
+    static int active_zone = 0;
     SCHEDULE_QUERY_STATUS_LT irrigation_schedule_status = SCHEDULE_FUTURE;    
-    int err = 0;
+    //int err = 0;
     int weekday;
     int min_now;
     int mow_now;
-    char log_message[200];
+    //char log_message[200];
     int schedule_start_mow = 0;
     int schedule_end_mow = 0;
     int mins_till_irrigation = 0;
+    int zone = -1;
+    int i = 0;
 
     // get time in local time zone
     get_dow_and_mod_local_tz(&weekday, &min_now);
@@ -617,14 +631,26 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
     // track last seven days of rain
     web.trailing_seven_days_rain = accumulate_trailing_seven_day_total_rain(web.daily_rain, weekday);
 
-    // find next irrigation period
-    irrigation_schedule_status = find_next_irrigation_period(&schedule_start_mow, &schedule_end_mow, &mins_till_irrigation);
+    // check irrigation schedule
+    irrigation_schedule_status = get_next_irrigation_period(&schedule_start_mow, &schedule_end_mow, &mins_till_irrigation, &zone);
 
-    if (irrigation_schedule_status == SCHEDULE_FUTURE)
+    switch(irrigation_schedule_status)
     {
+    case SCHEDULE_FUTURE:
         printf("Current Minute of Week = %d.  Next Irrigation begins at Minute of Week = %d.   [%d minutes from now]\n", mow_now, schedule_start_mow, mins_till_irrigation);
-    }
+        snprintf(web.status_message, sizeof(web.status_message), "Next irrigation %s at %02d:%02d", day_name(schedule_start_mow/(24*60)), (schedule_start_mow%(24*60))/60, (schedule_start_mow%(24*60))%60);        
+        break;   
+    case SCHEDULE_NOW:
+        snprintf(web.status_message, sizeof(web.status_message), "Irrigation in progress (Zone %d)", zone+1); 
+        break;
+    case SCHEDULE_NEVER: // no irrigation scheduled
+        snprintf(web.status_message, sizeof(web.status_message), "No irrigation scheduled"); 
+        break;
+    default:
+        break;
+    }        
 
+    // update irrigation state
     switch(irrigation_state)
     {
     case IRRIGATION_DISRUPTED:
@@ -635,7 +661,7 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
         if (irrigation_schedule_status == SCHEDULE_NOW)
         {
             send_syslog_message("usurper", "Irrigation commenced according to schedule");            
-            snprintf(web.status_message, sizeof(web.status_message), "Irrigation in progress");            
+            snprintf(web.status_message, sizeof(web.status_message), "Irrigation in progress (Zone %d)", zone+1);            
             schedule_change_affecting_active_irrigation(schedule_start_mow, schedule_end_mow, true);  // initiate schedule monitoring
             irrigation_state = IRRIGATION_IN_PROGRESS;
 
@@ -654,7 +680,11 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
             irrigation_state = IRRIGATION_OFF;
             break;
         case SCHEDULE_NOW:
-            if (schedule_change_affecting_active_irrigation(schedule_start_mow, schedule_end_mow, false))
+            if (zone != active_zone)
+            {
+                active_zone = zone;
+                schedule_change_affecting_active_irrigation(schedule_start_mow, schedule_end_mow, true);
+            } else if (schedule_change_affecting_active_irrigation(schedule_start_mow, schedule_end_mow, false))
             {
                 send_syslog_message("usurper", "Irrigation disrupted by schedule alteration\n");
                 irrigation_state = IRRIGATION_DISRUPTED;
@@ -691,18 +721,41 @@ IRRIGATION_STATE_T control_irrigation_relay(void)
         case IRRIGATION_OFF:
         case IRRIGATION_TERMINATED:
         case IRRIGATION_DISRUPTED:
-            gpio_put(config.gpio_number, config.relay_normally_open?0:1);
-            //printf("IRRIGATION OFF\n"); 
+            // turn off all relays
+            for (i=0; i<16; i++)
+            {
+                if (gpio_valid(config.zone_gpio[i]))
+                {
+                    gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
+                    if (anti_moron_protection_active) SLEEP_MS(1000);
+                }
+            }
+            printf("IRRIGATION OFF\n"); 
             break;
         case IRRIGATION_IN_PROGRESS:
-            gpio_put(config.gpio_number, config.relay_normally_open?1:0); 
-            //printf("IRRIGATION ON\n"); 
+            // turn off all relays except desired zone        
+            for (i=0; i<16; i++)
+            {
+                if ((i != zone) && gpio_valid(config.zone_gpio[i]))
+                {
+                    gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
+                    if (anti_moron_protection_active) SLEEP_MS(1000);
+                }
+            } 
+
+            // turn on relay for desired zone
+            if ((zone >= 0) && (zone < config.zone_max) && (config.zone_gpio[zone]))
+            {
+                gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0); 
+            } 
+            printf("IRRIGATION ON, Zone = %d\n", zone);
             break;
         } 
     }
 
     return(irrigation_state);
 }
+
 
 /*!
  * \brief Set moodlight colour based on irrigation state
@@ -979,6 +1032,7 @@ bool terminate_irrigation_due_to_weather (void)
     int wind_speed = 0;
     int rain_day = 0;
     int rain_week = 0; 
+    int soil_moisture = 0;
 
     // convert current measurements to archaic units if necessary
     switch(config.use_archaic_units)
@@ -987,6 +1041,7 @@ bool terminate_irrigation_due_to_weather (void)
         wind_speed = (web.wind_speed*3281 + 500)/1000;                 // feet per second
         rain_week = (10*web.trailing_seven_days_rain + 127)/254;       // inches
         rain_day = (10*web.daily_rain + 127)/254;                      // inches
+        soil_moisture = web.soil_moisture[0];                          // percentage        
         break;
         
     default:
@@ -994,6 +1049,7 @@ bool terminate_irrigation_due_to_weather (void)
         wind_speed = web.wind_speed;                      // m/s
         rain_week = web.trailing_seven_days_rain;         // mm   
         rain_day = web.daily_rain;                        // mm      
+        soil_moisture = web.soil_moisture[0];             // percentage
         break;
     } 
 
@@ -1001,20 +1057,20 @@ bool terminate_irrigation_due_to_weather (void)
     if ((wind_speed > config.wind_threshold)      ||
         (rain_day > config.rain_day_threshold)    ||
         (rain_week  > config.rain_week_threshold) ||     
-        (web.soil_moisture[0]  > config.soil_moisture_threshold[0]))                   
+        (soil_moisture > config.soil_moisture_threshold[0]))                   
     {
         terminate_irrigation = true;
 
         switch(config.use_archaic_units)
         {
         case true:
-            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed is %d.%d ft/s Daily rain is %d.%d inches Seven day rain is %d.%d inches",
-                wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
+            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed is %d.%d ft/s Daily rain is %d.%d inches Seven day rain is %d.%d inches Soil Moisture is %d%%",
+                wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
             break;            
         default:
         case false:
-            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed is %d.%d m/s Daily rain is %d.%d mm Seven day rain is %d.%d mm",
-                wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
+            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed is %d.%d m/s Daily rain is %d.%d mm Seven day rain is %d.%d mm Soil Moisture is %d%%",
+                wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
             break;
         }         
         get_timestamp(web.last_usurped_timestring, sizeof(web.last_usurped_timestring), 0);                 
@@ -1065,10 +1121,12 @@ int syslog_report_weather (void)
     int wind_speed = 0;
     int rain_day = 0;
     int rain_week = 0; 
+    int soil_moisture = 0;
     static int previous_outside_temp = 0;
     static int previous_wind_speed = 0;
     static int previous_rain_day = 0;
-    static int previous_rain_week = 0;     
+    static int previous_rain_week = 0;  
+    static int previous_soil_moisture = 0;        
  
     // convert current measurements to archaic units if necessary
     switch(config.use_archaic_units)
@@ -1078,6 +1136,7 @@ int syslog_report_weather (void)
         wind_speed = (web.wind_speed*3281 + 500)/1000;          // feet per second
         rain_week = (10*web.weekly_rain + 127)/254;             // inches
         rain_day = (10*web.daily_rain + 127)/254;               // inches
+        soil_moisture = web.soil_moisture[0];                   // percentage
         break;
         
     default:
@@ -1086,6 +1145,7 @@ int syslog_report_weather (void)
         wind_speed = web.wind_speed;                            // m/s
         rain_week = web.weekly_rain;                            // mm   
         rain_day = web.daily_rain;                              // mm
+        soil_moisture = web.soil_moisture[0];                   // percentage        
         break;
     } 
 
@@ -1094,24 +1154,26 @@ int syslog_report_weather (void)
     if ((outside_temp != previous_outside_temp) ||
         (wind_speed != previous_wind_speed)     ||
         (rain_day != previous_rain_day)         ||
-        (rain_week != previous_rain_week))
+        (rain_week != previous_rain_week)       ||
+        (soil_moisture != previous_soil_moisture))
     {
         // remember what we log
         previous_outside_temp = outside_temp;
         previous_wind_speed = wind_speed;
         previous_rain_day = rain_day;
-        previous_rain_week =  rain_week;  
+        previous_rain_week =  rain_week;
+        previous_soil_moisture = soil_moisture;  
 
         switch(config.use_archaic_units)
         {
         case true:
-            send_syslog_message("usurper", "Temperature = %d.%d F Wind speed = %d.%d ft/s Daily rain = %d.%d inches Weekly rain = %d.%d inches",
-                outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
+            send_syslog_message("usurper", "Temperature = %d.%d F Wind speed = %d.%d ft/s Daily rain = %d.%d inches Weekly rain = %d.%d inches Soil Moisture is %d%%",
+                outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
             break;            
         default:
         case false:
-            send_syslog_message("usurper", "Temperature = %d.%d C Wind speed = %d.%d m/s Daily rain = %d.%d mm Weekly rain = %d.%d mm",
-                outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10);
+            send_syslog_message("usurper", "Temperature = %d.%d C Wind speed = %d.%d m/s Daily rain = %d.%d mm Weekly rain = %d.%d mm Soil Moisture is %d%%",
+                outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
             break;
         }  
     }   
@@ -1130,5 +1192,20 @@ int set_led_strips(int pattern, int speed)
     set_led_speed_remote(speed);    
     set_led_pattern_local(pattern);
     set_led_speed_local(speed);
+
+    return(0);
 }
 
+/*!
+ * \brief Retard relay state changes to minimize damage caused by morons
+ * 
+ * \return 0 on success, non-zero on failure
+ */
+int anti_moron_relay_protection(void)
+{
+    sprintf(web.status_message, "Anit-moron protection activated.");
+    printf("%s\n", web.status_message);
+    anti_moron_protection_active = true;
+
+    return(0);
+}

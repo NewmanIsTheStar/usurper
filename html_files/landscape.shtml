@@ -134,12 +134,12 @@
           </div>   
           <div class="btn-group" style="width:100%">
             <a href="/sunday.shtml?day=0">   <button style="width:14.285714286%"><!--#strt1--></button></a> 
-            <a href="/monday.shtml?day=0">   <button style="width:14.285714286%"><!--#strt2--></button></a> 
-            <a href="/tuesday.shtml?day=0">   <button style="width:14.285714286%"><!--#strt3--></button></a> 
-            <a href="/wednesday.shtml?day=0">   <button style="width:14.285714286%"><!--#strt4--></button></a> 
-            <a href="/thursday.shtml?day=0">   <button style="width:14.285714286%"><!--#strt5--></button></a> 
-            <a href="/friday.shtml?day=0">   <button style="width:14.285714286%"><!--#strt6--></button></a> 
-            <a href="/saturday.shtml?day=0">   <button style="width:14.285714286%"><!--#strt7--></button></a> 
+            <a href="/monday.shtml?day=1">   <button style="width:14.285714286%"><!--#strt2--></button></a> 
+            <a href="/tuesday.shtml?day=2">   <button style="width:14.285714286%"><!--#strt3--></button></a> 
+            <a href="/wednesday.shtml?day=3">   <button style="width:14.285714286%"><!--#strt4--></button></a> 
+            <a href="/thursday.shtml?day=4">   <button style="width:14.285714286%"><!--#strt5--></button></a> 
+            <a href="/friday.shtml?day=5">   <button style="width:14.285714286%"><!--#strt6--></button></a> 
+            <a href="/saturday.shtml?day=6">   <button style="width:14.285714286%"><!--#strt7--></button></a> 
           </div>            
           <div class="btn-group-minor" style="width:100%">
             <a href="/hrdec.cgi?x=0">   <button style="width:7.142857143%">-</button></a> 
@@ -167,13 +167,13 @@
             <a href="/durinc.cgi?x=6">   <button style="width:14.285714286%">+</button></a> 
           </div>   
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">   <button style="width:14.285714286%"><!--#dur1--> min</button></a> 
-            <a href="/monday.shtml?day=0">   <button style="width:14.285714286%"><!--#dur2--> min</button></a> 
-            <a href="/tuesday.shtml?day=0">   <button style="width:14.285714286%"><!--#dur3--> min</button></a> 
-            <a href="/wednesday.shtml?day=0">   <button style="width:14.285714286%"><!--#dur4--> min</button></a> 
-            <a href="/thursday.shtml?day=0">   <button style="width:14.285714286%"><!--#dur5--> min</button></a> 
-            <a href="/friday.shtml?day=0">   <button style="width:14.285714286%"><!--#dur6--> min</button></a> 
-            <a href="/saturday.shtml?day=0">   <button style="width:14.285714286%"><!--#dur7--> min</button></a> 
+            <a href="/sunday.shtml?day=0">   <button style="width:14.285714286%"><!--#z1d1d--> min</button></a> 
+            <a href="/monday.shtml?day=1">   <button style="width:14.285714286%"><!--#z1d2d--> min</button></a> 
+            <a href="/tuesday.shtml?day=2">   <button style="width:14.285714286%"><!--#z1d3d--> min</button></a> 
+            <a href="/wednesday.shtml?day=3">   <button style="width:14.285714286%"><!--#z1d4d--> min</button></a> 
+            <a href="/thursday.shtml?day=4">   <button style="width:14.285714286%"><!--#z1d5d--> min</button></a> 
+            <a href="/friday.shtml?day=5">   <button style="width:14.285714286%"><!--#z1d6d--> min</button></a> 
+            <a href="/saturday.shtml?day=6">   <button style="width:14.285714286%"><!--#z1d7d--> min</button></a> 
           </div>            
           <div class="btn-group-minor" style="width:100%">
             <a href="/durdec.cgi?x=0">   <button style="width:14.285714286%">-</button></a> 

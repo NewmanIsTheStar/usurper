@@ -62,8 +62,8 @@ body {
 <div class="main">
   <h2>Monday Schedule</h2> 
 
-  <form action="/dsched.cgi?day=1" method="get" name="daysched">
-    <input type="hidden" name="day" value="2" />                 
+  <form action="/dsched.cgi" method="get" name="daysched">
+    <input type="hidden" name="day" value="1" />                 
     <fieldset>
         <div class="form-group">
             <label for="enable">Irrigate:</label>
@@ -74,9 +74,37 @@ body {
             <input name="strt1" id="csta" style="font-size: 28px;" value="<!--#strt2-->"/>
         </div>
         <div class="form-group">
-            <label for="duration">Duration:</label>
-            <input name="dur1" id="cdur" style="font-size: 28px;" value="<!--#dur2-->"/>
+          <label for="duration" <!--#z1viz--> ><!--#z1dur-->:</label>
+          <input name="z1d2d" id="z1d2d" <!--#z1iviz--> value="<!--#z1d2d-->"/>
         </div>
+        <div class="form-group">
+          <label for="duration" <!--#z2viz--> >Zone 2 Duration:</label>
+          <input name="z2d2d" id="z2d2d" <!--#z2iviz--> value="<!--#z2d2d-->"/>
+        </div>
+        <div class="form-group">
+          <label for="duration" <!--#z3viz--> >Zone 3 Duration:</label>
+          <input name="z3d2d" id="z3d2d" <!--#z3iviz--> value="<!--#z3d2d-->"/>
+        </div>
+        <div class="form-group">
+          <label for="duration" <!--#z4viz--> >Zone 4 Duration:</label>
+          <input name="z4d2d" id="z4d2d" <!--#z4iviz--> value="<!--#z4d2d-->"/>
+        </div>
+        <div class="form-group">
+          <label for="duration" <!--#z5viz--> >Zone 5 Duration:</label>
+          <input name="z5d2d" id="z5d2d" <!--#z5iviz--> value="<!--#z5d2d-->"/>
+        </div>
+        <div class="form-group">
+          <label for="duration" <!--#z6viz--> >Zone 6 Duration:</label>
+          <input name="z6d2d" id="z6d2d" <!--#z6iviz--> value="<!--#z6d2d-->"/>
+        </div>
+        <div class="form-group">
+          <label for="duration" <!--#z7viz--> >Zone 7 Duration:</label>
+          <input name="z7d2d" id="z7d2d" <!--#z7iviz--> value="<!--#z7d2d-->"/>
+        </div>
+        <div class="form-group">
+          <label for="duration" <!--#z8viz--> >Zone 8 Duration:</label>
+          <input name="z8d2d" id="z8d2d" <!--#z8iviz--> value="<!--#z8d2d-->"/>
+        </div>         
     </fieldset>                                                                                   
     <fieldset>
         <input type="submit" style="font-size: 28px;" value="Save">

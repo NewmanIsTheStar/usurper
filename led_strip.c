@@ -67,6 +67,7 @@ void pattern_breath(int sm, uint len, uint t);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
+extern WEB_VARIABLES_T web;
 
 // types
 typedef void (*pattern)(int sm, uint len, uint t);
@@ -89,8 +90,6 @@ const struct {
 //static variable
 static int live_pattern = -1;
 static int live_speed = -1;
-static int new_pattern;  // used to minimize window in which live_pattern is invalid, clipped to valid range after window closes, avoids locks
-static int new_speed;    // used to minimize window in which live_pattern is invalid, clipped to valid range after window closes, avoids locks
 static DOUBLE_BUF_INT local_pattern;
 static DOUBLE_BUF_INT local_speed;
 
@@ -203,6 +202,8 @@ void set_led_pattern_local(int pattern)
     CLIP(pattern, 0, count_of(pattern_table));
 
     set_double_buf_integer(&local_pattern, pattern);
+
+    web.led_current_pattern = pattern;
 }
 
 /*!
@@ -222,6 +223,8 @@ void set_led_speed_local(int speed)
     CLIP(speed, 0, 3000);
 
     set_double_buf_integer(&local_speed, speed);
+
+    web.led_current_transition_delay = speed;
 }
 
 /*!
@@ -412,8 +415,8 @@ void pattern_police(int sm, uint len, uint t) {
         case 0: // =.==.=
             for (i=0; i<len; i++)
             {
-                if ((i >= len/6*1) && (i < len/6*2) ||
-                    (i >= len/6*4) && (i < len/6*5))
+                if (((i >= len/6*1) && (i < len/6*2)) ||
+                    ((i >= len/6*4) && (i < len/6*5)))
                 {
                     put_pixel(sm, urgb_u32(0, 0, 0));   // off
                 }
@@ -434,8 +437,8 @@ void pattern_police(int sm, uint len, uint t) {
         case 1: // .=..=. 
             for (i=0; i<len; i++)
             {
-                if ((i >= len/6*1) && (i < len/6*2) ||
-                    (i >= len/6*4) && (i < len/6*5))
+                if (((i >= len/6*1) && (i < len/6*2)) ||
+                    ((i >= len/6*4) && (i < len/6*5)))
                 {
                     if (i < len/2)
                     {

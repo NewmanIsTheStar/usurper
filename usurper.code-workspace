@@ -30,7 +30,8 @@
 			"weather.h": "c",
 			"string": "c",
 			"ip4_addr.h": "c",
-			"utility.h": "c"
+			"utility.h": "c",
+			"rtc.h": "c"
 		}
 	}
 }

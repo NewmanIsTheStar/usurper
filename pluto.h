@@ -12,13 +12,10 @@
 
 #define STRNCPY(dst, src, size)  {strncpy((dst), (src), (size)); *((dst)+(size)-1)=0;}
 #define STRNCAT(dst, src, size)  {if ((size) > 0) {*((dst)+(size)-1)=0; strncat((dst), (src), (size)-strlen((dst))-1);};}
-// WARNING -- STRCAT macro can only be used when the destination size can be found with sizeof() -- if a pointer is the destination then use STRNCAT
 #define STRCAT(dst, src)  {*((dst)+(sizeof(dst))-1)=0; strncat((dst), (src), (sizeof(dst))-strlen((dst))-1);}
 #define NUM_ROWS(x) (sizeof(x)/sizeof(x[0]))
 #define MASKED_WRITE(dest,src,mask) {(dest) = (((dest) & (~(mask))) | ((src) & (mask)));}
-#define CLIP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-//#define SLEEP_MS(x) {printf("vTaskDelay %d ticks\n", ((x)/portTICK_PERIOD_MS)); vTaskDelay((x)/portTICK_PERIOD_MS);}
-//#define SLEEP_MS(x) (vTaskDelay((x)/portTICK_PERIOD_MS));
+#define CLIP(x, low, high)  (x=(((x)>(high))?(high):(((x)<(low))?(low):(x))))
 #define SLEEP_MS(x) (vTaskDelay(x));
 
 //int applet_entry_point(void);

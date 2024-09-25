@@ -92,8 +92,6 @@ static LED_REMOTE_STATE_T remote_led_strip_state[6];
 static SOCKET message_socket = 0;
 static char message_buffer[128];
 static int message_receive_timeout = 5000000;                             // five seconds
-static int live_pattern = -1;
-static int live_speed = -1;
 static DOUBLE_BUF_INT remote_pattern;
 static DOUBLE_BUF_INT remote_speed;
 
@@ -106,9 +104,6 @@ static DOUBLE_BUF_INT remote_speed;
  */
 void message_task(__unused void *params) 
 {
-    char *pcMsg;
-    //int iMsgSize;
-    int iStatus;
     SOCKADDR_IN sClientAddress;  
     int received_bytes = 0;         
     
@@ -125,28 +120,21 @@ void message_task(__unused void *params)
              // process messages
             received_bytes = udp_receive(message_socket, message_buffer, sizeof(message_buffer), &sClientAddress, message_receive_timeout);
 
-            //printf("received_bytes = %d\n", received_bytes);
-
             if (received_bytes >= sizeof(tsMSG_HDR))
             {
-                //printf("Interpreting Rx header\n");
                 if (check_received_header((tsMSG_HDR *)&message_buffer, sClientAddress) == 0)
                 {
                     // process request
-                    //printf("size enum = %d size int = %d size long = %d\n", sizeof(teMSG_ID), sizeof(int), sizeof(long));
-                    //printf("RAW Msg ID = %d  Network Order = %d\n", ((tsMSG_HDR *)&message_buffer)->message, htonl(((tsMSG_HDR *)&message_buffer)->message));
                     switch(htonl(((tsMSG_HDR *)&message_buffer)->message))
                     {
                     case LED_STRIP_RQST:
-                        //printf("Got LED Strip Request\n");
                         receive_led_strip_request((tsLED_STRIP_RQST *)&message_buffer, sClientAddress);
                         break;
                     case LED_STRIP_CNFM:
-                        //printf("Got LED Strip Confirm\n");
                          receive_led_strip_confirm((tsLED_STRIP_CNFM *)&message_buffer, sClientAddress);
                         break;                        
                     default:
-                        printf("unrecognized Rx message ID (%d)\n", htonl(((tsMSG_HDR *)&message_buffer)->message));
+                        printf("unrecognized Rx message ID (%lu)\n", htonl(((tsMSG_HDR *)&message_buffer)->message));
                         break;
                     }
 
@@ -200,7 +188,6 @@ int check_received_header(tsMSG_HDR *psMsg, SOCKADDR_IN sDest)
     char *address = NULL;
 
     address = inet_ntoa(sDest.sin_addr);
-    //printf("Message Header source address is [%s]\n", address);
 
     // validate header
     switch(htonl(psMsg->version))
@@ -209,7 +196,7 @@ int check_received_header(tsMSG_HDR *psMsg, SOCKADDR_IN sDest)
             break;
 
         default:
-            printf("Message header unknown version %d recieved from %s\n", htonl(psMsg->version), address);
+            printf("Message header unknown version %lu recieved from %s\n", htonl(psMsg->version), address);
             iStatus = -1;
             break;
     }
@@ -219,10 +206,11 @@ int check_received_header(tsMSG_HDR *psMsg, SOCKADDR_IN sDest)
         case LED_STRIP_RQST:
         case LED_STRIP_CNFM:
             // TODO:  here we should detect retries and replay previous responses
+            STRNCPY(web.led_last_request_ip, address, sizeof(web.led_last_request_ip));
             break;
 
         default:
-            printf("Message header contains unrecognised MsgId %d recieved from %s\n", htonl(psMsg->message), address);
+            printf("Message header contains unrecognised MsgId %lu recieved from %s\n", htonl(psMsg->message), address);
             iStatus = -1;
             break;
     }   
@@ -267,17 +255,12 @@ int receive_led_strip_request(tsLED_STRIP_RQST *psMsg, SOCKADDR_IN sDest)
  */
 int receive_led_strip_confirm(tsLED_STRIP_CNFM *psMsg, SOCKADDR_IN sDest)
 {
-    int iError = 0;
+    //int iError = 0;
     int strip;
 
     // compatibility check
     if (htonl(psMsg->sHeader.version) == 1)
     {
-
-        int pattern;
-        int speed;
-        TickType_t tick_now;
-
         for (strip=0; strip < 6; strip++)
         {             
             if (remote_led_strip_state[strip].latest_transaction == htonl(psMsg->sHeader.transaction))  //TODO: this relies on transaction being unique, which is not true!
@@ -408,7 +391,6 @@ void set_led_speed_remote(int speed)
     set_double_buf_integer(&remote_speed, speed);
 }
 
-#ifdef USE_GETHOSTBYNAME
 /*!
  * \brief construct address
  *
@@ -420,81 +402,17 @@ void set_led_speed_remote(int speed)
  */
 int construct_address(char *address_string, int port, SOCKADDR_IN *address)
 {
-    struct hostent *hp;
-    int err = 0;
-    static char pattern = 0;
-    int i;
 
-    // begin constructing address
-    memset(address, 0, sizeof(struct sockaddr_in));
-    address->sin_len = sizeof(address);
-    address->sin_family = AF_INET;
-    address->sin_addr.s_addr = INADDR_ANY;
-    address->sin_port = PP_HTONS(port);
-
-    if (address_string[0])
-    {
-        // dns lookup
-        for (i=0; i<3; i++)
-        {
-            hp = gethostbyname(address_string);  // blocking call  -- not reentrant, need to look at alternatives like getaddrinfo
-
-            if (!hp)
-            {
-                printf("gethostbyname() returned NULL [while looking up %s]\n", address_string);
-                err = 1;
-            }
-            else
-            {
-                //printf("gethostbyname() returned IP\n");
-                break;
-            }
-            SLEEP_MS(1000);
-        }
-
-        //TODO: check if we can remove this because gethostbyname or its replacement works for numeric IP
-        if(!hp)
-        {
-            address->sin_addr.s_addr = inet_addr(address_string);  // string with numerical IP address only
-        }
-        else
-        {
-            address->sin_addr.s_addr = *((u32_t *)(hp->h_addr)); //string with either hostname or numerical IP address   
-
-            //printf("%d.%d.%d.%d\n", ((char *)(ipv4_address->sin_addr.s_addr))[0], ((char *)(ipv4_address->sin_addr.s_addr))[1], ((char *)(ipv4_address->sin_addr.s_addr))[2],((char *)(ipv4_address->sin_addr.s_addr))[3] );
-        }
-    }
-
-    return(err);
-}
-#else
-/*!
- * \brief construct address
- *
- * \param[in]   address_string  hostname or ip 
- * \param[in]   port            udp port
- * \param[out]  address         destination address 
- *
- * \return 0 on success
- */
-int construct_address(char *address_string, int port, SOCKADDR_IN *address)
-{
-    struct hostent *hp;
     int err = -1;
-    static char pattern = 0;
-    int i;
     struct addrinfo hints;
-    struct addrinfo *result, *rp;
-    int socket, s, j;
-    size_t len;
-    ssize_t nread;
-    //char buf[BUF_SIZE];
+    struct addrinfo *result;
+    int s;
     char port_string[12];
     int type;
 
     sprintf(port_string, "%d", port);
     type = SOCK_DGRAM;    
-    socket = -1;
+
 
     /* Obtain address(es) matching host/port */
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -531,7 +449,6 @@ int construct_address(char *address_string, int port, SOCKADDR_IN *address)
 
     return(err);
 }
-#endif
 
 /*!
  * \brief Initialize remote LED strip state variables

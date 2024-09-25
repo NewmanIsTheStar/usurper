@@ -14,6 +14,7 @@ void weather_initialize(void);
 int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len);
 int init_web_variables(void);
 int invalidate_weather_variables(void);
+int anti_moron_relay_protection(void);
 
 
 /* ecowitt command message format
@@ -202,6 +203,9 @@ typedef struct WEB_VARIABLES
   char software_server[100];
   char software_url[100];
   char software_file[100];
+  int led_current_pattern;
+  int led_current_transition_delay;
+  char led_last_request_ip[32];
 } WEB_VARIABLES_T;                  //remember to add initialization code when adding to this structure !!!
 
 #endif

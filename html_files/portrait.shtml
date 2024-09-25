@@ -61,8 +61,8 @@ body {
 <div class="main">
   <h2>Sunday Schedule</h2> 
 
-  <form action="/dsched.cgi?day=1" method="get" name="daysched">
-    <input type="hidden" name="day" value="1" />                 
+  <form action="/dsched.cgi?" method="get" name="daysched">
+    <input type="hidden" name="day" value="0" />                 
     <fieldset>
         <div class="form-group">
             <label for="enable">Irrigate:</label>

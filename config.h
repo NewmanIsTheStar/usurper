@@ -6,6 +6,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <limits.h>
+
 void config_changed(void);
 bool config_dirty(bool clear_flag);
 void config_blank_to_v1(void);
@@ -20,7 +22,7 @@ typedef enum
     SPRINKLER_CONTROLLER       =   1,             // multizone sprinkler control 
     LED_STRIP_CONTROLLER       =   2,             // allows remote control of an led strip
     
-    NO_PERSONALITY             =   4294967295,
+    NO_PERSONALITY             =   4294967295,    // force enum to be 4 bytes long 
 } PERSONALITY_E;
 
 // non-vol structure conversion info
@@ -37,7 +39,7 @@ typedef struct
 * Modification Rule 1 -- duplicate this structure and append a version number before making changes
 * Modification Rule 2 -- only add new fields, do not reorder or resize existing fields (except crc)
 * Modification Rule 3 -- crc field must always be last
-* Modification Rule 4 -- increment version and add an upgrade function to convert from previous version
+* Modification Rule 4 -- add an upgrade function to convert from previous version
 */
 typedef struct
 {
@@ -95,7 +97,12 @@ typedef struct
     int use_archaic_units; 
     int use_simplified_english;
     int use_monday_as_week_start; 
-    int soil_moisture_threshold[16];      
+    int soil_moisture_threshold[16];
+    int zone_max;
+    int zone_gpio[16];
+    char zone_name[16][32];
+    char zone_enable[16];    
+    int zone_duration[16][7];
     uint16_t crc;
 } NON_VOL_VARIABLES_T;
 
@@ -160,5 +167,64 @@ typedef struct
     uint16_t crc;
 } NON_VOL_VARIABLES_T_VERSION_1;
 
+typedef struct
+{
+    int version;
+    PERSONALITY_E personality;
+    char wifi_ssid[32];
+    char wifi_password[32];
+    char wifi_country[32];
+    char dhcp_enable;
+    char ip_address[32];
+    char network_mask[32];    
+    char gateway[32];      
+    char irrigation_enable;
+    char day_schedule_enable[7];
+    int day_start[7];
+    int day_duration[7];
+    int day_start_alternate[7];
+    int day_duration_alternate[7];    
+    char schedule_opportunity_start[32];
+    char schedule_opportunity_duration[32];
+    int timezone_offset;
+    char daylightsaving_enable;
+    char daylightsaving_start[32];
+    char daylightsaving_end[32];
+    char time_server[4][32];
+    int weather_station_enable;
+    char weather_station_ip[32];
+    int wind_threshold;
+    int rain_week_threshold;
+    int rain_day_threshold;
+    int relay_normally_open;
+    int gpio_number;
+    int led_pattern;
+    int led_speed;
+    int led_number;
+    int led_pin;
+    int led_rgbw;
+    int use_led_strip_to_indicate_irrigation_status;
+    int led_pattern_when_irrigation_active;
+    int led_pattern_when_irrigation_usurped;
+    int led_sustain_duration; 
+    int led_strip_remote_enable;  
+    char led_strip_remote_ip[6][32];  
+    char govee_light_ip[32]; 
+    int use_govee_to_indicate_irrigation_status;
+    int govee_irrigation_active_red;
+    int govee_irrigation_active_green; 
+    int govee_irrigation_active_blue;    
+    int govee_irrigation_usurped_red;
+    int govee_irrigation_usurped_green;
+    int govee_irrigation_usurped_blue;
+    int govee_sustain_duration;
+    int syslog_enable;
+    char syslog_server_ip[32];    
+    int use_archaic_units; 
+    int use_simplified_english;
+    int use_monday_as_week_start; 
+    int soil_moisture_threshold[16];      
+    uint16_t crc;
+} NON_VOL_VARIABLES_T_VERSION_2;
 
 #endif

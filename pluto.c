@@ -3,10 +3,12 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+
 #include "pico/cyw43_arch.h"
+#include "pico/types.h"
 #include "pico/stdlib.h"
-#include "pico/util/datetime.h"
 #include "hardware/rtc.h"
+#include "pico/util/datetime.h"
 #include "hardware/watchdog.h"
 
 #include "lwip/netif.h"
@@ -91,7 +93,7 @@ int pluto(void)
 {
     const char *rtos_name;
     TaskHandle_t task;
-   
+
     stdio_init_all();
 
     printf("\n%s version ", APP_NAME);
@@ -151,7 +153,7 @@ void boss_task(__unused void *params)
     ip_addr_t ip = {0};
     ip_addr_t nm = {0};
     ip_addr_t gw = {0};
-
+    
     // start watchdog
     xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
 
@@ -164,8 +166,7 @@ void boss_task(__unused void *params)
          printf("***Failed to initialise wifi***\n");
          cyw43_arch_deinit();
          SLEEP_MS(1000);       
-    } 	    
-    
+    } 
     // enable wifi station mode
     cyw43_arch_enable_sta_mode();
 
@@ -240,12 +241,18 @@ void boss_task(__unused void *params)
         SLEEP_MS(1000);
 
         if (restart_requested)
-        {           
-            printf("***REBOOT in 100 ms***\n");
+        {
+            printf("Shutdown commenced\n");
+
+            // disable wifi
             restart_requested = false;
             cyw43_arch_disable_sta_mode();
             cyw43_arch_deinit();
+            
+            // flush recent config changes to flash prior to reboot with one retry
+            if (config_write()) config_write();
 
+            printf("***REBOOT in 100 ms***\n");
             watchdog_enable(100, 0);
 
             SLEEP_MS(1000);
@@ -264,6 +271,8 @@ void boss_task(__unused void *params)
 int application_restart(void)
 {
     restart_requested = true;
+
+    return(0);
 }
  
 
@@ -431,6 +440,8 @@ int set_realtime_clock(void)
     }
     printf("\n");
 #endif    
+
+    return(0);
 }
 
 
@@ -461,7 +472,7 @@ int monitor_stacks(void)
         // print stack message for web interface
         if (chars_remaining)
         {
-            chars_written = snprintf(web.stack_message+char_offset, chars_remaining, "%s=%d  ", worker_tasks[worker].name, worker_tasks[worker].stack_high_water_mark);
+            chars_written = snprintf(web.stack_message+char_offset, chars_remaining, "%s=%lu  ", worker_tasks[worker].name, worker_tasks[worker].stack_high_water_mark);
             if ((chars_written >0) && (chars_written < chars_remaining))
             {
                 char_offset += chars_written;

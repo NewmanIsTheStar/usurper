@@ -7,10 +7,11 @@
 #define _GNU_SOURCE
 
 #include "pico/cyw43_arch.h"
+#include "pico/types.h"
 #include "pico/stdlib.h"
 #include <string.h>
-#include "pico/util/datetime.h"
 #include "hardware/rtc.h"
+#include "pico/util/datetime.h"
 #include "hardware/watchdog.h"
 
 #include "lwip/netif.h"
@@ -34,6 +35,7 @@
 #include "time.h"
 #include "utility.h"
 #include "config.h"
+
 
 //#define IRRIGATION_TEST (1)
 
@@ -209,10 +211,6 @@ int set_daylight_saving_dates(void)
 {
    int err = 0;
    int year;
-   int month;
-   int weekday;
-   int instance_of_weekday;
-   int day_of_month;
    datetime_t t;   
    int ok = 0;
 
@@ -491,19 +489,19 @@ int get_local_time_string(char *timestamp, int len)
     return(printed);
 }
 
-
-
 /*!
- * \brief Find start and stop times for next irrigation period
+ * \brief Get start and stop times for next irrigation period
  *
  * \param[out]  start_mow   0 - 10079 minute of week, beginning Sunday at midnight
  * \param[out]  end_mow     0 - 10079 minute of week, beginning Sunday at midnight
  * \param[out]  delay_mins  0 - 10079 minutes from now until next irrigation period
+ * \param[out]  zone        0 - 15
  * 
  * \return -1 on error, 0 on success, 1 if currently in irrigation period
  */
-SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mow, int *delay_mins)
+SCHEDULE_QUERY_STATUS_LT get_next_irrigation_period(int *start_mow, int *end_mow, int *delay_mins, int *zone)
 {
+   int potential_zone;
    int day;      
    int now_mow = 0;
    int irrigate_now = SCHEDULE_NEVER;
@@ -511,69 +509,56 @@ SCHEDULE_QUERY_STATUS_LT find_next_irrigation_period(int *start_mow, int *end_mo
    int candidate_end_mow;
    int lowest_delta = MINUTES_IN_WEEK;
    int delta = 0;
-   static int test_start_mow = -1;
-   
+   int day_total_duration = 0;
+
    // get current minute of week 
    get_mow_local_tz(&now_mow);                      
 
-#ifdef IRRIGATION_TEST
-   if (test_start_mow == -1)
-   {
-      test_start_mow = now_mow;
-   }
-
-   if (now_mow > (test_start_mow+1))
-   {
-      test_start_mow = now_mow+1;
-      *start_mow = test_start_mow;
-      *end_mow = test_start_mow+1;
-      *delay_mins = 1;
-      irrigate_now = SCHEDULE_FUTURE;      
-   }
-   else if (now_mow > test_start_mow)
-   {
-      irrigate_now = SCHEDULE_NOW;
-      *start_mow = test_start_mow;
-      *end_mow = test_start_mow+1;  
-      *delay_mins = 0;    
-   }
-
-
-#else
     // search for next irrigation period
-   for (day = 0; day < DAYS_IN_WEEK; day++)
+   for (day = 0; (day < DAYS_IN_WEEK) && (irrigate_now != SCHEDULE_NOW); day++)
    {
       if (config.day_schedule_enable[day])
-      {   
-         candidate_start_mow = (day*HOURS_IN_DAY*MINUTES_IN_HOUR + config.day_start[day])%MINUTES_IN_WEEK;
-         candidate_end_mow =  (day*HOURS_IN_DAY*MINUTES_IN_HOUR + config.day_start[day] + config.day_duration[day])%MINUTES_IN_WEEK;
+      {
+         day_total_duration = 0;
 
-         // check if current time is within the candidate irrigation period
-         if (mow_between(now_mow, candidate_start_mow, candidate_end_mow))
+         for(potential_zone=0; potential_zone < config.zone_max; potential_zone++)
          {
-            irrigate_now = SCHEDULE_NOW;
-            *start_mow = candidate_start_mow;
-            *end_mow = candidate_end_mow;
-            *delay_mins = 0;
-            break;
-         }
+            if (config.zone_enable[potential_zone])
+            {   
+               candidate_start_mow = (day*HOURS_IN_DAY*MINUTES_IN_HOUR + config.day_start[day] + day_total_duration)%MINUTES_IN_WEEK;
+               candidate_end_mow =   (candidate_start_mow + config.zone_duration[potential_zone][day])%MINUTES_IN_WEEK;
 
-         // find the lowest delta to a future irrigation period
-         delta = mow_future_delta(now_mow, candidate_start_mow);
-         if (delta < lowest_delta)
-         {
-            lowest_delta = delta;
-            
-            *start_mow = candidate_start_mow;
-            *end_mow = candidate_end_mow;
-            *delay_mins = delta;
-            irrigate_now = SCHEDULE_FUTURE;
+               // maintain running total of duration for the day
+               day_total_duration += config.zone_duration[potential_zone][day];
+
+               // check if current time is within the candidate irrigation period
+               if (mow_between(now_mow, candidate_start_mow, candidate_end_mow))
+               {
+                  irrigate_now = SCHEDULE_NOW;
+                  *start_mow = candidate_start_mow;
+                  *end_mow = candidate_end_mow;
+                  *delay_mins = 0;
+                  *zone = potential_zone;
+                  break;
+               }
+
+               // find the lowest delta to a future irrigation
+               delta = mow_future_delta(now_mow, candidate_start_mow);
+               if (delta < lowest_delta)
+               {
+                  irrigate_now = SCHEDULE_FUTURE;                  
+                  lowest_delta = delta;                  
+                  *start_mow = candidate_start_mow;
+                  *end_mow = candidate_end_mow;
+                  *delay_mins = delta;
+                  *zone = potential_zone;
+               }            
+            }
          }
       }   
    }
-#endif
 
-    return (irrigate_now);
+   return (irrigate_now);
 }
 
 
@@ -608,7 +593,7 @@ bool mow_between(int time_mow, int start_mow, int end_mow)
    // check for range with wrap at week boundary
    if (start_mow > end_mow)
    {
-      if (!(time_mow >= end_mow) && (time_mow < start_mow))
+      if (!(time_mow < end_mow) || (time_mow >= start_mow))
       {
          in_range = true;
       }   
@@ -644,24 +629,19 @@ int mow_future_delta(int start_mow, int end_mow)
 }
 
 /*!
- * \brief Calculate future delta between mow times
+ * \brief Return pointer to string with weekday name
  *
  * \param[in]  day         0 - 6 day of week, beginning Sunday at midnight
  * 
- * \return pointer to string containing name of day
+ * \return pointer to string containing name of day or NULL on error
  */
 const char *day_name(int day)
 {
-   int err = 0;
    const char *name = NULL;
 
    if ((day >=0) && (day <DAYS_IN_WEEK))
    {
       name = weekdays[day];
-   }
-   else
-   {
-      err = -1;
    }
 
    return(name);
@@ -698,33 +678,55 @@ int get_mow_local_tz(int *mow)
  */
 int set_calendar_html_page(void)
 {
-   if(config.use_monday_as_week_start)
+   switch(config.personality)
    {
-      STRNCPY(current_calendar_web_page, "/landscape_monday.shtml", sizeof(current_calendar_web_page));
+   default:
+   case NO_PERSONALITY:
+         STRNCPY(current_calendar_web_page, "/personality.shtml", sizeof(current_calendar_web_page));    
+         break;
+   case SPRINKLER_USURPER:
+         if (config.use_monday_as_week_start)
+         {
+            STRNCPY(current_calendar_web_page, "/landscape_monday.shtml", sizeof(current_calendar_web_page));            
+         }
+         else
+         {
+            STRNCPY(current_calendar_web_page, "/landscape.shtml", sizeof(current_calendar_web_page)); 
+         }
+         break;
+   case SPRINKLER_CONTROLLER:
+         if (config.use_monday_as_week_start)
+         {
+            STRNCPY(current_calendar_web_page, "/zm_landscape.shtml", sizeof(current_calendar_web_page)); 
+         }
+         else
+         {
+            STRNCPY(current_calendar_web_page, "/zs_landscape.shtml", sizeof(current_calendar_web_page)); 
+         }
+         break;                
+   case LED_STRIP_CONTROLLER:
+         STRNCPY(current_calendar_web_page, "/led_controller.shtml", sizeof(current_calendar_web_page)); 
+         break;
    }
-   else
-   {
-      STRNCPY(current_calendar_web_page, "/landscape.shtml", sizeof(current_calendar_web_page));
-   }
+
 
     return(0);
 }
 /*!
- * \brief Get seconds of minute
+ * \brief Get seconds part of the current real time
  *
  * \param[out]   dow day of week, 0-6 where 0 = Sunday  
  * 
  * \param[out]   mod minute of day, 0 - 1439    
  * 
- * \return 0 on success or -1 on error
+ * \return 0-59 on success or 0 if unable to read rtc
  */
-int8_t get_seconds_of_minute(void)
+int8_t get_real_time_clock_seconds(void)
 {
-    int err = 0;
-    datetime_t date;
+   datetime_t date;
 
-    // determine current weekday in UTC
-    rtc_get_datetime(&date);
+   date.sec = 0;
+   rtc_get_datetime(&date);
 
-    return(date.sec);
+   return(date.sec);
 }

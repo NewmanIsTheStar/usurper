@@ -50,7 +50,7 @@ body {
   <div class="sidenav">
     <a href="/network.shtml">Network</a>   
     <a href="/time.shtml">Time</a>
-    <a href="/relay.shtml">Relay</a>
+    <a href="<!--#rpage-->">Relay</a>
     <a href="/weather.shtml">Weather</a>
     <a href="/moodlight.shtml">Moodlight</a>     
     <a href="/addressable_led.shtml">LED strip</a>

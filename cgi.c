@@ -132,15 +132,15 @@ const char * cgi_schedule_handler(int iIndex, int iNumParams, char *pcParam[], c
  * \return nothing
  */
 const char * cgi_weekday_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
-{
-    
+{   
     CLIP(iIndex, 1, 7);
 
     //toggle the state (assumes index 1-7 used in cgi_handlers[] for weekdays)
     config.day_schedule_enable[iIndex-1] = !config.day_schedule_enable[iIndex-1];
 
-    // Send the next page back to the user
     config_changed();
+
+    // Send the current page back to the user
     return(current_calendar_web_page);
 }
 
@@ -173,8 +173,7 @@ const char * cgi_inc_duration_handler(int iIndex, int iNumParams, char *pcParam[
 
     CLIP(i, 0, 6);
 
-    //toggle the state (assumes index 1-7 used in cgi_handlers[] for weekdays)
-    config.day_duration[i]++;
+    config.zone_duration[0][i]++;
 
     // Send the next page back to the user
     config_changed();
@@ -210,7 +209,10 @@ const char * cgi_dec_duration_handler(int iIndex, int iNumParams, char *pcParam[
     CLIP(i, 0, 6);
 
     //toggle the state (assumes index 1-7 used in cgi_handlers[] for weekdays)
-    if(config.day_duration[i] > 0) config.day_duration[i]--;
+    if(config.zone_duration[0][i] > 0)
+    {
+        config.zone_duration[0][i]--;
+    }
 
     // Send the next page back to the user
     config_changed();
@@ -608,11 +610,11 @@ const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], ch
 const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_value = 0;
+    //int new_value = 0;
        
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
@@ -723,11 +725,11 @@ const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], ch
 const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_value = 0;
+    //int new_value = 0;
 
     config.use_led_strip_to_indicate_irrigation_status = 0;       
 
@@ -823,26 +825,15 @@ const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *
  */
 const char * cgi_reboot_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-    int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
-    char *param = NULL;
-    char *value = NULL;
-    int new_value = 0;
+    //int i = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
+    //char *param = NULL;
+    //char *value = NULL;
+    //int new_value = 0;
        
     printf("REBOOT requested\n");
     
-    SLEEP_MS(1000);
-
-    while (config_dirty(false))
-    {
-        printf("Waiting for config to be written to flash before rebooting (%d seconds)\n", i++*5);
-        SLEEP_MS(5000);
-
-        //escape
-        if (i>12) break;
-    }
-
     //request reboot
     application_restart();
 
@@ -862,11 +853,11 @@ const char * cgi_reboot_handler(int iIndex, int iNumParams, char *pcParam[], cha
 const char * cgi_portrait_schedule_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_value = 0;
+    //int new_value = 0;
        
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
@@ -933,16 +924,19 @@ const char * cgi_portrait_schedule_handler(int iIndex, int iNumParams, char *pcP
 const char * cgi_day_schedule_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_value = 0;
+    //int new_value = 0;
     int day = -1;
+    int dur_zone = -1;
+    int dur_day = -1;
     bool checked = false;
     int start_hour = -1;
     int start_minute = -1;
     int duration = -1;
+    static char weekday_page[32] = "/index.shtml";
            
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
@@ -956,9 +950,13 @@ const char * cgi_day_schedule_handler(int iIndex, int iNumParams, char *pcParam[
         {
             //printf("Parameter: %s has Value: %s\n", param, value);
             
-            if (strcasecmp("day", param) == 0)  //day is 1-7
+            if (strcasecmp("day", param) == 0) 
             {
-                sscanf(value, "%d", &day);             
+                sscanf(value, "%d", &day);   
+
+                CLIP(day, 0, 6);
+                sprintf(weekday_page, "/%s.shtml", day_name(day));    
+                weekday_page[1] = tolower(weekday_page[1]);      
             }
 
             if (strcasecmp("currentday", param) == 0)
@@ -972,31 +970,53 @@ const char * cgi_day_schedule_handler(int iIndex, int iNumParams, char *pcParam[
             if (strncasecmp("strt", param, 4) == 0)
             {
                 sscanf(value, "%d%%3A%d", &start_hour, &start_minute); 
-                sscanf(value, "%d+%%3A+%d", &start_hour, &start_minute);             
+                sscanf(value, "%d+%%3A+%d", &start_hour, &start_minute);       
+
+                CLIP(start_hour, 0, 23);
+                CLIP(start_minute, 0, 59);      
             }
 
             if (strncasecmp("dur", param, 3) == 0)
             {
                 sscanf(value, "%d", &duration);             
-            }              
+            } 
+
+            sscanf(param, "z%dd%dd", &dur_zone, &dur_day);
+            if ((dur_zone >= 1) && (dur_zone <= 8) && (dur_day >= 1) && (dur_day <= 7))
+            {
+                // adjust to zero base
+                dur_zone--;
+                dur_day--;
+
+                sscanf(value, "%d", &config.zone_duration[dur_zone][dur_day]);  
+            }             
         }
 
         i++;
     }
 
-    if ((day >0) && (day <=7))
+    if ((day >=0) && (day <=6))
     {
         //printf("got valid day = %d storing new schedule parameters\n", day);
 
-        config.day_schedule_enable[day-1] = checked;
-        if ((start_hour != -1) && (start_minute != -1)) config.day_start[day-1] = start_hour*60 + start_minute;
-        if (duration != -1) config.day_duration[day-1] = duration;
+        config.day_schedule_enable[day] = checked;
+        if ((start_hour != -1) && (start_minute != -1)) config.day_start[day] = start_hour*60 + start_minute;
+        if (duration != -1) config.day_duration[day] = duration;
+    }
+    else
+    {
+        sprintf(weekday_page, "/index.shtml"); 
     }
 
 
-    // Send the index page back to the user
     config_changed();
-    return "/index.shtml";
+
+
+    // Send the current page back to the user
+    //printf("Redirecting browser to : %s\n", weekday_page);
+    return(weekday_page);
+
+    //return "/index.shtml";
 }
 
 /*!
@@ -1012,16 +1032,18 @@ const char * cgi_day_schedule_handler(int iIndex, int iNumParams, char *pcParam[
 const char * cgi_mood_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_value = 0;
+    //int new_value = 0;
     int red = -1;
     int green = -1;
     int blue = -1;
        
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    config.use_govee_to_indicate_irrigation_status = 0;
 
     i = 0;
     while (i < iNumParams)
@@ -1106,11 +1128,11 @@ const char * cgi_mood_handler(int iIndex, int iNumParams, char *pcParam[], char 
 const char * cgi_syslog_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_value = 0;
+    //int new_value = 0;
        
     // vile design caused by web browser not sending unchecked parameters, they must be presumed unchecked
     config.syslog_enable = 0;       
@@ -1269,11 +1291,11 @@ const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char
 const char * cgi_software_load_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_value = 0;
+    //int new_value = 0;
 
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
@@ -1324,8 +1346,8 @@ const char * cgi_software_load_handler(int iIndex, int iNumParams, char *pcParam
 const char * cgi_remote_led_strips(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int hour = 0;
-    int minute = 0;
+    //int hour = 0;
+    //int minute = 0;
     char *param = NULL;
     char *value = NULL;
        
@@ -1403,8 +1425,8 @@ const char * cgi_remote_led_strips(int iIndex, int iNumParams, char *pcParam[], 
 const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int hour = 0;
-    int minute = 0;
+    //int hour = 0;
+    //int minute = 0;
     char *param = NULL;
     char *value = NULL;
     PERSONALITY_E new_personality = NO_PERSONALITY;
@@ -1423,21 +1445,32 @@ const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[]
 
             if (strcasecmp("pertyp", param) == 0)
             {               
-                sscanf(value, "%d", &new_personality);
+                sscanf(value, "%d", (int *)&new_personality);
 
                 switch(new_personality)
                 {
                     case SPRINKLER_USURPER:
+                        config.personality = new_personality;
+                        config.zone_max = 1;
+                        set_calendar_html_page();
+                        break;
+
                     case SPRINKLER_CONTROLLER:
+                        config.personality = new_personality;
+                        config.zone_max = 8;
+                        set_calendar_html_page();
+                        break;
+
                     case LED_STRIP_CONTROLLER:
                         config.personality = new_personality;
-                        //printf("config.personality set to %d\n", config.personality);
+                        set_calendar_html_page();
                         break;
                     
                     default:
                         printf("Invalid personality\n");
                         break;
-                }                
+                } 
+                config_changed();              
             }
         }  
         i++;
@@ -1445,7 +1478,6 @@ const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[]
 
 
     // Send the next page back to the user
-    config_changed();
     return "/personality.shtml";
 }
 
@@ -1465,7 +1497,9 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
     char *param = NULL;
     char *value = NULL;
     int new_relay_normally_open = 0;  
-    int new_gpio = 0;  
+    int new_gpio = 0;
+    int gpio_zone = -1;  
+    int new_zone_max = 0;
        
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
  
@@ -1494,22 +1528,62 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
             if (strcasecmp("gpio", param) == 0)
             {
                 new_gpio = atoi(value);
-                if (!initialize_relay_gpio_(new_gpio))
+                if (!initialize_relay_gpio(new_gpio))
                 {
                     gpio_put(new_gpio, config.relay_normally_open?0:1); 
                     config.gpio_number = new_gpio; 
                 }                                
-            }                                     
-        }
+            } 
 
+            sscanf(param, "z%dgpio", &gpio_zone);
+            if ((gpio_zone >= 1) && (gpio_zone < 8))
+            {
+                // adjust to zero base
+                gpio_zone--;
+
+                sscanf(value, "%d", &config.zone_gpio[gpio_zone]);  
+            }   
+
+            if (strcasecmp("zmax", param) == 0)
+            {
+                sscanf(value, "%d", &new_zone_max);
+                
+                if ((new_zone_max > 0) && (new_zone_max <= 8))
+                {
+                    config.zone_max = new_zone_max;
+
+                    // activate anti-moron relay protection
+                    printf("Anti-moron protection activated.  If you have made a mistake with GPIO configuration then you have 30 seconds to disconnect the power before permanent damage and//or may fire occur.\n");
+                }                           
+            }
+        }
         i++;
     }
 
-    config.relay_normally_open = new_relay_normally_open;
+    if (config.relay_normally_open != new_relay_normally_open)
+    {
+        anti_moron_relay_protection();
+
+        config.relay_normally_open = new_relay_normally_open;
+    }
+
+    // normally open must be used in controller mode
+    if (config.personality == SPRINKLER_CONTROLLER)
+    {
+        config.relay_normally_open = 1;
+    }
 
     // Send the next page back to the user
     config_changed();
-    return "/relay.shtml";
+
+    if (config.personality == SPRINKLER_CONTROLLER)
+    {    
+        return "/z_relay.shtml";
+    }
+    else
+    {
+        return "/relay.shtml";
+    }
 }
 
 
@@ -1526,11 +1600,11 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
 const char * cgi_wificountry_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    int whole_part = 0;
-    int tenths_part = 0;
+    //int whole_part = 0;
+    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_value = 0;
+    //int new_value = 0;
        
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 

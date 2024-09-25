@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="<!--#rpage-->">Relay</a>
+    <a href="/weather.shtml">Weather</a>
+    <a href="/moodlight.shtml">Moodlight</a>     
+    <a href="/addressable_led.shtml">LED strip</a>
+    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/units.shtml">Foibles</a>     
+    <a href="/status.shtml">Status</a>   
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>Relay Settings</h2>      
+  <form action="/relay.cgi">             
+    <label for="wind">Normally Open (NO)</label>
+    <a href="/z_relay_no.shtml" style="text-decoration:none"> <small>   Why?</small></a> <br><br>    
+    <label for="ecoip">Number of Irrigation Zones</label>
+    <input type="text" id="zmax" name="zmax" value="<!--#zmax-->"><br><br>
+    <label for="wind" <!--#z1viz--> >Zone 1 GPIO:</label>
+    <input type="text" id="z1gpio" name="z1gpio" value="<!--#z1gpio-->" <!--#z1viz--> ><br>
+    <label for="wind" <!--#z2viz--> >Zone 2 GPIO:</label>
+    <input type="text" id="z2gpio" name="z2gpio" value="<!--#z2gpio-->" <!--#z2viz--> ><br>
+    <label for="wind" <!--#z3viz--> >Zone 3 GPIO:</label>
+    <input type="text" id="z3gpio" name="z3gpio" value="<!--#z3gpio-->" <!--#z3viz--> ><br>
+    <label for="wind" <!--#z4viz--> >Zone 4 GPIO:</label>
+    <input type="text" id="z4gpio" name="z4gpio" value="<!--#z4gpio-->" <!--#z4viz--> ><br>
+    <label for="wind" <!--#z5viz--> >Zone 5 GPIO:</label>
+    <input type="text" id="z5gpio" name="z5gpio" value="<!--#z5gpio-->" <!--#z5viz--> ><br>
+    <label for="wind" <!--#z6viz--> >Zone 6 GPIO:</label>
+    <input type="text" id="z6gpio" name="z6gpio" value="<!--#z6gpio-->" <!--#z6viz--> ><br>
+    <label for="wind" <!--#z7viz--> >Zone 7 GPIO:</label>
+    <input type="text" id="z7gpio" name="z7gpio" value="<!--#z7gpio-->" <!--#z7viz--> ><br>
+    <label for="wind" <!--#z8viz--> >Zone 8 GPIO:</label>
+    <input type="text" id="z8gpio" name="z8gpio" value="<!--#z8gpio-->" <!--#z8viz--> ><br>
+    <br>
+    <br>
+    <input type="submit" value="Save" style="font-size: 25px;">
+  </form> 
+  <br>  
+  <form action="/reboot.cgi" method="get">
+    <input type="submit" value="Reboot" name="reboot" id="reboot" style="font-size: 25px;">
+</form>    
+</div>
+   
+</body>
+</html> 
+  

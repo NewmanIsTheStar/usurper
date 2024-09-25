@@ -25,6 +25,7 @@
 
 int config_validate(void);
 void config_v1_to_v2(void);
+void config_v2_to_v3(void);
 
 
 NON_VOL_VARIABLES_T config;
@@ -32,7 +33,8 @@ static int config_dirty_flag = 0;
 static NON_VOL_CONVERSION_T config_info[] =
 {
     {1,      offsetof(NON_VOL_VARIABLES_T_VERSION_1, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_1, crc),   &config_blank_to_v1},
-    {2,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v1_to_v2}, 
+    {2,      offsetof(NON_VOL_VARIABLES_T_VERSION_2, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_2, crc),   &config_v1_to_v2}, 
+    {3,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v2_to_v3}, 
 };
 
 
@@ -139,6 +141,43 @@ void config_v1_to_v2(void)
     }
 }
 
+/*!
+ * \brief Convert configuration from v2 to v3 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v2_to_v3(void)
+{
+    int i = 0;
+    int j = 0;
+
+    printf("Converting configuration from version 2 to version 3\n"); 
+    config.version = 3;     
+
+    config.zone_max = 1;
+
+    for (j=0; j < 16; j++)
+    {
+        config.zone_gpio[j] = -1;
+    }
+    config.zone_gpio[0] = config.gpio_number;
+
+    for(i = 0; i < 16; i++)
+    {
+        sprintf(config.zone_name[i], "Zone %d", j);
+        config.zone_enable[i] = 1;
+
+        for (j=0; j < 7; j++)
+        {                      
+            config.zone_duration[i][j] = 0;
+        }
+    }
+
+    for (j=0; j < 7; j++)
+    {        
+        config.zone_duration[0][j] = config.day_duration[j];
+    }    
+}
 
 
 /*!
@@ -216,7 +255,6 @@ int config_write(void)
         if (memcmp((char *)(XIP_BASE +  FLASH_TARGET_OFFSET), ((char *)&config), sizeof(config)))
         {
             printf("Writing configuration to flash\n");
-            //config.crc = 55;  //TEST TEST TEST
             flash_write_non_volatile_variables();
         }
         else
@@ -234,6 +272,8 @@ int config_write(void)
             // printf("calculated crc = %d\n", crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, crc)));
             
             config_changed();
+
+            err = -1;
         }          
     }  
 
@@ -254,36 +294,16 @@ bool config_compare_flash_ram(void)
     uint16_t flash_crc;    
     bool difference_found = false;
 
-    // length of configuration excluding crc
-    len = offsetof(NON_VOL_VARIABLES_T, crc);  
-
-    // compute ram crc and store in ram copy of configuration  
-    ram_crc = crc_buffer((uint8_t *)&config, len);
-
-    // compute flash crc
-    non_vol = (NON_VOL_VARIABLES_T *)(XIP_BASE +  FLASH_TARGET_OFFSET);    
-    flash_crc = crc_buffer((uint8_t *)non_vol, len);
-
-    if (ram_crc != flash_crc)
+    for (i=0; i<sizeof(config); i++)
     {
-        difference_found = true;
-    }
-    else
-    {
-        difference_found = false;
-
-        // crc matches, 1/65536 random chance of a false match so check byte by byte
-        for (i=0; i<sizeof(config); i++)
+        if (((char *)(XIP_BASE +  FLASH_TARGET_OFFSET))[i] != ((char *)&config)[i])
         {
-            if (((char *)(XIP_BASE +  FLASH_TARGET_OFFSET))[i] != ((char *)&config)[i])
-            {
-                printf("Found byte difference at offset %d so will write flash even though CRC matches\n", i);
-                difference_found = true;
-                break;
-            }
+            printf("Found byte difference at offset %d so will write flash\n", i);
+            difference_found = true;
+            break;
         }
     }
-
+    
     return(difference_found);
 }
 
@@ -308,13 +328,9 @@ int config_validate(void)
     // check for valid configuration
     for(i=0; i < NUM_ROWS(config_info); i++)
     {
-        version_from_flash = *((int *)((void *)&config + config_info[i].version_offset));
-        crc_from_flash = *((uint16_t *)((void *)&config + config_info[i].crc_offset));
+        version_from_flash = *((int *)((uint8_t *)&config + config_info[i].version_offset));
+        crc_from_flash = *((uint16_t *)((uint8_t *)&config + config_info[i].crc_offset));
         calculated_crc = crc_buffer((uint8_t *)&config, config_info[i].crc_offset);        
-
-        // printf("version read from flash = %d\n", version_from_flash);
-        // printf("crc read from flash = %d\n", crc_from_flash);
-        // printf("crc calculated = %d\n", calculated_crc);
 
         if ((version_from_flash == config_info[i].version) && (crc_from_flash == calculated_crc))
         {

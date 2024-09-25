@@ -143,7 +143,110 @@ extern NON_VOL_VARIABLES_T config;
     x(wific)     \
     x(gway)      \
     x(soilm1)    \
-    x(soilt1)
+    x(soilt1)    \
+    x(z1d1d)     \
+    x(z1d2d)     \
+    x(z1d3d)     \
+    x(z1d4d)     \
+    x(z1d5d)     \
+    x(z1d6d)     \
+    x(z1d7d)     \
+    x(z2d1d)     \
+    x(z2d2d)     \
+    x(z2d3d)     \
+    x(z2d4d)     \
+    x(z2d5d)     \
+    x(z2d6d)     \
+    x(z2d7d)     \
+    x(z3d1d)     \
+    x(z3d2d)     \
+    x(z3d3d)     \
+    x(z3d4d)     \
+    x(z3d5d)     \
+    x(z3d6d)     \
+    x(z3d7d)     \
+    x(z4d1d)     \
+    x(z4d2d)     \
+    x(z4d3d)     \
+    x(z4d4d)     \
+    x(z4d5d)     \
+    x(z4d6d)     \
+    x(z4d7d)     \
+    x(z5d1d)     \
+    x(z5d2d)     \
+    x(z5d3d)     \
+    x(z5d4d)     \
+    x(z5d5d)     \
+    x(z5d6d)     \
+    x(z5d7d)     \
+    x(z6d1d)     \
+    x(z6d2d)     \
+    x(z6d3d)     \
+    x(z6d4d)     \
+    x(z6d5d)     \
+    x(z6d6d)     \
+    x(z6d7d)     \
+    x(z7d1d)     \
+    x(z7d2d)     \
+    x(z7d3d)     \
+    x(z7d4d)     \
+    x(z7d5d)     \
+    x(z7d6d)     \
+    x(z7d7d)     \
+    x(z8d1d)     \
+    x(z8d2d)     \
+    x(z8d3d)     \
+    x(z8d4d)     \
+    x(z8d5d)     \
+    x(z8d6d)     \
+    x(z8d7d)     \
+    x(clpat)     \
+    x(cltran)    \
+    x(clreq)     \
+    x(z1gpio)    \
+    x(z2gpio)    \
+    x(z3gpio)    \
+    x(z4gpio)    \
+    x(z5gpio)    \
+    x(z6gpio)    \
+    x(z7gpio)    \
+    x(z8gpio)    \
+    x(z1viz)     \
+    x(z2viz)     \
+    x(z3viz)     \
+    x(z4viz)     \
+    x(z5viz)     \
+    x(z6viz)     \
+    x(z7viz)     \
+    x(z8viz)     \
+    x(zmax)      \
+    x(rpage)     \
+    x(z1bviz)    \
+    x(z2bviz)    \
+    x(z3bviz)    \
+    x(z4bviz)    \
+    x(z5bviz)    \
+    x(z6bviz)    \
+    x(z7bviz)    \
+    x(z8bviz)    \
+    x(z1iviz)    \
+    x(z2iviz)    \
+    x(z3iviz)    \
+    x(z4iviz)    \
+    x(z5iviz)    \
+    x(z6iviz)    \
+    x(z7iviz)    \
+    x(z8iviz)    \
+    x(z1zviz)    \
+    x(z2zviz)    \
+    x(z3zviz)    \
+    x(z4zviz)    \
+    x(z5zviz)    \
+    x(z6zviz)    \
+    x(z7zviz)    \
+    x(z8zviz)    \
+    x(z1dur)     \
+    x(pernme)    
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
@@ -194,7 +297,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             else
             {
                 temp = (web.outside_temperature*9)/5 + 320;
-                printed = snprintf(pcInsert, iInsertLen, "%d.%d", temp/10, temp%10);
+                printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", temp/10, temp%10);
             }              
         }
         break;
@@ -207,7 +310,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             else
             {
                 temp = (web.wind_speed*3281 + 500)/1000;
-                printed = snprintf(pcInsert, iInsertLen, "%d.%d", temp/10, temp%10);
+                printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", temp/10, temp%10);
             }              
         } 
         break;  
@@ -220,7 +323,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             else
             {
                 temp = (10*web.daily_rain + 127)/254;
-                printed = snprintf(pcInsert, iInsertLen, "%d.%d", temp/10, temp%10);
+                printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", temp/10, temp%10);
             }            
         }  
         break;
@@ -229,7 +332,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             if (web.us_last_rx_packet)
             {
                 us_now = time_us_32();
-                printed = snprintf(pcInsert, iInsertLen, "%d s", (us_now - web.us_last_rx_packet)/1000000);   
+                printed = snprintf(pcInsert, iInsertLen, "%lu s", (us_now - web.us_last_rx_packet)/1000000);   
             }
             else
             {
@@ -251,7 +354,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             else
             {
                 temp = (10*web.weekly_rain + 127)/254;
-                printed = snprintf(pcInsert, iInsertLen, "%d.%d", temp/10, temp%10);
+                printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", temp/10, temp%10);
             }             
         }  
         break;   
@@ -297,7 +400,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_dur6:
         case SSI_dur7:
         {
-            if (config.day_schedule_enable[iIndex-23])
+            if (config.day_schedule_enable[iIndex-SSI_dur1])
             {
                 printed = snprintf(pcInsert, iInsertLen, "%d", config.day_duration[iIndex-SSI_dur1]);    
             }
@@ -557,7 +660,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             else
             {
                 temp = (10*web.trailing_seven_days_rain + 127)/254;
-                printed = snprintf(pcInsert, iInsertLen, "%d.%d", temp/10, temp%10);
+                printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", temp/10, temp%10);
             }                
             
         }                        
@@ -676,7 +779,6 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                 printed = snprintf(pcInsert, iInsertLen, "/personality.shtml");
                 break;
             case SPRINKLER_USURPER:
-            case SPRINKLER_CONTROLLER:
                 if (config.use_monday_as_week_start)
                 {
                     //printf("redirecting to landscape_monday.shtml\n");
@@ -688,8 +790,20 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                     printed = snprintf(pcInsert, iInsertLen, "/landscape.shtml");
                 }
                 break;
+            case SPRINKLER_CONTROLLER:
+                if (config.use_monday_as_week_start)
+                {
+                    //printf("redirecting to landscape_monday.shtml\n");
+                    printed = snprintf(pcInsert, iInsertLen, "/zm_landscape.shtml");
+                }
+                else
+                {
+                    //printf("redirecting to landscape.shtml\n");
+                    printed = snprintf(pcInsert, iInsertLen, "/zs_landscape.shtml");
+                }
+                break;                
             case LED_STRIP_CONTROLLER:
-                printed = snprintf(pcInsert, iInsertLen, "/addressable_led.shtml");
+                printed = snprintf(pcInsert, iInsertLen, "/led_controller.shtml");
                 break;
             }
         }                                                                                                                                                   
@@ -758,8 +872,231 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         {
             printed = snprintf(pcInsert, iInsertLen, "%d", config.soil_moisture_threshold[0]);
         }                       
-        break;             
-
+        break;   
+        case SSI_z1d1d:
+        case SSI_z1d2d:
+        case SSI_z1d3d:
+        case SSI_z1d4d:
+        case SSI_z1d5d:
+        case SSI_z1d6d:
+        case SSI_z1d7d:
+        case SSI_z2d1d:
+        case SSI_z2d2d:
+        case SSI_z2d3d:
+        case SSI_z2d4d:
+        case SSI_z2d5d:
+        case SSI_z2d6d:
+        case SSI_z2d7d:
+        case SSI_z3d1d:
+        case SSI_z3d2d:
+        case SSI_z3d3d:
+        case SSI_z3d4d:
+        case SSI_z3d5d:
+        case SSI_z3d6d:
+        case SSI_z3d7d:
+        case SSI_z4d1d:
+        case SSI_z4d2d:
+        case SSI_z4d3d:
+        case SSI_z4d4d:
+        case SSI_z4d5d:
+        case SSI_z4d6d:
+        case SSI_z4d7d:
+        case SSI_z5d1d:
+        case SSI_z5d2d:
+        case SSI_z5d3d:
+        case SSI_z5d4d:
+        case SSI_z5d5d:
+        case SSI_z5d6d:
+        case SSI_z5d7d:
+        case SSI_z6d1d:
+        case SSI_z6d2d:
+        case SSI_z6d3d:
+        case SSI_z6d4d:
+        case SSI_z6d5d:
+        case SSI_z6d6d:
+        case SSI_z6d7d:
+        case SSI_z7d1d:
+        case SSI_z7d2d:
+        case SSI_z7d3d:
+        case SSI_z7d4d:
+        case SSI_z7d5d:
+        case SSI_z7d6d:
+        case SSI_z7d7d:
+        case SSI_z8d1d:
+        case SSI_z8d2d:
+        case SSI_z8d3d:
+        case SSI_z8d4d:
+        case SSI_z8d5d:
+        case SSI_z8d6d:
+        case SSI_z8d7d:
+        {  
+            if (config.day_schedule_enable[(iIndex-SSI_z1d1d)%7])
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.zone_duration[(iIndex-SSI_z1d1d)/7][(iIndex-SSI_z1d1d)%7]);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "--");  
+            }                                 
+        }
+        break;
+        case SSI_clpat: //clpat
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", web.led_current_pattern);
+        } 
+        break;
+        case SSI_cltran: //cltran
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", web.led_current_transition_delay);
+        } 
+        break;  
+        case SSI_clreq: //clreq
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", web.led_last_request_ip);
+        } 
+        break;         
+        case SSI_z1gpio:
+        case SSI_z2gpio:
+        case SSI_z3gpio:
+        case SSI_z4gpio:
+        case SSI_z5gpio:
+        case SSI_z6gpio:
+        case SSI_z7gpio:
+        case SSI_z8gpio:
+        {     
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.zone_gpio[(iIndex-SSI_z1gpio)%8]);             
+        }
+        break;
+        case SSI_z1viz:
+        case SSI_z2viz:
+        case SSI_z3viz:
+        case SSI_z4viz:
+        case SSI_z5viz:
+        case SSI_z6viz:
+        case SSI_z7viz:
+        case SSI_z8viz:
+        {
+            if ((iIndex-SSI_z1viz)%8 >= config.zone_max)
+            {     
+                printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
+            }
+            else
+            {
+                printed = 0;
+            }             
+        }
+        break; 
+        case SSI_zmax: //zmax
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.zone_max);
+        }   
+        break;     
+        case SSI_rpage: //rpage
+        {
+            switch(config.personality)
+            {
+            default:
+            case NO_PERSONALITY:
+            case SPRINKLER_USURPER:   
+            case LED_STRIP_CONTROLLER:         
+                printed = snprintf(pcInsert, iInsertLen, "/relay.shtml");
+                break;
+            case SPRINKLER_CONTROLLER:
+                printed = snprintf(pcInsert, iInsertLen, "/z_relay.shtml");
+                break;
+            }            
+            
+        }   
+        break;                  
+        case SSI_z1bviz:
+        case SSI_z2bviz:
+        case SSI_z3bviz:
+        case SSI_z4bviz:
+        case SSI_z5bviz:
+        case SSI_z6bviz:
+        case SSI_z7bviz:
+        case SSI_z8bviz:
+        {
+            if ((iIndex-SSI_z1bviz)%8 >= config.zone_max)
+            {     
+                printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
+            }
+            else
+            {
+                //printed = snprintf(pcInsert, iInsertLen, "style=\"width:14.285714286%%\"");
+                printed = snprintf(pcInsert, iInsertLen, "style=\"width:13%%\"");                
+            }             
+        }
+        break; 
+        case SSI_z1iviz:
+        case SSI_z2iviz:
+        case SSI_z3iviz:
+        case SSI_z4iviz:
+        case SSI_z5iviz:
+        case SSI_z6iviz:
+        case SSI_z7iviz:
+        case SSI_z8iviz:
+        {
+            if ((iIndex-SSI_z1iviz)%8 >= config.zone_max)
+            {     
+                printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "style=\"font-size: 28px;\"");
+            }             
+        }
+        break;   
+        case SSI_z1zviz:
+        case SSI_z2zviz:
+        case SSI_z3zviz:
+        case SSI_z4zviz:
+        case SSI_z5zviz:
+        case SSI_z6zviz:
+        case SSI_z7zviz:
+        case SSI_z8zviz:
+        {
+            if ((iIndex-SSI_z1zviz)%8 >= config.zone_max)
+            {     
+                printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
+            }
+            else
+            {
+                //printed = snprintf(pcInsert, iInsertLen, "style=\"width:14.285714286%%\"");
+                printed = snprintf(pcInsert, iInsertLen, "style=\"width:2%%\"");                
+            }             
+        } 
+        break;      
+        case SSI_z1dur:
+        {
+            if (config.personality == SPRINKLER_USURPER)
+            {
+                printed = snprintf(pcInsert, iInsertLen, "Duration");
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "Zone 1 Duration");
+            }
+        }
+        break;
+        case SSI_pernme: //pernme
+        {
+            switch(config.personality)
+            {
+            case SPRINKLER_USURPER:
+                printed = snprintf(pcInsert, iInsertLen, "Sprinkler Usurper");
+                break;
+            case SPRINKLER_CONTROLLER:
+                printed = snprintf(pcInsert, iInsertLen, "Sprinkler Controller");
+                break;
+            default:
+            case NO_PERSONALITY:
+                printed = snprintf(pcInsert, iInsertLen, "No personality");
+                break;
+            }
+        }             
+        break;
+                   
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    

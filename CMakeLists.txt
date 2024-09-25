@@ -21,15 +21,7 @@ project(usurper C CXX ASM)
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# what I used with previous sdk
-# include(pico_sdk_import.cmake)
-# include(FreeRTOS_Kernel_import.cmake)
-
-# pico_sdk_init()
-
 include(FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
-
-
 
 message("Creating githash.h")
 execute_process(COMMAND
@@ -66,6 +58,8 @@ add_executable(usurper
 
 target_compile_definitions(usurper PRIVATE
         )
+        
+#target_compile_options(usurper PRIVATE -O3 -Wall -Wunused-function -pedantic)
 
 target_include_directories(usurper PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
