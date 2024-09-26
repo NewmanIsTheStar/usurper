@@ -48,8 +48,7 @@ body {
 </head>
 <body>
 
-  <div class="sidenav">
-    <a href="/personality.shtml">&#128512</a>     
+  <div class="sidenav">    
     <a href="/network.shtml">Network</a>   
     <a href="/time.shtml">Time</a>
     <a href="<!--#rpage-->">Relay</a>
@@ -59,7 +58,14 @@ body {
     <a href="/syslog.shtml">Syslog</a>    
     <a href="/units.shtml">Foibles</a>     
     <a href="/status.shtml">Status</a>   
-    <p><a href="/index.shtml">&#8629</a></p> 
+    <p><a href="/index.shtml">&#8629</a></p>
+    <br> 
+    <br> 
+    <br> 
+    <br> 
+    <br> 
+    <br> 
+    <a href="/personality.shtml">&#9786</a> 
   </div>
 
 <div class="main">
