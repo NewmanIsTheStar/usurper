@@ -81,6 +81,12 @@ target_link_libraries(usurper
         pico_flash
         hardware_pio
         )
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        pico_enable_stdio_usb(usurper 1)
+        pico_enable_stdio_uart(usurper 0)
+endif()
+
 pico_add_extra_outputs(usurper)
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/generated)
