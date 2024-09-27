@@ -1456,6 +1456,18 @@ const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[]
                         break;
 
                     case SPRINKLER_CONTROLLER:
+                        if (config.personality != new_personality)
+                        {
+                            // default gpio for waveshare industrial relay module
+                            config.zone_gpio[0] = 21;
+                            config.zone_gpio[1] = 20;
+                            config.zone_gpio[2] = 19;
+                            config.zone_gpio[3] = 18;
+                            config.zone_gpio[4] = 17;
+                            config.zone_gpio[5] = 16;
+                            config.zone_gpio[6] = 15;
+                            config.zone_gpio[7] = 14;                            
+                        }
                         config.personality = new_personality;
                         config.zone_max = 8;
                         set_calendar_html_page();

@@ -58,8 +58,8 @@ body {
 <div class="main">
   <h2>Personality Setting</h2>     
   <form action="/personality.cgi">           
-      <label for="personalitycurrent">Current Personality Type is <!--#pernme--></label><br><br>
-      <label for="personalitychange">Change Personality Type using the drop down list</label><br>
+      <label for="personalitycurrent">Current Personality is <b><!--#pernme--></b></label><br><br>
+      <label for="personalitychange">Change Personality using the drop down list</label><br>
       <select name="pertyp" id="pertyp" style="font-size: 28px;">
         <option value="0">Sprinkler Usurper</option>
         <option value="1">Sprinkler Controller</option>
