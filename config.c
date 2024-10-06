@@ -26,6 +26,7 @@
 int config_validate(void);
 void config_v1_to_v2(void);
 void config_v2_to_v3(void);
+void config_v3_to_v4(void);
 
 
 NON_VOL_VARIABLES_T config;
@@ -34,7 +35,8 @@ static NON_VOL_CONVERSION_T config_info[] =
 {
     {1,      offsetof(NON_VOL_VARIABLES_T_VERSION_1, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_1, crc),   &config_blank_to_v1},
     {2,      offsetof(NON_VOL_VARIABLES_T_VERSION_2, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_2, crc),   &config_v1_to_v2}, 
-    {3,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v2_to_v3}, 
+    {3,      offsetof(NON_VOL_VARIABLES_T_VERSION_3, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_3, crc),   &config_v2_to_v3}, 
+    {4,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v3_to_v4},     
 };
 
 
@@ -137,7 +139,7 @@ void config_v1_to_v2(void)
     
     for(i = 0; i < NUM_ROWS(config.soil_moisture_threshold); i++)
     {
-        config.soil_moisture_threshold[i] = 0; 
+        config.soil_moisture_threshold[i] = 70; 
     }
 }
 
@@ -178,6 +180,28 @@ void config_v2_to_v3(void)
         config.zone_duration[0][j] = config.day_duration[j];
     }    
 }
+
+/*!
+ * \brief Convert configuration from v3 to v4 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v3_to_v4(void)
+{
+    int i = 0;
+    int j = 0;
+
+    printf("Converting configuration from version 3 to version 4\n"); 
+    config.version = 4;     
+
+    config.led_strip_remote_enable = 0;
+
+    for (i=0; i < 6; i++)
+    {
+        config.led_strip_remote_ip[i][0] = 0;
+    }   
+}
+
 
 
 /*!

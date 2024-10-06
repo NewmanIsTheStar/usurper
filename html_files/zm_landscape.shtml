@@ -96,7 +96,7 @@
         <title>Sprinkler Controller</title>
     </head>
     <body>
-      <h1 style="font-family:Lato,sans-serif; color: #070000;">Sprinkler Usurper</h1>
+      <h1 style="font-family:Lato,sans-serif; color: #070000;">Sprinkler Controller</h1>
       <br>
       <div class="btn-group-title" style="width:100%">
           <a href="/sunday.cgi?day=0">   <button style="width:2%">&nbsp;</button></a>                  

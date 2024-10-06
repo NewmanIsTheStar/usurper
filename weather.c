@@ -190,44 +190,44 @@ void weather_task(void *params)
 
     while (true)
     {
-        if ((config.personality == SPRINKLER_USURPER) && config.weather_station_enable)
-        {
-            // get weather info
-            weather_query_status = query_weather_station((s16_t *)&web.outside_temperature,
-                                                         (s16_t *)&web.wind_speed,
-                                                         (s32_t *)&web.daily_rain,
-                                                         (s32_t *)&web.weekly_rain,
-                                                         (u8_t *)&web.soil_moisture[0]);
-
-            switch(weather_query_status)
-            {            
-            case WEATHER_READ_SUCCESS:
-                syslog_report_weather();                   
-                iNumFailedQueries = 0;
-                break;
-
-            default:
-            case WEATHER_READ_FAILED:
-                iNumFailedQueries++;
-
-                if (iNumFailedQueries > 3)
-                {
-                    invalidate_weather_variables();
-                }
-
-                if (iNumFailedQueries > 30)
-                {
-                    send_syslog_message("usurper", "Failed to read from weather station 30 times. ---REBOOT---.");    
-
-                    // reboot
-                    application_restart();
-                }          
-                break;
-            }
-        }
-
         if ((config.personality == SPRINKLER_USURPER) || (config.personality == SPRINKLER_CONTROLLER))
-        {
+        {        
+            if (config.weather_station_enable)
+            {
+                // get weather info
+                weather_query_status = query_weather_station((s16_t *)&web.outside_temperature,
+                                                            (s16_t *)&web.wind_speed,
+                                                            (s32_t *)&web.daily_rain,
+                                                            (s32_t *)&web.weekly_rain,
+                                                            (u8_t *)&web.soil_moisture[0]);
+
+                switch(weather_query_status)
+                {            
+                case WEATHER_READ_SUCCESS:
+                    syslog_report_weather();                   
+                    iNumFailedQueries = 0;
+                    break;
+
+                default:
+                case WEATHER_READ_FAILED:
+                    iNumFailedQueries++;
+
+                    if (iNumFailedQueries > 3)
+                    {
+                        invalidate_weather_variables();
+                    }
+
+                    if (iNumFailedQueries > 30)
+                    {
+                        send_syslog_message("usurper", "Failed to read from weather station 30 times. ---REBOOT---.");    
+
+                        // reboot
+                        application_restart();
+                    }          
+                    break;
+                }
+            }
+
             // control the irrigation relay
             irrigation_state = control_irrigation_relays();
 
@@ -248,12 +248,12 @@ void weather_task(void *params)
                 CLIP(delay_seconds, 1, 60);
                 SLEEP_MS(delay_seconds*1000); 
             }
-        }
+        }  
         else
         {
             SLEEP_MS(60000); 
-        }
-        
+        }   
+
         // tell watchdog task that we are still alive
         watchdog_pulse((int *)params);               
     }
@@ -741,10 +741,12 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
                     gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
                     if (anti_moron_protection_active) SLEEP_MS(1000);
                 }
-            } 
+            }
+
+            SLEEP_MS(1000);
 
             // turn on relay for desired zone
-            if ((zone >= 0) && (zone < config.zone_max) && (config.zone_gpio[zone]))
+            if ((zone >= 0) && (zone < config.zone_max) && gpio_valid(config.zone_gpio[zone]))
             {
                 gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0); 
             } 
@@ -1203,7 +1205,7 @@ int set_led_strips(int pattern, int speed)
  */
 int anti_moron_relay_protection(void)
 {
-    sprintf(web.status_message, "Anit-moron protection activated.");
+    sprintf(web.status_message, "Anit-moron relay protection activated.");
     printf("%s\n", web.status_message);
     anti_moron_protection_active = true;
 
