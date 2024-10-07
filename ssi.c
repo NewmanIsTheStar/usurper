@@ -246,7 +246,8 @@ extern NON_VOL_VARIABLES_T config;
     x(z7zviz)    \
     x(z8zviz)    \
     x(z1dur)     \
-    x(pernme)    
+    x(pernme)    \
+    x(irgnow)
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
@@ -1096,7 +1097,12 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             }
         }             
         break;
-                   
+        case SSI_irgnow: //irgnow
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", web.irrigation_test_enable?"checked":"");
+        }   
+        break;
+
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    

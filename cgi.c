@@ -1565,8 +1565,16 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
                     config.zone_max = new_zone_max;
 
                     // activate anti-moron relay protection
-                    printf("Anti-moron protection activated.  If you have made a mistake with GPIO configuration then you have 30 seconds to disconnect the power before permanent damage and//or may fire occur.\n");
+                    printf("Anti-moron protection activated.\n  If you have made a mistake with GPIO configuration then you have 30 seconds to disconnect the power\n before permanent damage and/or may fire occur.\n");
                 }                           
+            }
+
+            if (strcasecmp("irgnow", param) == 0)
+            {
+                if (value[0])
+                {
+                    web.irrigation_test_enable = 1;
+                } 
             }
         }
         i++;

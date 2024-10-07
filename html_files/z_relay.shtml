@@ -86,6 +86,9 @@ body {
     <input type="text" id="z8gpio" name="z8gpio" value="<!--#z8gpio-->" <!--#z8viz--> ><br>
     <br>
     <br>
+    <label for="wind">Run one minute test of each zone now</label>
+    <input type="checkbox" id="irgnow" name="irgnow" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#irgnow-->><br><br>
+    <br>
     <input type="submit" value="Save" style="font-size: 25px;">
   </form> 
   <br>  

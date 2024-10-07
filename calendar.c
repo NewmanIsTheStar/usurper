@@ -54,6 +54,7 @@ static int daylight_saving_start_month;
 static int daylight_saving_start_day;
 static int daylight_saving_end_month;
 static int daylight_saving_end_day;
+static int irrigation_test_start_mow = -1;
 
 
 const char *weekdays[] =

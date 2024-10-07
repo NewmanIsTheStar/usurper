@@ -206,6 +206,7 @@ typedef struct WEB_VARIABLES
   int led_current_pattern;
   int led_current_transition_delay;
   char led_last_request_ip[32];
+  int irrigation_test_enable;
 } WEB_VARIABLES_T;                  //remember to add initialization code when adding to this structure !!!
 
 #endif

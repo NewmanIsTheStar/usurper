@@ -75,6 +75,7 @@ int control_led_strip(IRRIGATION_STATE_T irrigation_state, bool reset);
 int schedule_change_affecting_active_irrigation(int start_mow, int end_mow, bool reset);
 int syslog_report_weather (void);
 int set_led_strips(int pattern, int speed);
+void irrigation_relay_test(void);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -169,8 +170,6 @@ void weather_task(void *params)
     IRRIGATION_STATE_T irrigation_state = IRRIGATION_OFF;
     WEATHER_QUERY_STATUS_T weather_query_status = WEATHER_READ_SUCCESS;   
     int iNumFailedQueries = 0;    
-    //char log_message[200];  
-    //int iStatus = 0;
     int delay_seconds = 0;
     int zone = 0;
 
@@ -191,7 +190,7 @@ void weather_task(void *params)
     while (true)
     {
         if ((config.personality == SPRINKLER_USURPER) || (config.personality == SPRINKLER_CONTROLLER))
-        {        
+        { 
             if (config.weather_station_enable)
             {
                 // get weather info
@@ -228,25 +227,34 @@ void weather_task(void *params)
                 }
             }
 
-            // control the irrigation relay
-            irrigation_state = control_irrigation_relays();
-
-            if (irrigation_state != IRRIGATION_DISRUPTED)
+            if (!web.irrigation_test_enable)
             {
-                if (config.use_govee_to_indicate_irrigation_status)
-                {
-                    control_moodlight(irrigation_state, false);
-                }
+                // normal irrigation
+                irrigation_state = control_irrigation_relays();
 
-                if (config.use_led_strip_to_indicate_irrigation_status)
+                if (irrigation_state != IRRIGATION_DISRUPTED)
                 {
-                    control_led_strip(irrigation_state, false);
-                }
+                    if (config.use_govee_to_indicate_irrigation_status)
+                    {
+                        control_moodlight(irrigation_state, false);
+                    }
 
-                // sleep until start of next minute
-                delay_seconds = (60 - get_real_time_clock_seconds());
-                CLIP(delay_seconds, 1, 60);
-                SLEEP_MS(delay_seconds*1000); 
+                    if (config.use_led_strip_to_indicate_irrigation_status)
+                    {
+                        control_led_strip(irrigation_state, false);
+                    }
+
+                    // sleep until start of next minute
+                    delay_seconds = (60 - get_real_time_clock_seconds());
+                    CLIP(delay_seconds, 1, 60);
+
+                    SLEEP_MS(delay_seconds*1000); 
+                }
+            }
+            else
+            {
+                // irrigation relay test
+                irrigation_relay_test();
             }
         }  
         else
@@ -555,7 +563,9 @@ int init_web_variables(void)
     web.weekly_rain = 0;
     web.trailing_seven_days_rain = 0;
     web.us_last_rx_packet = 0;  
-    web.soil_moisture[0] = 0;  
+    web.soil_moisture[0] = 0; 
+
+    web.irrigation_test_enable = 0; 
 
     STRNCPY(web.last_usurped_timestring,"never", sizeof(web.last_usurped_timestring));
     STRNCPY(web.watchdog_timestring,"never", sizeof(web.watchdog_timestring));
@@ -1205,9 +1215,69 @@ int set_led_strips(int pattern, int speed)
  */
 int anti_moron_relay_protection(void)
 {
-    sprintf(web.status_message, "Anit-moron relay protection activated.");
+    sprintf(web.status_message, "Anti-moron relay protection activated.");
     printf("%s\n", web.status_message);
     anti_moron_protection_active = true;
 
     return(0);
+}
+
+
+/*!
+ * \brief Run one minute test of each irrigation relay
+ * 
+ * \return nothing
+ */
+void irrigation_relay_test(void)
+{
+    static int zone = -1;
+    int i = 0;
+   
+    if (web.irrigation_test_enable)
+    {
+        // initiate new test
+        if (zone < 0)
+        {
+            zone = 0;
+        }
+
+        if (zone < config.zone_max)
+        {
+            // turn off all relays except desired zone        
+            for (i=0; i<16; i++)
+            {
+                if ((i != zone) && gpio_valid(config.zone_gpio[i]))
+                {
+                    gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
+                }
+            }
+
+            SLEEP_MS(1000);
+
+            // turn on relay for desired zone
+            if ((zone >= 0) && (zone < config.zone_max) && gpio_valid(config.zone_gpio[zone]))
+            {
+                gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0); 
+                
+                printf("Testing Zone %d for 1 minute\n", zone+1);
+                snprintf(web.status_message, sizeof(web.status_message), "Irrigation test in progress (Zone %d)", zone+1); 
+                SLEEP_MS(60000);
+            }
+            else
+            {
+                printf("Invalid configuration for zone %d\n", zone+1);
+            }
+
+            zone++; 
+        }
+        else
+        {
+            printf("Irrigation relay test complete\n");
+            snprintf(web.status_message, sizeof(web.status_message), "Irrigation test completed");
+            web.irrigation_test_enable = 0;
+            zone = -1;
+        }
+    }
+    
+    return;
 }
