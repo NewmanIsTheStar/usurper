@@ -87,7 +87,7 @@ int led_strip_sustain_until_mow = 0;
 bool led_strip_sustain_in_progress = false;
 int govee_sustain_until_mow = 0;
 bool govee_sustain_in_progress = false;
-bool anti_moron_protection_active = true;
+static int test_zone = -1;
 
 
 //ecowitt request messages                 HDR   HDR   CMD                  LEN   CHECKSUM
@@ -248,7 +248,10 @@ void weather_task(void *params)
                     delay_seconds = (60 - get_real_time_clock_seconds());
                     CLIP(delay_seconds, 1, 60);
 
-                    SLEEP_MS(delay_seconds*1000); 
+                    //SLEEP_MS(delay_seconds*1000); 
+                    ulTaskNotifyTakeIndexed( 0,               /* Use the 0th notification */  
+                                             pdTRUE,          /* Clear the notification value  before exiting. */  
+                                             delay_seconds*1000 );  /*presume one tick is one millisecond*/
                 }
             }
             else
@@ -737,7 +740,6 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
                 if (gpio_valid(config.zone_gpio[i]))
                 {
                     gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
-                    if (anti_moron_protection_active) SLEEP_MS(1000);
                 }
             }
             printf("IRRIGATION OFF\n"); 
@@ -749,7 +751,6 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
                 if ((i != zone) && gpio_valid(config.zone_gpio[i]))
                 {
                     gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
-                    if (anti_moron_protection_active) SLEEP_MS(1000);
                 }
             }
 
@@ -1076,12 +1077,12 @@ bool terminate_irrigation_due_to_weather (void)
         switch(config.use_archaic_units)
         {
         case true:
-            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed is %d.%d ft/s Daily rain is %d.%d inches Seven day rain is %d.%d inches Soil Moisture is %d%%",
+            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d ft/s Daily rain = %d.%d inches 7-day rain = %d.%d inches Soil Moisture = %d%%",
                 wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
             break;            
         default:
         case false:
-            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed is %d.%d m/s Daily rain is %d.%d mm Seven day rain is %d.%d mm Soil Moisture is %d%%",
+            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d m/s Daily rain = %d.%d mm 7-day rain = %d.%d mm Soil Moisture = %d%%",
                 wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
             break;
         }         
@@ -1179,12 +1180,12 @@ int syslog_report_weather (void)
         switch(config.use_archaic_units)
         {
         case true:
-            send_syslog_message("usurper", "Temperature = %d.%d F Wind speed = %d.%d ft/s Daily rain = %d.%d inches Weekly rain = %d.%d inches Soil Moisture is %d%%",
+            send_syslog_message("usurper", "Temperature = %d.%d F Wind speed = %d.%d ft/s Daily rain = %d.%d inches Weekly rain = %d.%d inches Soil Moisture = %d%%",
                 outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
             break;            
         default:
         case false:
-            send_syslog_message("usurper", "Temperature = %d.%d C Wind speed = %d.%d m/s Daily rain = %d.%d mm Weekly rain = %d.%d mm Soil Moisture is %d%%",
+            send_syslog_message("usurper", "Temperature = %d.%d C Wind speed = %d.%d m/s Daily rain = %d.%d mm Weekly rain = %d.%d mm Soil Moisture = %d%%",
                 outside_temp/10, abs(outside_temp%10), wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
             break;
         }  
@@ -1209,37 +1210,20 @@ int set_led_strips(int pattern, int speed)
 }
 
 /*!
- * \brief Retard relay state changes to minimize damage caused by morons
- * 
- * \return 0 on success, non-zero on failure
- */
-int anti_moron_relay_protection(void)
-{
-    sprintf(web.status_message, "Anti-moron relay protection activated.");
-    printf("%s\n", web.status_message);
-    anti_moron_protection_active = true;
-
-    return(0);
-}
-
-
-/*!
  * \brief Run one minute test of each irrigation relay
  * 
  * \return nothing
  */
 void irrigation_relay_test(void)
 {
-    static int zone = -1;
     int i = 0;
-   
+    int zone = 0;
+
     if (web.irrigation_test_enable)
     {
-        // initiate new test
-        if (zone < 0)
-        {
-            zone = 0;
-        }
+        // make local copy to avoid corruption by another task TODO: proper intertask communication
+        zone = test_zone;
+        CLIP(zone, 0, config.zone_max);
 
         if (zone < config.zone_max)
         {
@@ -1260,24 +1244,59 @@ void irrigation_relay_test(void)
                 gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0); 
                 
                 printf("Testing Zone %d for 1 minute\n", zone+1);
-                snprintf(web.status_message, sizeof(web.status_message), "Irrigation test in progress (Zone %d)", zone+1); 
-                SLEEP_MS(60000);
+                snprintf(web.status_message, sizeof(web.status_message), "Zone %d test in progress", zone+1); 
+                //SLEEP_MS(60000);
+                ulTaskNotifyTakeIndexed( 0,               /* Use the 0th notification */  
+                                        pdTRUE,           /* Clear the notification value  before exiting. */  
+                                        60000 );          /*presume one tick is one millisecond*/                
             }
             else
             {
                 printf("Invalid configuration for zone %d\n", zone+1);
             }
-
-            zone++; 
         }
-        else
+
+        if (test_zone == -1 )
         {
-            printf("Irrigation relay test complete\n");
+            snprintf(web.status_message, sizeof(web.status_message), "Irrigation test stopped");
+            printf("%s\n", web.status_message); 
+        } 
+        else if (zone == test_zone)
+        {
             snprintf(web.status_message, sizeof(web.status_message), "Irrigation test completed");
+            printf("%s\n", web.status_message);
             web.irrigation_test_enable = 0;
             zone = -1;
         }
+        else
+        {
+            zone = test_zone;
+            snprintf(web.status_message, sizeof(web.status_message), "Irrigation test altered to use Zone %d", zone+1);
+            printf("%s\n", web.status_message);
+        }
     }
-    
+
     return;
+}
+
+/*!
+ * \brief Set irrigation test zone
+ * 
+ * \return nothing
+ */
+void set_irrigation_relay_test_zone(int zone)
+{
+    CLIP(zone, -1, config.zone_max);
+
+    test_zone = zone;
+}
+
+/*!
+ * \brief Get irrigation test zone
+ * 
+ * \return test zone 0 to 15 or -1 if no test active
+ */
+int get_irrigation_relay_test_zone(void)
+{
+    return(test_zone);
 }

@@ -21,13 +21,16 @@
 #include "utility.h"
 #include "config.h"
 #include "led_strip.h"
+#include "worker_tasks.h"
 #include "pluto.h"
 
 
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
+extern WORKER_TASK_T worker_tasks[];
 
 extern char current_calendar_web_page[50];
+static bool test_end_redirect = false;
 
 
 /*!
@@ -1508,7 +1511,8 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
     int i = 0;
     char *param = NULL;
     char *value = NULL;
-    int new_relay_normally_open = 0;  
+    int new_relay_normally_open = 0; 
+    int new_irrigation_test_enable = 0;      
     int new_gpio = 0;
     int gpio_zone = -1;  
     int new_zone_max = 0;
@@ -1563,9 +1567,6 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
                 if ((new_zone_max > 0) && (new_zone_max <= 8))
                 {
                     config.zone_max = new_zone_max;
-
-                    // activate anti-moron relay protection
-                    printf("Anti-moron protection activated.\n  If you have made a mistake with GPIO configuration then you have 30 seconds to disconnect the power\n before permanent damage and/or may fire occur.\n");
                 }                           
             }
 
@@ -1573,19 +1574,43 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
             {
                 if (value[0])
                 {
+                    new_irrigation_test_enable = 1;
+                } 
+                else
+                {
+                    new_irrigation_test_enable = 0;  // this should never happen, since the parameter is only passed if "on"
+                }   
+
+                if (value[0] && !web.irrigation_test_enable)
+                {
                     web.irrigation_test_enable = 1;
+                    snprintf(web.status_message, sizeof(web.status_message), "Preparing for irrigation test");
                 } 
             }
         }
         i++;
     }
 
+    // handle normally open checkbox
     if (config.relay_normally_open != new_relay_normally_open)
     {
-        anti_moron_relay_protection();
-
         config.relay_normally_open = new_relay_normally_open;
     }
+
+    // handle irrigation test checkbox
+    if (web.irrigation_test_enable != new_irrigation_test_enable)
+    {
+        web.irrigation_test_enable = new_irrigation_test_enable;
+
+        if (web.irrigation_test_enable == 1)
+        {
+           snprintf(web.status_message, sizeof(web.status_message), "Preparing for irrigation test"); 
+        }
+        else
+        {
+           snprintf(web.status_message, sizeof(web.status_message), "Irrigation test terminated");  
+        }
+    }    
 
     // normally open must be used in controller mode
     if (config.personality == SPRINKLER_CONTROLLER)
@@ -1593,12 +1618,19 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
         config.relay_normally_open = 1;
     }
 
-    // Send the next page back to the user
     config_changed();
 
+    // Send the next page back to the user
     if (config.personality == SPRINKLER_CONTROLLER)
-    {    
-        return "/z_relay.shtml";
+    {
+        if (!web.irrigation_test_enable)
+        {    
+            return "/z_relay.shtml";
+        }
+        else
+        {
+            return "/z_relay_test.shtml";
+        }
     }
     else
     {
@@ -1654,6 +1686,125 @@ const char * cgi_wificountry_handler(int iIndex, int iNumParams, char *pcParam[]
     return "/network.shtml";
 }
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_relay_test_stop_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    //TODO: proper intertask communication
+    web.irrigation_test_enable = 0;
+    set_irrigation_relay_test_zone(-1);
+    snprintf(web.status_message, sizeof(web.status_message), "Irrigation test terminated");  
+    test_end_redirect = false;
+    xTaskNotifyGiveIndexed(worker_tasks[0].task_handle, 0);
+               
+    // Send the next page back to the user
+    if (config.personality == SPRINKLER_CONTROLLER)
+    {
+        if (!web.irrigation_test_enable)
+        {    
+            return "/index.shtml";
+        }
+        else
+        {
+            return "/z_relay_test.shtml";
+        }
+    }
+    else
+    {
+        return "/index.shtml";
+    }
+}
+
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_relay_test_start_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int zone = -1;
+    bool start_test = false;
+    char *next_page_url = "/index.shtml";
+    static int last_zone = -1;
+
+    if (iNumParams == 1)
+    {
+        // get zone parameter sent by browser
+        if (pcParam[0]!= NULL)
+        {
+            if (pcParam[0][0] == 'x')
+            {
+                zone = pcValue[0][0] - '0';
+                CLIP(zone, 0, config.zone_max);
+            }
+        }
+
+        // check if we have a valid zone
+        if ((zone >=0) && (zone <config.zone_max))
+        {
+            // check if test in progress
+            if (web.irrigation_test_enable)
+            {
+                // check if test zone altered
+                if (zone != get_irrigation_relay_test_zone())
+                {
+                    snprintf(web.status_message, sizeof(web.status_message), "Changing irrigation test to Zone %d", zone+1);
+                    start_test = true; 
+                }
+                else
+                {
+                    // presume this is a browser page refresh during running test
+                    next_page_url = "/z_relay_test.shtml";
+                }
+            } 
+            else 
+            {
+                // check if a test just ended
+                if (test_end_redirect && (zone == last_zone))
+                {
+                    // redirect browser to main page to avoid refresh restarting the test
+                    test_end_redirect = false;
+                    printf("Redirecting to index due to test end.  zone = %d get_zone = %d\n", zone, get_irrigation_relay_test_zone());
+                }
+                else
+                {
+                    snprintf(web.status_message, sizeof(web.status_message), "Starting irrigation test for Zone %d", zone+1); 
+                    start_test = true; 
+                }
+            }
+
+            // initiate irrigation test
+            if (start_test)
+            {
+                printf("%s\n", web.status_message);        
+                set_irrigation_relay_test_zone(zone);
+                web.irrigation_test_enable = 1;
+                test_end_redirect = true;
+                last_zone = zone;
+
+                xTaskNotifyGiveIndexed(worker_tasks[0].task_handle, 0);
+
+                next_page_url = "/z_relay_test.shtml";
+            }
+        }
+    }
+
+    return(next_page_url);
+}
+
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
     {"/schedule.cgi",           cgi_schedule_handler},
@@ -1684,8 +1835,10 @@ static const tCGI cgi_handlers[] = {
     {"/remote_led_strips.cgi",  cgi_remote_led_strips},  
     {"/personality.cgi",        cgi_personality_handler},   
     {"/relay.cgi",              cgi_relay_handler}, 
-    {"/wificountry.cgi",        cgi_wificountry_handler},     
-                                 
+    {"/wificountry.cgi",        cgi_wificountry_handler}, 
+    {"/relay_test_stop.cgi",    cgi_relay_test_stop_handler}, 
+    {"/relay_test_start.cgi",   cgi_relay_test_start_handler},     
+                                                 
 };
 
 /*!

@@ -131,7 +131,7 @@
           </div>            
 
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">   <button <!--#z1zviz-->>1</button></a>             
+            <a href="/relay_test_start.cgi?x=0">   <button <!--#z1zviz-->>1</button></a>             
             <a href="/sunday.shtml?day=0">   <button <!--#z1bviz-->><!--#z1d1d--> min</button></a> 
             <a href="/monday.shtml?day=1">   <button <!--#z1bviz-->><!--#z1d2d--> min</button></a> 
             <a href="/tuesday.shtml?day=2">   <button <!--#z1bviz-->><!--#z1d3d--> min</button></a> 
@@ -142,7 +142,7 @@
           </div>
           
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">   <button <!--#z2zviz-->>2</button></a>              
+            <a href="/relay_test_start.cgi?x=1">   <button <!--#z2zviz-->>2</button></a>              
             <a href="/sunday.shtml?day=0">   <button  <!--#z2bviz--> ><!--#z2d1d--> min</button></a> 
             <a href="/monday.shtml?day=1">   <button  <!--#z2bviz--> ><!--#z2d2d--> min</button></a> 
             <a href="/tuesday.shtml?day=2">   <button <!--#z2bviz--> ><!--#z2d3d--> min</button></a> 
@@ -153,7 +153,7 @@
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">   <button <!--#z3zviz-->>3</button></a>              
+            <a href="/relay_test_start.cgi?x=2">   <button <!--#z3zviz-->>3</button></a>              
             <a href="/sunday.shtml?day=0">   <button <!--#z3bviz-->><!--#z3d1d--> min</button></a> 
             <a href="/monday.shtml?day=1">   <button <!--#z3bviz-->><!--#z3d2d--> min</button></a> 
             <a href="/tuesday.shtml?day=2">   <button <!--#z3bviz-->><!--#z3d3d--> min</button></a> 
@@ -164,7 +164,7 @@
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">  <button <!--#z4zviz-->>4</button></a>              
+            <a href="/relay_test_start.cgi?x=3">  <button <!--#z4zviz-->>4</button></a>              
             <a href="/sunday.shtml?day=0">   <button <!--#z4bviz-->><!--#z4d1d--> min</button></a> 
             <a href="/monday.shtml?day=1">   <button <!--#z4bviz-->><!--#z4d2d--> min</button></a> 
             <a href="/tuesday.shtml?day=2">   <button <!--#z4bviz-->><!--#z4d3d--> min</button></a> 
@@ -175,7 +175,7 @@
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">   <button <!--#z5zviz-->>5</button></a>              
+            <a href="/relay_test_start.cgi?x=4">    <button <!--#z5zviz-->>5</button></a>              
             <a href="/sunday.shtml?day=0">   <button <!--#z5bviz-->><!--#z5d1d--> min</button></a> 
             <a href="/monday.shtml?day=1">   <button <!--#z5bviz-->><!--#z5d2d--> min</button></a> 
             <a href="/tuesday.shtml?day=2">   <button <!--#z5bviz-->><!--#z5d3d--> min</button></a> 
@@ -186,7 +186,7 @@
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">  <button <!--#z6zviz-->>6</button></a>              
+            <a href="/relay_test_start.cgi?x=5">  <button <!--#z6zviz-->>6</button></a>              
             <a href="/sunday.shtml?day=0">   <button <!--#z6bviz-->><!--#z6d1d--> min</button></a> 
             <a href="/monday.shtml?day=1">   <button <!--#z6bviz-->><!--#z6d2d--> min</button></a> 
             <a href="/tuesday.shtml?day=2">   <button <!--#z6bviz-->><!--#z6d3d--> min</button></a> 
@@ -197,7 +197,7 @@
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">   <button <!--#z7zviz-->>7</button></a>              
+            <a href="/relay_test_start.cgi?x=6">    <button <!--#z7zviz-->>7</button></a>              
             <a href="/sunday.shtml?day=0">   <button <!--#z7bviz-->><!--#z7d1d--> min</button></a> 
             <a href="/monday.shtml?day=1">   <button <!--#z7bviz-->><!--#z7d2d--> min</button></a> 
             <a href="/tuesday.shtml?day=2">   <button <!--#z7bviz-->><!--#z7d3d--> min</button></a> 
@@ -208,7 +208,7 @@
           </div>
            
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">  <button <!--#z8zviz-->>8</button></a>              
+            <a href="/relay_test_start.cgi?x=7">   <button <!--#z8zviz-->>8</button></a>              
             <a href="/sunday.shtml?day=0">   <button <!--#z8bviz-->><!--#z8d1d--> min</button></a> 
             <a href="/monday.shtml?day=1">   <button <!--#z8bviz-->><!--#z8d2d--> min</button></a> 
             <a href="/tuesday.shtml?day=2">   <button <!--#z8bviz-->><!--#z8d3d--> min</button></a> 

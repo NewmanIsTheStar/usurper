@@ -1,1 +1,1 @@
-#define GITHASH "d7c5247"
+#define GITHASH "39373fc"

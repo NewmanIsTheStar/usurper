@@ -14,8 +14,8 @@ void weather_initialize(void);
 int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len);
 int init_web_variables(void);
 int invalidate_weather_variables(void);
-int anti_moron_relay_protection(void);
-
+void set_irrigation_relay_test_zone(int zone);
+int get_irrigation_relay_test_zone(void);
 
 /* ecowitt command message format
     Fixed header, CMD, SIZE, DATA1, DATA2, … , DATAn, CHECKSUM

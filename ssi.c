@@ -389,7 +389,14 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             }
             else
             {
-                printed = snprintf(pcInsert, iInsertLen, "-- : --"); 
+                if (true /*config.personality == SPRINKLER_USURPER*/)
+                {
+                    printed = snprintf(pcInsert, iInsertLen, "-- : --"); 
+                }
+                else
+                {
+                    printed = snprintf(pcInsert, iInsertLen, " "); 
+                }                
             }
         }
         break;
@@ -406,8 +413,15 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                 printed = snprintf(pcInsert, iInsertLen, "%d", config.day_duration[iIndex-SSI_dur1]);    
             }
             else
-            {
-                printed = snprintf(pcInsert, iInsertLen, "--");  
+            {                 
+                if (true /*config.personality == SPRINKLER_USURPER*/)
+                {
+                    printed = snprintf(pcInsert, iInsertLen, "--"); 
+                }
+                else
+                {
+                    printed = snprintf(pcInsert, iInsertLen, " "); 
+                } 
             }
         }
         break;
@@ -937,7 +951,15 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             }
             else
             {
-                printed = snprintf(pcInsert, iInsertLen, "--");  
+                if (true /*config.personality == SPRINKLER_USURPER*/)
+                {
+                    printed = snprintf(pcInsert, iInsertLen, "--");  
+                }
+                else
+                {
+                    printed = snprintf(pcInsert, iInsertLen, " ");  
+                }
+                
             }                                 
         }
         break;
