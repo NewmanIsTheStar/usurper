@@ -63,7 +63,6 @@ typedef enum
 } LIGHT_STATE_T;
 
 // prototypes
-//WEATHER_QUERY_STATUS_T query_weather_station(int *outside_temperature, int *wind_speed, int *daily_rain, int *weekly_rain);
 WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *wind_speed, s32_t *daily_rain, s32_t *weekly_rain, u8_t *soil_moisture);
 int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len);
 void hex_dump_to_string(const uint8_t *bptr, uint32_t len, char *out_string, int out_len);
@@ -247,11 +246,7 @@ void weather_task(void *params)
                     // sleep until start of next minute
                     delay_seconds = (60 - get_real_time_clock_seconds());
                     CLIP(delay_seconds, 1, 60);
-
-                    //SLEEP_MS(delay_seconds*1000); 
-                    ulTaskNotifyTakeIndexed( 0,               /* Use the 0th notification */  
-                                             pdTRUE,          /* Clear the notification value  before exiting. */  
-                                             delay_seconds*1000 );  /*presume one tick is one millisecond*/
+                    ulTaskNotifyTakeIndexed(0, pdTRUE, pdMS_TO_TICKS(delay_seconds*1000));
                 }
             }
             else
@@ -394,7 +389,6 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
     int found_id;
     int complete_msg_received = 0;
     int error = 0;
-    //char log_message[200];
     bool rx_header = false;
 
 
@@ -407,7 +401,7 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
            rx_header = true;
         }
 
-        ecowitt_msg_len = rx_bytes[3]*256 + rx_bytes[4]; //try shifting <<8 instead
+        ecowitt_msg_len = rx_bytes[3]*256 + rx_bytes[4];
         //printf("Receieved ecowitt message length %d  [bytes %x %x]\n", ecowitt_msg_len, rx_bytes[3], rx_bytes[4]);
 
         if (rx_header && (rx_len >= ecowitt_msg_len+2))
@@ -514,7 +508,6 @@ int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len)
 int accumulate_trailing_seven_day_total_rain(int daily_rain, int weekday)
 {
     static int day = 0;
-    //static int max_daily_rain = 0;
     static int daily_rain_accumulator[7] = {0,0,0,0,0,0,0};
     static int current_weekday = 0;
     int seven_day_rain_total = 0;
@@ -624,13 +617,11 @@ int invalidate_weather_variables(void)
 IRRIGATION_STATE_T control_irrigation_relays(void)
 {
     static IRRIGATION_STATE_T irrigation_state = IRRIGATION_OFF;
-    static int active_zone = 0;
-    SCHEDULE_QUERY_STATUS_LT irrigation_schedule_status = SCHEDULE_FUTURE;    
-    //int err = 0;
+    SCHEDULE_QUERY_STATUS_LT irrigation_schedule_status = SCHEDULE_FUTURE; 
+    static int active_zone = 0;       
     int weekday;
     int min_now;
     int mow_now;
-    //char log_message[200];
     int schedule_start_mow = 0;
     int schedule_end_mow = 0;
     int mins_till_irrigation = 0;
@@ -1210,7 +1201,7 @@ int set_led_strips(int pattern, int speed)
 }
 
 /*!
- * \brief Run one minute test of each irrigation relay
+ * \brief Run one minute test of irrigation relay
  * 
  * \return nothing
  */
@@ -1245,10 +1236,7 @@ void irrigation_relay_test(void)
                 
                 printf("Testing Zone %d for 1 minute\n", zone+1);
                 snprintf(web.status_message, sizeof(web.status_message), "Zone %d test in progress", zone+1); 
-                //SLEEP_MS(60000);
-                ulTaskNotifyTakeIndexed( 0,               /* Use the 0th notification */  
-                                        pdTRUE,           /* Clear the notification value  before exiting. */  
-                                        60000 );          /*presume one tick is one millisecond*/                
+                ulTaskNotifyTakeIndexed(0, pdTRUE, pdMS_TO_TICKS(60000));                          
             }
             else
             {

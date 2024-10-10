@@ -1131,11 +1131,9 @@ const char * cgi_mood_handler(int iIndex, int iNumParams, char *pcParam[], char 
 const char * cgi_syslog_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    //int whole_part = 0;
-    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    //int new_value = 0;
+
        
     // vile design caused by web browser not sending unchecked parameters, they must be presumed unchecked
     config.syslog_enable = 0;       
@@ -1294,11 +1292,8 @@ const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char
 const char * cgi_software_load_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    //int whole_part = 0;
-    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    //int new_value = 0;
 
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
@@ -1349,8 +1344,6 @@ const char * cgi_software_load_handler(int iIndex, int iNumParams, char *pcParam
 const char * cgi_remote_led_strips(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    //int hour = 0;
-    //int minute = 0;
     char *param = NULL;
     char *value = NULL;
        
@@ -1428,8 +1421,6 @@ const char * cgi_remote_led_strips(int iIndex, int iNumParams, char *pcParam[], 
 const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    //int hour = 0;
-    //int minute = 0;
     char *param = NULL;
     char *value = NULL;
     PERSONALITY_E new_personality = NO_PERSONALITY;
@@ -1652,11 +1643,8 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
 const char * cgi_wificountry_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    //int whole_part = 0;
-    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    //int new_value = 0;
        
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
@@ -1699,9 +1687,9 @@ const char * cgi_wificountry_handler(int iIndex, int iNumParams, char *pcParam[]
 const char * cgi_relay_test_stop_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     //TODO: proper intertask communication
-    web.irrigation_test_enable = 0;
-    set_irrigation_relay_test_zone(-1);
     snprintf(web.status_message, sizeof(web.status_message), "Irrigation test terminated");  
+    web.irrigation_test_enable = 0;
+    set_irrigation_relay_test_zone(-1);    
     test_end_redirect = false;
     xTaskNotifyGiveIndexed(worker_tasks[0].task_handle, 0);
                
