@@ -1793,39 +1793,128 @@ const char * cgi_relay_test_start_handler(int iIndex, int iNumParams, char *pcPa
     return(next_page_url);
 }
 
+
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_led_pattern_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int new_pattern = -1;
+    static int pattern_type = -1;
+    bool pattern_set = false;
+       
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            printf("Parameter: %s has Value: %s\n", param, value);
+
+            if (strcasecmp("ledp", param) == 0)
+            {
+                new_pattern = pcValue[0][0] - '0'; 
+                CLIP(new_pattern, 0, 7);           
+            } 
+
+            if (strcasecmp("p", param) == 0)
+            {
+                pattern_type = pcValue[0][0] - '0'; 
+                CLIP(pattern_type, -1, 3);           
+            }                                                                   
+        }
+
+        i++;
+    }
+
+    if ((new_pattern >= 0) && (new_pattern < 8))
+    {
+        printf("got a valid new pattern\n");
+
+        switch(pattern_type)
+        {
+        case 0:
+            printf("acitve pattern = %d\n", new_pattern);
+            config.led_pattern_when_irrigation_active = new_pattern;
+            pattern_set = true;
+            break;
+        case 1:
+            printf("skipped pattern = %d\n", new_pattern);
+            config.led_pattern_when_irrigation_usurped = new_pattern;
+            pattern_set = true;            
+            break;
+        case 2:
+            printf("default pattern = %d\n", new_pattern);
+            config.led_pattern = new_pattern;
+            pattern_set = true;            
+            break;
+        default:
+            printf("pattern type not established\n");
+            break;
+        }        
+    }
+
+    if (pattern_set)
+    {
+        pattern_type = -1;
+        config_changed();
+        return "/addressable_led.shtml";
+    }
+    else
+    {
+        return "/led_pattern.shtml";
+    }
+}
+
+
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
-    {"/schedule.cgi",           cgi_schedule_handler},
-    {"/sunday.cgi",             cgi_weekday_handler},   //-START- days of week must be consecutive AND start at index 1
-    {"/monday.cgi",             cgi_weekday_handler},
-    {"/tuesday.cgi",            cgi_weekday_handler},
-    {"/wednesday.cgi",          cgi_weekday_handler},
-    {"/thursday.cgi",           cgi_weekday_handler},
-    {"/friday.cgi",             cgi_weekday_handler},
-    {"/saturday.cgi",           cgi_weekday_handler},   //-END- days of week must be consecutive 
-    {"/durinc.cgi",             cgi_inc_duration_handler}, 
-    {"/durdec.cgi",             cgi_dec_duration_handler},    
-    {"/hrinc.cgi",              cgi_inc_hour_handler}, 
-    {"/mininc.cgi",             cgi_inc_minute_handler},  
-    {"/hrdec.cgi",              cgi_dec_hour_handler}, 
-    {"/mindec.cgi",             cgi_dec_minute_handler}, 
-    {"/time.cgi",               cgi_time_handler},      
-    {"/ecowitt.cgi",            cgi_ecowitt_handler},   
-    {"/network.cgi",            cgi_network_handler},    
-    {"/reboot.cgi",             cgi_reboot_handler},    
-    {"/aled.cgi",               cgi_led_handler},   
-    {"/psched.cgi",             cgi_portrait_schedule_handler},     
-    {"/dsched.cgi",             cgi_day_schedule_handler},   
-    {"/mood.cgi",               cgi_mood_handler},       
-    {"/syslog.cgi",             cgi_syslog_handler}, 
-    {"/units.cgi",              cgi_units_handler},   
-    {"/swload.cgi",             cgi_software_load_handler},     
-    {"/remote_led_strips.cgi",  cgi_remote_led_strips},  
-    {"/personality.cgi",        cgi_personality_handler},   
-    {"/relay.cgi",              cgi_relay_handler}, 
-    {"/wificountry.cgi",        cgi_wificountry_handler}, 
-    {"/relay_test_stop.cgi",    cgi_relay_test_stop_handler}, 
-    {"/relay_test_start.cgi",   cgi_relay_test_start_handler},     
+    {"/schedule.cgi",                   cgi_schedule_handler},
+    {"/sunday.cgi",                     cgi_weekday_handler},   //-START- days of week must be consecutive AND start at index 1
+    {"/monday.cgi",                     cgi_weekday_handler},
+    {"/tuesday.cgi",                    cgi_weekday_handler},
+    {"/wednesday.cgi",                  cgi_weekday_handler},
+    {"/thursday.cgi",                   cgi_weekday_handler},
+    {"/friday.cgi",                     cgi_weekday_handler},
+    {"/saturday.cgi",                   cgi_weekday_handler},   //-END- days of week must be consecutive 
+    {"/durinc.cgi",                     cgi_inc_duration_handler}, 
+    {"/durdec.cgi",                     cgi_dec_duration_handler},    
+    {"/hrinc.cgi",                      cgi_inc_hour_handler}, 
+    {"/mininc.cgi",                     cgi_inc_minute_handler},  
+    {"/hrdec.cgi",                      cgi_dec_hour_handler}, 
+    {"/mindec.cgi",                     cgi_dec_minute_handler}, 
+    {"/time.cgi",                       cgi_time_handler},      
+    {"/ecowitt.cgi",                    cgi_ecowitt_handler},   
+    {"/network.cgi",                    cgi_network_handler},    
+    {"/reboot.cgi",                     cgi_reboot_handler},    
+    {"/aled.cgi",                       cgi_led_handler},   
+    {"/psched.cgi",                     cgi_portrait_schedule_handler},     
+    {"/dsched.cgi",                     cgi_day_schedule_handler},   
+    {"/mood.cgi",                       cgi_mood_handler},       
+    {"/syslog.cgi",                     cgi_syslog_handler}, 
+    {"/units.cgi",                      cgi_units_handler},   
+    {"/swload.cgi",                     cgi_software_load_handler},     
+    {"/remote_led_strips.cgi",          cgi_remote_led_strips},  
+    {"/personality.cgi",                cgi_personality_handler},   
+    {"/relay.cgi",                      cgi_relay_handler}, 
+    {"/wificountry.cgi",                cgi_wificountry_handler}, 
+    {"/relay_test_stop.cgi",            cgi_relay_test_stop_handler}, 
+    {"/relay_test_start.cgi",           cgi_relay_test_start_handler},     
+    {"/led_pattern.cgi",                cgi_led_pattern_handler},   
                                                  
 };
 

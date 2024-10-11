@@ -565,8 +565,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;   
         case SSI_lpat: //lpat
         {
-            printed = snprintf(pcInsert, iInsertLen, "%d", config.led_pattern);
-            //aled_pattern_web_selection(pcInsert, iInsertLen, config.led_pattern);   
+            printed = snprintf(pcInsert, iInsertLen, "%s", get_pattern_name(config.led_pattern)); 
         }               
         break; 
         case SSI_lspd: //lspd
@@ -642,14 +641,12 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;
         case SSI_lia: //lia
         {
-            printed = snprintf(pcInsert, iInsertLen, "%d", config.led_pattern_when_irrigation_active);
-            //aled_pattern_web_selection(pcInsert, iInsertLen, config.led_pattern_when_irrigation_active);             
+            printed = snprintf(pcInsert, iInsertLen, "%s", get_pattern_name(config.led_pattern_when_irrigation_active));           
         }
         break; 
         case SSI_liu: //liu
         {
-            printed = snprintf(pcInsert, iInsertLen, "%d", config.led_pattern_when_irrigation_usurped);
-            //aled_pattern_web_selection(pcInsert, iInsertLen, config.led_pattern_when_irrigation_active);              
+            printed = snprintf(pcInsert, iInsertLen, "%s", get_pattern_name(config.led_pattern_when_irrigation_usurped));            
         }
         break; 
         case SSI_lis: //lis

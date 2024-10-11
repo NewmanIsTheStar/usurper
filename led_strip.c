@@ -79,7 +79,7 @@ const struct {
         {pattern_blank,   "Blank"},    
         {pattern_snakes,  "Snakes"},
         {pattern_scan,    "Scan"},
-        {pattern_random,  "Random data"},
+        {pattern_random,  "Random"},
         {pattern_sparkle, "Sparkles"},
         {pattern_greys,   "Greys"},
         {pattern_police,  "Police"},
@@ -520,40 +520,16 @@ void pattern_breath(int sm, uint len, uint t) {
     }
 }
 
-
-
-// NB: this doesn't work because the SSI tag value becomes too long, would need mulitple tags to make this work e.g. one per pattern
-/*!
- * \brief a failed attempt to dynamically generate an html drop down list of pattern names
+ /*!
+ * \brief get pattern name
  *
- * \param[in]  buf            buffer to receive html snippet
- * \param[in]  len            max length of buffer
- * \param[in]  selected_row   row to select in the html drop down list 
+ * \param[in]  pattern        index into pattern table
  * 
- * \return nothing
+ * \return pinter to constant string containing pattern name
  */
- int aled_pattern_web_selection(char *buf, int len, int selected_row)  
+ const char *get_pattern_name(int pattern)  
  {
-    int num_chars = 0;
-    int row = 0;
-    int i = 0;
+    CLIP(pattern, 0, NUM_ROWS(pattern_table));
 
-    while(row < NUM_ROWS(pattern_table) && num_chars < len)
-    {
-        if (row == selected_row)
-        {
-            i = snprintf(buf+num_chars, len-num_chars, "<option value=\"%d selected\">%s</option>", row, pattern_table[row].name);
-        }
-        else
-        {
-           i = snprintf(buf+num_chars, len-num_chars, "<option value=\"%d\">%s</option>", row, pattern_table[row].name); 
-        }
-        if (i >= 0)
-        {
-            num_chars += i;
-        }
-        row++; 
-    }
-
-    return(0);
- }    
+    return(pattern_table[pattern].name);
+ }   

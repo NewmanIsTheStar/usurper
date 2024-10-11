@@ -61,26 +61,27 @@ body {
   </div>
 
 <div class="main">
-  <h2>LED Strip Control</h2>       
+  <h2>LED Strip Control</h2> 
   <form action="/aled.cgi">
-    <label for="dsenable">Use LED strip to indicate irrigation status</label>
-    <input type="checkbox" id="lie" name="lie" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#lie-->><br><br>       
-    <label for="lednum">LED strip pattern when irrigation active</label>
-    <input type="text" id="lia" name="lia" value="<!--#lia-->"><br><br>
-    <label for="lednum">LED strip pattern when irrigation skipped</label>
-    <input type="text" id="liu" name="liu" value="<!--#liu-->"><br><br>     
-    <label for="lednum">Sustain LED pattern after irrigation (minutes)</label>
+    <label for="dsenable">Use LED strips to indicate irrigation status</label>
+    <input type="checkbox" id="lie" name="lie" value="on" style="height:20px; width:20px; vertical-align: middle;" onclick="this.form.submit()"<!--#lie--> ><br><br>       
+    <label for="pattern">Default pattern</label>
+    <a href="/led_pattern.cgi?p=2" style="text-decoration:none"><!--#lpat--></a><br><br>   
+    <label for="pata">Pattern when irrigation active</label>
+    <a href="/led_pattern.cgi?p=0" style="text-decoration:none"><!--#lia--></a><br><br> 
+    <label for="lednum">Pattern when irrigation skipped</label>
+    <a href="/led_pattern.cgi?p=1" style="text-decoration:none"><!--#liu--></a><br><br>  
+    <label for="speed">Pattern transitition delay (ms)</label>
+    <input type="text" id="lspd" name="lspd" value="<!--#lspd-->"><br><br>     
+    <label for="lednum">Sustain pattern after irrigation (minutes)</label>
     <input type="text" id="lis" name="lis" value="<!--#lis-->"><br><br>  
-    <label for="pattern">LED strip default pattern</label>
-    <input type="text" id="lpat" name="lpat" value="<!--#lpat-->"><br><br>
-    <br> 
-    <label for="speed">LED strip transitition delay (ms)</label>
-    <input type="text" id="lspd" name="lspd" value="<!--#lspd-->"><br><br>                       
-    <label for="ledgpio">LED strip GPIO</label>
+    <br>
+    <h3>Directly Connected LED Strip</h3> 
+    <label for="ledgpio">GPIO</label>
     <input type="text" id="lpin" name="lpin" value="<!--#lpin-->"><br><br>  
-    <label for="ledrgbw">LED strip is RGBW</label>
+    <label for="ledrgbw">RGBW</label>
     <input type="checkbox" id="lrgbw" name="lrgbw" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#lrgbw-->><br><br>         
-    <label for="lednum">LED strip total number of LEDs</label>
+    <label for="lednum">Number of LEDs</label>
     <input type="text" id="lnum" name="lnum" value="<!--#lnum-->"><br><br>      
     <br>                       
     <input type="submit" value="Save" style="font-size: 25px;">
