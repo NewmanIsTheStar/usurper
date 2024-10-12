@@ -28,7 +28,7 @@ Upon completion of a successful build the file usurper.uf2 should be created.  T
 
 ## Initial Configuration
 - The Pico W will initially create a WiFi network with called **pluto**.  Connect to this WiFi network and then point your web browser to http://192.168.4.1
-- Note that many web browsers automatically change the URL from http:// to https:// so if it is not connecting you might need to reenter the URL.
+  - Note that many web browsers automatically change the URL from http:// to https:// so if it is not connecting you might need to reenter the URL.
 - Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to the pluto network and correct your mistakes.  
 - Set the personality by navigating to Settings/Foibles/☺
   - Sprinkler Usurper for single relay
