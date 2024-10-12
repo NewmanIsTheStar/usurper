@@ -11,7 +11,8 @@ A relay controlled by the Pico W is inserted into the common line that runs from
 ![usurper-system](https://github.com/user-attachments/assets/6ff725fb-f210-417a-a9da-73a56ac723e8)
 
 ### Option 2: Implement the entire irrigation controller
-Relays controlled by the Pico W are used to switch 24VAC to each irrigation zone. A device like "Waveshare Industrial 8-Channel Relay Module for Raspberry Pi Pico" with 8 relays can be used to control up to 8 irrigation zones.
+Relays controlled by the Pico W are used to switch 24VAC to each irrigation zone. A device like "Waveshare Industrial 8-Channel Relay Module for Raspberry Pi Pico" can be used to control up to 8 irrigation zones.
+![Screenshot from 2024-10-11 20-26-41](https://github.com/user-attachments/assets/6641408e-83aa-46b1-a006-ec8aa4d0b83c)
 
 ## Installation on Ubuntu Linux
 ```
@@ -27,7 +28,7 @@ Upon completion of a successful build the file usurper.uf2 should be created.  T
 
 ## Initial Configuration
 - The Pico W will initially create a WiFi network with SSID = pluto.  Connect to this WiFi network and then point your web browser to http://192.168.4.1
-- Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to the pluto network and correct your mistakes.  Note that many web browsers you change the URL from http:// to https:// -- this may necessitate reentering the URL several times ifyou fail to connect the first time.
+- Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to the pluto network and correct your mistakes.  Note that many web browsers automatically change the URL from http:// to https:// so if it is not connecting you might need to reenter the URL.
 
 ## Optional Hardware
 I bought this stuff on Amazon and it is available elsewhere.  The relay module is especially convenient for this project. 
