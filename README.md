@@ -37,6 +37,7 @@ I bought this stuff on Amazon and it is available elsewhere.  The relay module i
 - Govee Table Lamp H60511D1
 - Addressable RGB LED strips
 - Additional Pico W boards to control remote LED strips
+- Waveshare Industrial 8-Channel Relay Module for Raspberry Pi Pico
 
 ## Licenses
 - SPDX-License-Identifier: BSD-3-Clause
