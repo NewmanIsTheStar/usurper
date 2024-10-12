@@ -31,9 +31,9 @@ Upon completion of a successful build the file usurper.uf2 should be created.  T
 - Note that many web browsers automatically change the URL from http:// to https:// so if it is not connecting you might need to reenter the URL.
 - Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to the pluto network and correct your mistakes.  
 - Set the personality by navigating to Settings/Foibles/☺
-  -Sprinkler Usurper for single relay
-  -Sprinkler Controller for multiple relays
-  -LED Controller for remote LED strip
+  - Sprinkler Usurper for single relay
+  - Sprinkler Controller for multiple relays
+  - LED Controller for remote LED strip
 - Refer to the Wiki for more detailed configuration
 
 ## Optional Hardware
