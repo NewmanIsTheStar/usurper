@@ -1,0 +1,7 @@
+The two bash scripts in this directory are used for step through debugging with gdb using the pico debug probe.
+
+debugserver - establish connection via pico probe
+watchlog - display stout from the pi pico
+
+It is usually best to run these in two separate terminal windows so that you can easily see what is going on.
+
