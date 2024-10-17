@@ -34,7 +34,7 @@ Upon completion of a successful build the file usurper.uf2 should be created.  T
   - Sprinkler Usurper for single relay
   - Sprinkler Controller for multiple relays
   - LED Controller for remote LED strip
-- Refer to the Wiki for more detailed configuration
+- Refer to the [Wiki](https://github.com/NewmanIsTheStar/usurper/wiki) for more detailed configuration
 
 ## Optional Hardware
 I bought this stuff on Amazon and it is available elsewhere.  The relay module is especially convenient for this project. 
