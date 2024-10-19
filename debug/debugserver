@@ -1,4 +1,6 @@
 #!/bin/bash
-openocd -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000"
+# set the following path based on your local installation
+cd ~/.pico-sdk/openocd/0.12.0+dev/scripts
+sudo ../openocd -s tcl -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000"
 
 
