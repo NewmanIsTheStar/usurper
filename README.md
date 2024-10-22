@@ -40,6 +40,7 @@ Upon completion of a successful build the file usurper.uf2 should be created.  T
 I bought this stuff on Amazon and it is available elsewhere.  The relay module is especially convenient for this project. 
 - Signal Relay Module for Raspberry Pi Pico, SPDT 2Amp / AC120V DC24V
 - ECOWITT Wittboy Weather Station GW2001
+- ECOWITT WH51 Soil Moisture Sensor Soil Humidity Tester
 - Govee Table Lamp H60511D1
 - Addressable RGB LED strips
 - Additional Pico W boards to control remote LED strips
