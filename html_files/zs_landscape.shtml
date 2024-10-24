@@ -94,6 +94,7 @@
 
     <head>
         <title>Sprinkler Controller</title>
+        <link rel="icon" type="image/x-icon" href="/sprinkler.ico">
     </head>
     <body>
         <h1 style="font-family:Lato,sans-serif; color: #070000;">Sprinkler Controller</h1>

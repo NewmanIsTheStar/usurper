@@ -7,7 +7,7 @@
 #ifndef PLUTO_H
 #define PLUTO_H
 
-#define PLUTO_VER "01.00.00"            //manually maintained version
+#define PLUTO_VER "01.00.01"            //manually maintained version
 #define USE_GIT_HASH_AS_VERSION (1)     //use git hash as version
 
 #define STRNCPY(dst, src, size)  {strncpy((dst), (src), (size)); *((dst)+(size)-1)=0;}

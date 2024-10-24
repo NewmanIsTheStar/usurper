@@ -58,20 +58,19 @@ body {
     <p><a href="/index.shtml">&#8629</a></p>    
   </div>
 
-<div class="main">
-  <h2>LED Controller</h2>      
-    <p>Current LED pattern: <!--#clpat--></p>
-    <p>Current LED transition delay: <!--#cltran--></p>       
-    <br>
-    <br>
-    <p>Local Time: <!--#ltme--></p>
-    <p>Last LED request from: <!--#clreq--></p> 
-    <br>
-    <br>   
-    <p>Network Time: <!--#time--></p>
-    <p>Last reboot: <!--#dogtme--></p>
-    <br> 
-    <p>Version: <!--#ghsh--></p> 
-</div>   
+  <div class="main">
+    <h2>LED Strip Control</h2> 
+    <form action="/led_strip.cgi">
+      <h3>Directly Connected LED Strip</h3> 
+      <label for="ledgpio">GPIO</label>
+      <input type="text" id="lpin" name="lpin" value="<!--#lpin-->"><br><br>  
+      <label for="ledrgbw">RGBW</label>
+      <input type="checkbox" id="lrgbw" name="lrgbw" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#lrgbw-->><br><br>         
+      <label for="lednum">Number of LEDs</label>
+      <input type="text" id="lnum" name="lnum" value="<!--#lnum-->"><br><br>      
+      <br>                       
+      <input type="submit" value="Save" style="font-size: 25px;">
+    </form> 
+  </div>    
 </body>
 </html> 

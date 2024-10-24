@@ -3,6 +3,7 @@
 
 <head>
     <title>Orientation Detection</title>
+    <link rel="icon" type="image/x-icon" href="/sprinkler.ico">    
 </head>
 
 <body onload="load_page();"></body>

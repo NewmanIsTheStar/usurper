@@ -728,13 +728,11 @@ const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], ch
 const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     int i = 0;
-    //int whole_part = 0;
-    //int tenths_part = 0;
     char *param = NULL;
     char *value = NULL;
-    //int new_value = 0;
 
-    config.use_led_strip_to_indicate_irrigation_status = 0;       
+    config.use_led_strip_to_indicate_irrigation_status = 0;   
+    config.led_rgbw = 0;   
 
     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
@@ -770,8 +768,15 @@ const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *
 
             if (strcasecmp("lrgbw", param) == 0)
             {
-                sscanf(value, "%d", &config.led_rgbw);             
-            }
+                if (value[0])
+                {
+                    config.led_rgbw = 1;
+                } 
+                else
+                {
+                    config.led_rgbw = 0;
+                }                             
+            }            
 
             if (strcasecmp("lnum", param) == 0)
             {
@@ -1880,6 +1885,69 @@ const char * cgi_led_pattern_handler(int iIndex, int iNumParams, char *pcParam[]
     }
 }
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_led_strip_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+
+
+    config.led_rgbw = 0;       
+
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            //printf("Parameter: %s has Value: %s\n", param, value); 
+
+            if (strcasecmp("lpin", param) == 0)
+            {
+                sscanf(value, "%d", &config.led_pin);             
+            }
+
+            if (strcasecmp("lrgbw", param) == 0)
+            {
+                if (value[0])
+                {
+                    config.led_rgbw = 1;
+                } 
+                else
+                {
+                    config.led_rgbw = 0;
+                }                             
+            }   
+
+            if (strcasecmp("lnum", param) == 0)
+            {
+                sscanf(value, "%d", &config.led_number);             
+            }                         
+        }
+
+        i++;
+    }
+
+
+    // Send the next page back to the user
+    config_changed();
+    return "/led_strip.shtml";
+}
+
 
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
@@ -1915,6 +1983,7 @@ static const tCGI cgi_handlers[] = {
     {"/relay_test_stop.cgi",            cgi_relay_test_stop_handler}, 
     {"/relay_test_start.cgi",           cgi_relay_test_start_handler},     
     {"/led_pattern.cgi",                cgi_led_pattern_handler},   
+    {"/led_strip.cgi",                  cgi_led_strip_handler},       
                                                  
 };
 
