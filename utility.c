@@ -267,7 +267,7 @@ int check_watchdog_reboot(void)
     if (watchdog_reset && config.syslog_enable && !syslog_sent)
     {
         // log watchdog event
-        if ((send_syslog_message("usurper", "REBBOT @ %s", web.watchdog_timestring)) > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
+        if ((send_syslog_message("usurper", "REBOOT @ %s", web.watchdog_timestring)) > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
         {
             syslog_sent = true;
         }

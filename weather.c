@@ -733,7 +733,7 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
                     gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
                 }
             }
-            printf("IRRIGATION OFF\n"); 
+            //printf("IRRIGATION OFF\n"); 
             break;
         case IRRIGATION_IN_PROGRESS:
             // turn off all relays except desired zone        
@@ -752,7 +752,7 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
             {
                 gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0); 
             } 
-            printf("IRRIGATION ON, Zone = %d\n", zone+1);
+            //printf("IRRIGATION ON, Zone = %d\n", zone+1);
             break;
         } 
     }
