@@ -13,6 +13,7 @@
             "compilerPath": "/usr/bin/arm-none-eabi-gcc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++14",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
             "intelliSenseMode": "linux-gcc-arm"
         }
     ],

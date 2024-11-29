@@ -91,5 +91,16 @@ int flash_dump(void)
 }
 
 
+void flash_get_program_size(void)
+{
+    int flash_percentage = 0;
+    extern char __flash_binary_start;  // defined in linker script
+    extern char __flash_binary_end;    // defined in linker script
 
+    uintptr_t start = (uintptr_t) &__flash_binary_start;
+    uintptr_t end = (uintptr_t) &__flash_binary_end;
+    //printf("Binary starts at %08x and ends at %08x, size is %08x\n", start, end, end-start);
+    flash_percentage = ((end-start)*1000)/(PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE);
+    printf("Size: %d.%d%% of flash\n", flash_percentage/10, flash_percentage%10);
+}
 

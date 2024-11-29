@@ -27,6 +27,7 @@ int config_validate(void);
 void config_v1_to_v2(void);
 void config_v2_to_v3(void);
 void config_v3_to_v4(void);
+void config_v4_to_v5(void);
 
 
 NON_VOL_VARIABLES_T config;
@@ -36,7 +37,8 @@ static NON_VOL_CONVERSION_T config_info[] =
     {1,      offsetof(NON_VOL_VARIABLES_T_VERSION_1, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_1, crc),   &config_blank_to_v1},
     {2,      offsetof(NON_VOL_VARIABLES_T_VERSION_2, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_2, crc),   &config_v1_to_v2}, 
     {3,      offsetof(NON_VOL_VARIABLES_T_VERSION_3, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_3, crc),   &config_v2_to_v3}, 
-    {4,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v3_to_v4},     
+    {4,      offsetof(NON_VOL_VARIABLES_T_VERSION_4, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_4, crc),   &config_v3_to_v4},  
+    {5,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v4_to_v5},        
 };
 
 
@@ -202,6 +204,24 @@ void config_v3_to_v4(void)
     }   
 }
 
+/*!
+ * \brief Convert configuration from v4 to v5 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v4_to_v5(void)
+{
+    int i = 0;
+    int j = 0;
+
+    printf("Converting configuration from version 4 to version 5\n"); 
+    config.version = 5;     
+
+    config.thermostat_enable = 0;
+    config.heating_gpio = -1;
+    config.cooling_gpio = -1;
+    config.fan_gpio = -1;
+}
 
 
 /*!

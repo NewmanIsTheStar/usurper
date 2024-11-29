@@ -708,6 +708,9 @@ int set_calendar_html_page(void)
    case LED_STRIP_CONTROLLER:
          STRNCPY(current_calendar_web_page, "/led_controller.shtml", sizeof(current_calendar_web_page)); 
          break;
+   case HVAC_THERMOSTAT:
+         STRNCPY(current_calendar_web_page, "/thermostat.shtml", sizeof(current_calendar_web_page)); 
+         break;         
    }
 
 

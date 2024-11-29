@@ -54,6 +54,7 @@ add_executable(usurper
         message.c
         udp.c
         wifi.c
+        thermostat.c
         )      
 
 target_compile_definitions(usurper PRIVATE
@@ -64,7 +65,8 @@ target_compile_definitions(usurper PRIVATE
 target_include_directories(usurper PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/
-        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
+        #${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
+        #${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/include        
         ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_stdio/include
         )
@@ -80,6 +82,7 @@ target_link_libraries(usurper
         hardware_rtc
         pico_flash
         hardware_pio
+        hardware_i2c
         )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")

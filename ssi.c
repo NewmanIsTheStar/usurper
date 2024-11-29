@@ -817,6 +817,9 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             case LED_STRIP_CONTROLLER:
                 printed = snprintf(pcInsert, iInsertLen, "/led_controller.shtml");
                 break;
+            case HVAC_THERMOSTAT:
+                printed = snprintf(pcInsert, iInsertLen, "/thermostat.shtml");
+                break;                
             }
         }                                                                                                                                                   
         break; 

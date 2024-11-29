@@ -18,6 +18,7 @@
 #include "weather.h"
 #include "led_strip.h"
 #include "message.h"
+#include "thermostat.h"
 
 // worker tasks to launch and monitor
 WORKER_TASK_T worker_tasks[] =
@@ -25,7 +26,8 @@ WORKER_TASK_T worker_tasks[] =
     //  function        name                    stack   priority        
     {   weather_task,   "Weather Task",         1024,   3},
     {   led_strip_task, "LED Strip Task",       1024,   4},  
-    {   message_task,   "Message Task",         1024,   1},         
+    {   message_task,   "Message Task",         1024,   1},  
+    //{   thermostat_task,"Thermostat Task",      1024,   5},        
 
     // end of table
     {   NULL,           NULL,               0,      0,         }

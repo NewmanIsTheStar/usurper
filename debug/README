@@ -3,7 +3,7 @@ The two bash scripts in this directory are used for step through debugging with 
 debugserver - establish connection via pico probe, this shows you what gdb is doing during a debug session
 watchlog    - display stdout from the pi pico, this shows you any printf output from your program
 
-To start step through debugging in VSCode, first click on the "Run and Debug" icon on the left side of the window, then click on the gren triangle icon to start the program.  The first time you do this you might get a drop down list of options, choose "launch.json"
+To start step through debugging in VSCode, first click on the "Run and Debug" icon on the left side of the window, then click on the green triangle icon to start the program.  The first time you do this you might get a drop down list of options, choose "launch.json"
 
 NOTES
 1. Under no circumstances should you click on "Import Project" if using the VSCode Pi Pico Extension -- this will entirely screw up the project.

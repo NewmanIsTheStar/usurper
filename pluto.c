@@ -104,6 +104,7 @@ int pluto(void)
     printf("%s\n", PLUTO_VER);
 #endif
 
+    flash_get_program_size();
     printf("Compiled: %s %s\n\n",__DATE__,__TIME__);
 
     if (watchdog_caused_reboot())
@@ -504,4 +505,3 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
         printf("stack overflow\n");
     }
 }
-

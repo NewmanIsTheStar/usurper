@@ -9,5 +9,6 @@
 int flash_read_non_volatile_variables(void);
 int flash_write_non_volatile_variables(void);
 int flash_dump(void);
+void flash_get_program_size(void);
 
 #endif
