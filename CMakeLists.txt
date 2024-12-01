@@ -8,9 +8,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(PICO_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/pico-sdk)
 set(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel)
+#set(PICOTOOL_FORCE_FETCH_FROM_GIT 1)
 
 set(PICO_BOARD pico_w CACHE STRING "Board type")
 add_compile_definitions(PCIO_BOARD pico_w)
+#set(PICO_BOARD pico2_w CACHE STRING "Board type")
+#add_compile_definitions(PCIO_BOARD pico2_w)
 
 # initialize pico-sdk from submodule
 # note: this must happen before project()
@@ -66,7 +69,7 @@ target_include_directories(usurper PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/
         #${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
-        #${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/include        
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/include        
         ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_stdio/include
         )
