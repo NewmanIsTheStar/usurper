@@ -1952,6 +1952,171 @@ const char * cgi_led_strip_handler(int iIndex, int iNumParams, char *pcParam[], 
     return "/led_strip.shtml";
 }
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_setpoints_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int new_relay_normally_open = 0; 
+    int new_irrigation_test_enable = 0;      
+    int new_gpio = 0;
+    int setpoint_number = -1;  
+    int setpoint_index = -1;
+    int new_zone_max = 0;
+    int len = 0;
+       
+    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+ 
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            printf("Parameter: %s has Value: %s\n", param, value);  
+
+            len = strlen(param);
+            if ((len > 5) && (param[len-1] == 'e') && (param[len-2] == 'm') && (param[len-3] == 'n'))
+            {
+                setpoint_number = -1;
+                sscanf(param, "sp%dnme", &setpoint_number);
+                if ((setpoint_number >= 1) && (setpoint_number <= 12))
+                {
+                    // adjust to zero base
+                    setpoint_number--;
+
+                    sscanf(value, "%s", &(config.setpoint_name[setpoint_number]));  
+                    printf("after scanf spn[%d] = %s\n", setpoint_number, config.setpoint_name[setpoint_number]);
+                } 
+            }
+
+            len = strlen(param);
+            if ((len > 5) && (param[len-1] == 'p') && (param[len-2] == 'm') && (param[len-3] == 't'))
+            {            
+                setpoint_number = -1;
+                sscanf(param, "sp%dtmp", &setpoint_number);
+                if ((setpoint_number >= 1) && (setpoint_number <= 12))
+                {
+                    // adjust to zero base
+                    setpoint_number--;
+
+                    sscanf(value, "%d", &(config.setpoint_temperaturex10[setpoint_number]));  
+                    printf("after scanf spt[%d] = %d\n", setpoint_number, config.setpoint_temperaturex10[setpoint_number]);
+                }
+            }             
+
+        }
+        i++;
+    }
+
+    config_changed();
+
+    // Send the next page back to the user
+    return "/ts_setpoints.shtml";
+    
+}
+
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_periods_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int new_relay_normally_open = 0; 
+    int new_irrigation_test_enable = 0;      
+    int new_gpio = 0;
+    int period_number = -1;  
+    int setpoint_index = -1;
+    int new_zone_max = 0;
+    int len = 0;
+       
+    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+ 
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            printf("Parameter: %s has Value: %s\n", param, value);  
+
+            len = strlen(param);
+            if ((len > 4) && (param[len-1] == 't') && (param[len-2] == 's'))
+            { 
+                period_number = -1;
+                sscanf(param, "ts%dst", &period_number);
+                if ((period_number >= 1) && (period_number <= 12))
+                {
+                    // adjust to zero base
+                    period_number--;
+
+                    //sscanf(value, "%s", &config.setpoint_name[period_number]);
+                    config.thermostat_period_start_mow[period_number] = string_to_mow(value, 32);
+
+                }
+            } 
+
+            len = strlen(param);
+            if ((len > 4) && (param[len-1] == 'n') && (param[len-2] == 'e'))
+            { 
+                period_number = -1;
+                sscanf(param, "ts%den", &period_number);
+                if ((period_number >= 1) && (period_number <= 12))
+                {
+                    // adjust to zero base
+                    period_number--;
+
+                    //sscanf(value, "%d", &config.setpoint_temperaturex10[period_number]); 
+                    config.thermostat_period_end_mow[period_number] = string_to_mow(value, 32); 
+                } 
+            } 
+            len = strlen(param);
+            if ((len > 4) && (param[len-1] == 'n') && (param[len-2] == 'i'))
+            { 
+                period_number = -1;
+                sscanf(param, "ts%din", &period_number);
+                if ((period_number >= 1) && (period_number <= 12))
+                {
+                    // adjust to zero base
+                    period_number--;
+
+                    sscanf(value, "%d", &(config.thermostat_period_setpoint_index[period_number]));  
+                }
+            }                      
+
+        }
+        i++;
+    }
+
+    config_changed();
+
+    // Send the next page back to the user
+    return "/ts_periods.shtml";
+    
+}
 
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
@@ -1987,8 +2152,9 @@ static const tCGI cgi_handlers[] = {
     {"/relay_test_stop.cgi",            cgi_relay_test_stop_handler}, 
     {"/relay_test_start.cgi",           cgi_relay_test_start_handler},     
     {"/led_pattern.cgi",                cgi_led_pattern_handler},   
-    {"/led_strip.cgi",                  cgi_led_strip_handler},       
-                                                 
+    {"/led_strip.cgi",                  cgi_led_strip_handler},  
+    {"/setpoints.cgi",                  cgi_setpoints_handler},      
+    {"/periods.cgi",                    cgi_periods_handler},                                                  
 };
 
 /*!

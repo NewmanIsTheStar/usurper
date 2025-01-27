@@ -143,5 +143,23 @@ to exclude the API function. */
 #define configUSE_PASSIVE_IDLE_HOOK             0
 #define portSUPPORT_SMP                         1
 
+
+//newman porting to Pico 2W
+#if 0
+#define configENABLE_FPU 1
+#define configENABLE_MPU 0
+#define configENABLE_TRUSTZONE 0
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY 16
+#endif
+
+#if 1
+#define configENABLE_MPU                        0
+#define configENABLE_TRUSTZONE                  0
+#define configRUN_FREERTOS_SECURE_ONLY          1
+#define configENABLE_FPU                        1
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY    16
+#define configCPU_CLOCK_HZ                      150000000
+#endif
+
 #endif /* FREERTOS_CONFIG_H */
 

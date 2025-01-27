@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="<!--#rpage-->">Relay</a>
+    <a href="/weather.shtml">Weather</a>
+    <a href="/moodlight.shtml">Moodlight</a>     
+    <a href="/addressable_led.shtml">LED strip</a>
+    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/units.shtml">Foibles</a>     
+    <a href="/status.shtml">Status</a>   
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>Set Points</h2>      
+  <form action="/setpoints.cgi">             
+    <input type="text" id="sp1nme" name="sp1nme" value="<!--#sp1nme-->" <!--#sp1viz--> >
+    <input type="text" id="sp1tmp" name="sp1tmp" value="<!--#sp1tmp-->" <!--#sp1viz--> ><br>
+    <input type="text" id="sp2nme" name="sp2nme" value="<!--#sp2nme-->" <!--#sp2viz--> >
+    <input type="text" id="sp2tmp" name="sp2tmp" value="<!--#sp2tmp-->" <!--#sp2viz--> ><br>
+    <input type="text" id="sp3nme" name="sp3nme" value="<!--#sp3nme-->" <!--#sp3viz--> >
+    <input type="text" id="sp3tmp" name="sp3tmp" value="<!--#sp3tmp-->" <!--#sp3viz--> ><br>
+    <input type="text" id="sp4nme" name="sp4nme" value="<!--#sp4nme-->" <!--#sp4viz--> >
+    <input type="text" id="sp4tmp" name="sp4tmp" value="<!--#sp4tmp-->" <!--#sp4viz--> ><br>
+    <input type="text" id="sp5nme" name="sp5nme" value="<!--#sp5nme-->" <!--#sp5viz--> >
+    <input type="text" id="sp5tmp" name="sp5tmp" value="<!--#sp5tmp-->" <!--#sp5viz--> ><br>
+    <input type="text" id="sp6nme" name="sp6nme" value="<!--#sp6nme-->" <!--#sp6viz--> >
+    <input type="text" id="sp6tmp" name="sp6tmp" value="<!--#sp6tmp-->" <!--#sp6viz--> ><br>
+    <input type="text" id="sp7nme" name="sp7nme" value="<!--#sp7nme-->" <!--#sp7viz--> >
+    <input type="text" id="sp7tmp" name="sp7tmp" value="<!--#sp7tmp-->" <!--#sp7viz--> ><br>
+    <input type="text" id="sp8nme" name="sp8nme" value="<!--#sp8nme-->" <!--#sp8viz--> >
+    <input type="text" id="sp8tmp" name="sp8tmp" value="<!--#sp8tmp-->" <!--#sp8viz--> ><br>
+    <input type="text" id="sp9nme" name="sp9nme" value="<!--#sp9nme-->" <!--#sp9viz--> >
+    <input type="text" id="sp9tmp" name="sp9tmp" value="<!--#sp9tmp-->" <!--#sp9viz--> ><br>
+    <input type="text" id="sp10nme" name="sp10nme" value="<!--#sp10nme-->" <!--#sp10viz--> >
+    <input type="text" id="sp10tmp" name="sp10tmp" value="<!--#sp10tmp-->" <!--#sp10viz--> ><br>
+    <input type="text" id="sp11nme" name="sp11nme" value="<!--#sp11nme-->" <!--#sp11viz--> >
+    <input type="text" id="sp11tmp" name="sp11tmp" value="<!--#sp11tmp-->" <!--#sp11viz--> ><br>
+    <input type="text" id="sp12nme" name="sp12nme" value="<!--#sp12nme-->" <!--#sp12viz--> >
+    <input type="text" id="sp12tmp" name="sp12tmp" value="<!--#sp12tmp-->" <!--#sp12viz--> ><br>
+    <br>
+    <br>
+    <input type="submit" value="Save" style="font-size: 25px;">
+  </form> 
+  <br>  
+  <form action="/reboot.cgi" method="get">
+    <input type="submit" value="Reboot" name="reboot" id="reboot" style="font-size: 25px;">
+</form>    
+</div>
+   
+</body>
+</html> 
+  

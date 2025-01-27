@@ -9,7 +9,7 @@
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
-#include "hardware/rtc.h"
+//#include "hardware/rtc.h"
 #include "hardware/watchdog.h"
 #include <hardware/flash.h>
 #include "hardware/i2c.h"
@@ -118,6 +118,7 @@ int accumlate_temperature_metrics(long int temperaturex10);
 void mark_hvac_off(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void track_hvac_extrema(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type);
+int get_current_setpoint_temperaturex10(void);
 
 
 
@@ -169,7 +170,7 @@ void thermostat_task(void *params)
     config.cooling_gpio = 8;
     config.fan_gpio = 9;
 
-    printf("thermostat_task started\n");
+    printf("thermostat_task started!!!!\n");
     
     // initialize data structures for climate metrics
     initialize_climate_metrics();
@@ -311,95 +312,151 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
     int mins_till_irrigation = 0;
     int zone = -1;
     int i = 0;
+    static TickType_t lockout_start_tick = 0;
+    static TickType_t lockout_period_ticks = 0;
+    TickType_t now_tick = 0;
+    static THERMOSTAT_STATE_T last_active = HEATING_AND_COOLING_OFF;
+   
+    now_tick = xTaskGetTickCount();
 
-    // update irrigation state
-    switch(thermostat_state)
+    if (lockout_period_ticks && 
+        ((now_tick - lockout_start_tick) > lockout_period_ticks))
     {
-    default:    
-    case HEATING_AND_COOLING_OFF:
-        if (temperaturex10 > (web.thermostat_set_point + web.thermostat_hysteresis))
+        // disable lockout
+        lockout_period_ticks = 0;
+
+        // determine current setpoint based on schedule
+        web.thermostat_set_point = get_current_setpoint_temperaturex10();
+
+        // update thermostat state
+        switch(thermostat_state)
         {
-            send_syslog_message("thermostat", "Cooling commenced");            
-            snprintf(web.status_message, sizeof(web.status_message), "Cooling in progress");            
-
-            thermostat_state = COOLING_IN_PROGRESS;
-
-            set_hvac_momentum(COOLING_MOMENTUM);
-
-        } else if (temperaturex10 < (web.thermostat_set_point - web.thermostat_hysteresis))
-        {
-            send_syslog_message("thermostat", "Heatinging commenced");            
-            snprintf(web.status_message, sizeof(web.status_message), "Heating in progress");            
-
-            thermostat_state = HEATING_IN_PROGRESS;
-            
-            set_hvac_momentum(COOLING_MOMENTUM);           
-        }
-        break;
-    case HEATING_IN_PROGRESS:
-        if (temperaturex10 > (web.thermostat_set_point + web.thermostat_hysteresis))
-        {
-            send_syslog_message("thermostat", "Heating completed");            
-            snprintf(web.status_message, sizeof(web.status_message), "Heating completed");  
-            mark_hvac_off(HEATING_MOMENTUM, temperaturex10);         
-
-            thermostat_state = HEATING_AND_COOLING_OFF;
-        } 
-        break;
-    case COOLING_IN_PROGRESS:
-        if (temperaturex10 < (web.thermostat_set_point - web.thermostat_hysteresis))
-        {
-            send_syslog_message("thermostat", "Cooling completed");            
-            snprintf(web.status_message, sizeof(web.status_message), "Cooling completed"); 
-            mark_hvac_off(COOLING_MOMENTUM, temperaturex10);
-
-            thermostat_state = HEATING_AND_COOLING_OFF;
-        } 
-        break;
-    case DUCT_PURGE:
-        if (0 /*time expired*/)
-        {
-            send_syslog_message("thermostat", "Duct purge complete");            
-            snprintf(web.status_message, sizeof(web.status_message), "Duct purge completed"); 
-
-            thermostat_state = HEATING_AND_COOLING_OFF;
-        } 
-        break;            
-    }
-
-    // set the gpio output connected to the relay
-    if (config.thermostat_enable && gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
-    {
-        switch (thermostat_state)
-        {
-        default:
+        default:    
         case HEATING_AND_COOLING_OFF:
-            printf("Heating, Cooling and Fan off\n");
-            // gpio_put(config.heating_gpio, 0);
-            // gpio_put(config.cooling_gpio, 0);
-            // gpio_put(config.fan_gpio, 0);   
+            if (temperaturex10 > (web.thermostat_set_point + web.thermostat_hysteresis))
+            {
+                if (last_active != HEATING_IN_PROGRESS)
+                {
+                    send_syslog_message("thermostat", "Cooling commenced");            
+                    snprintf(web.status_message, sizeof(web.status_message), "Cooling in progress");            
+
+                    thermostat_state = COOLING_IN_PROGRESS;
+
+                    // lockout state changes
+                    lockout_period_ticks = config.minimum_cooling_on_mins*60*1000;
+                    lockout_start_tick = now_tick;
+
+                    set_hvac_momentum(COOLING_MOMENTUM);
+                }
+                else
+                {
+                    send_syslog_message("thermostat", "Transition from heating to cooling! Lockout commenced!");
+
+                    // lockout state changes
+                    lockout_period_ticks = config.heating_to_cooling_lockout_mins*60*1000;
+                    lockout_start_tick = now_tick;                     
+                }
+            } else if (temperaturex10 < (web.thermostat_set_point - web.thermostat_hysteresis))
+            {
+                if (last_active != COOLING_IN_PROGRESS)
+                {
+                    send_syslog_message("thermostat", "Heatinging commenced");            
+                    snprintf(web.status_message, sizeof(web.status_message), "Heating in progress");            
+
+                    thermostat_state = HEATING_IN_PROGRESS;
+                    
+                    // lockout state changes
+                    lockout_period_ticks = config.minimum_heating_om_mins*60*1000;
+                    lockout_start_tick = now_tick;
+
+                    set_hvac_momentum(COOLING_MOMENTUM);  
+                }
+                else
+                {
+                    send_syslog_message("thermostat", "Transition from cooling to heating! Lockout commenced!");
+
+                    // lockout state changes
+                    lockout_period_ticks = config.heating_to_cooling_lockout_mins*60*1000;
+                    lockout_start_tick = now_tick;                     
+                }                        
+            }
             break;
         case HEATING_IN_PROGRESS:
-            printf("Heating on, Cooling and Fan off\n");
-            // gpio_put(config.heating_gpio, 1);
-            // gpio_put(config.cooling_gpio, 0);
-            // gpio_put(config.fan_gpio, 1);   
+            if (temperaturex10 > (web.thermostat_set_point + web.thermostat_hysteresis))
+            {
+                send_syslog_message("thermostat", "Heating completed");            
+                snprintf(web.status_message, sizeof(web.status_message), "Heating completed");  
+                mark_hvac_off(HEATING_MOMENTUM, temperaturex10);         
+
+                thermostat_state = HEATING_AND_COOLING_OFF;
+
+                // lockout state changes
+                lockout_period_ticks = config.minimum_heating_off_mins*60*1000;
+                lockout_start_tick = now_tick;
+
+                last_active = HEATING_IN_PROGRESS;
+            } 
             break;
         case COOLING_IN_PROGRESS:
-            printf("Cooling on, Heating and Fan off\n");
-            // gpio_put(config.heating_gpio, 0);
-            // gpio_put(config.cooling_gpio, 1);
-            // gpio_put(config.fan_gpio, 1);   
-            break;            
-        case DUCT_PURGE:
-            printf("Heating and Cooling off and Fan on\n");
-            // gpio_put(config.heating_gpio, 0);
-            // gpio_put(config.cooling_gpio, 0);
-            // gpio_put(config.fan_gpio, 1);   
-            break; 
-        }
-    }                                
+            if (temperaturex10 < (web.thermostat_set_point - web.thermostat_hysteresis))
+            {
+                send_syslog_message("thermostat", "Cooling completed");            
+                snprintf(web.status_message, sizeof(web.status_message), "Cooling completed"); 
+                mark_hvac_off(COOLING_MOMENTUM, temperaturex10);
 
+                thermostat_state = HEATING_AND_COOLING_OFF;
+
+                // lockout state changes
+                lockout_period_ticks = config.minimum_cooling_off_mins*60*1000;
+                lockout_start_tick = now_tick;    
+
+                last_active = COOLING_IN_PROGRESS;            
+            } 
+            break;
+        case DUCT_PURGE:
+            if (0 /*time expired*/)
+            {
+                send_syslog_message("thermostat", "Duct purge complete");            
+                snprintf(web.status_message, sizeof(web.status_message), "Duct purge completed"); 
+
+                thermostat_state = HEATING_AND_COOLING_OFF;
+            } 
+            break;            
+        }
+
+        // set the gpio output connected to the relay
+        if (config.thermostat_enable && gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
+        {
+            switch (thermostat_state)
+            {
+            default:
+            case HEATING_AND_COOLING_OFF:
+                //printf("Heating, Cooling and Fan off\n");
+                // gpio_put(config.heating_gpio, 0);
+                // gpio_put(config.cooling_gpio, 0);
+                // gpio_put(config.fan_gpio, 0);   
+                break;
+            case HEATING_IN_PROGRESS:
+                //printf("Heating on, Cooling and Fan off\n");
+                // gpio_put(config.heating_gpio, 1);
+                // gpio_put(config.cooling_gpio, 0);
+                // gpio_put(config.fan_gpio, 1);   
+                break;
+            case COOLING_IN_PROGRESS:
+                //printf("Cooling on, Heating and Fan off\n");
+                // gpio_put(config.heating_gpio, 0);
+                // gpio_put(config.cooling_gpio, 1);
+                // gpio_put(config.fan_gpio, 1);   
+                break;            
+            case DUCT_PURGE:
+                //printf("Heating and Cooling off and Fan on\n");
+                // gpio_put(config.heating_gpio, 0);
+                // gpio_put(config.cooling_gpio, 0);
+                // gpio_put(config.fan_gpio, 1);   
+                break; 
+            }
+        }                                
+    }
 
     return(thermostat_state);
 }
@@ -437,7 +494,7 @@ int accumlate_temperature_metrics(long int temperaturex10)
     climate_history.buffer_index  = (climate_history.buffer_index  + 1)%NUM_ROWS(climate_history.buffer);
 
     if (climate_history.buffer_population < NUM_ROWS(climate_history.buffer)) climate_history.buffer_population++;
-    printf("population = %d\n", climate_history.buffer_population);
+    //printf("population = %d\n", climate_history.buffer_population);
 
     climate_trend.moving_average.temperaturex10 = 0;
     gradient = 0;
@@ -462,7 +519,7 @@ int accumlate_temperature_metrics(long int temperaturex10)
         if (abs(climate_trend.buffer[i].temperaturex10) < 5) climate_trend.deltas[SMALL_DELATA]++;
     }
 
-    printf("Temp Sample = %d\tMoving Average = %d [%d, %d, %d] ", temperaturex10, climate_trend.moving_average, climate_trend.deltas[NEGATIVE_DELTA], climate_trend.deltas[POSITIVE_DELTA], climate_trend.deltas[SMALL_DELATA]);
+    //printf("Temp Sample = %d\tMoving Average = %d [%d, %d, %d] ", temperaturex10, climate_trend.moving_average, climate_trend.deltas[NEGATIVE_DELTA], climate_trend.deltas[POSITIVE_DELTA], climate_trend.deltas[SMALL_DELATA]);
 
     if ((climate_trend.deltas[NEGATIVE_DELTA]>= 1) && (climate_trend.deltas[POSITIVE_DELTA] == 0))
     {
@@ -508,7 +565,7 @@ int accumlate_temperature_metrics(long int temperaturex10)
     }
     else if ((climate_trend.deltas[SMALL_DELATA] == 10) && ((climate_trend.deltas[NEGATIVE_DELTA]-climate_trend.deltas[POSITIVE_DELTA]) < 3))
     {
-        printf("Stable\n");   // no change to trend as we allow the previous trend to continue after a plateau    
+        //printf("Stable\n");   // no change to trend as we allow the previous trend to continue after a plateau    
     }
     else
     {
@@ -582,4 +639,29 @@ void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type)
 
         printf("MOMENTUM LAST CYCLE:  Extrema occured %lu ms after HVAC shut off and temperature change was %ld\n", climate_momentum.momentum_delay[momentum_type], climate_momentum.momentum_temperature_delta[momentum_type]);
     }
+}
+
+/*!
+ * \brief Set momentum based on tracked extrema
+ * 
+ * \return nothing
+ */
+int get_current_setpoint_temperaturex10(void)
+{
+    int i;
+    int mow;
+    int setpointtemperaturex10 = 0;
+
+    if (!get_mow_local_tz(&mow))
+    {
+        for (i=0; i<16; i++)
+        {
+            if ((mow >= config.thermostat_period_start_mow[i]) &&
+                (mow < config.thermostat_period_end_mow[i]))
+            {
+                setpointtemperaturex10 = config.setpoint_temperaturex10[config.thermostat_period_setpoint_index[i]];
+            }
+        }
+    }
+    return(setpointtemperaturex10);
 }

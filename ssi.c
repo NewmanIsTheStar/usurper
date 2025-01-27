@@ -247,7 +247,116 @@ extern NON_VOL_VARIABLES_T config;
     x(z8zviz)    \
     x(z1dur)     \
     x(pernme)    \
-    x(irgnow)
+    x(irgnow)    \
+    x(sp1viz)    \
+    x(sp2viz)    \
+    x(sp3viz)    \
+    x(sp4viz)    \
+    x(sp5viz)    \
+    x(sp6viz)    \
+    x(sp7viz)    \
+    x(sp8viz)    \
+    x(sp9viz)    \
+    x(sp10viz)   \
+    x(sp11viz)   \
+    x(sp12viz)   \
+    x(sp1nme)    \
+    x(sp2nme)    \
+    x(sp3nme)    \
+    x(sp4nme)    \
+    x(sp5nme)    \
+    x(sp6nme)    \
+    x(sp7nme)    \
+    x(sp8nme)    \
+    x(sp9nme)    \
+    x(sp10nme)    \
+    x(sp11nme)    \
+    x(sp12nme)    \
+    x(sp13nme)    \
+    x(sp14nme)    \
+    x(sp15nme)    \
+    x(sp16nme)    \
+    x(sp1tmp)    \
+    x(sp2tmp)    \
+    x(sp3tmp)    \
+    x(sp4tmp)    \
+    x(sp5tmp)    \
+    x(sp6tmp)    \
+    x(sp7tmp)    \
+    x(sp8tmp)    \
+    x(sp9tmp)    \
+    x(sp10tmp)    \
+    x(sp11tmp)    \
+    x(sp12tmp)    \
+    x(sp13tmp)    \
+    x(sp14tmp)    \
+    x(sp15tmp)    \
+    x(sp16tmp)    \
+    x(ts1st)    \
+    x(ts2st)    \
+    x(ts3st)    \
+    x(ts4st)    \
+    x(ts5st)    \
+    x(ts6st)    \
+    x(ts7st)    \
+    x(ts8st)    \
+    x(ts9st)    \
+    x(ts10st)    \
+    x(ts11st)    \
+    x(ts12st)    \
+    x(ts13st)    \
+    x(ts14st)    \
+    x(ts15st)    \
+    x(ts16st)    \
+    x(ts1en)    \
+    x(ts2en)    \
+    x(ts3en)    \
+    x(ts4en)    \
+    x(ts5en)    \
+    x(ts6en)    \
+    x(ts7en)    \
+    x(ts8en)    \
+    x(ts9en)    \
+    x(ts10en)    \
+    x(ts11en)    \
+    x(ts12en)    \
+    x(ts13en)    \
+    x(ts14en)    \
+    x(ts15en)    \
+    x(ts16en)    \
+    x(ts1vz)    \
+    x(ts2vz)    \
+    x(ts3vz)    \
+    x(ts4vz)    \
+    x(ts5vz)    \
+    x(ts6vz)    \
+    x(ts7vz)    \
+    x(ts8vz)    \
+    x(ts9vz)    \
+    x(ts10vz)    \
+    x(ts11vz)    \
+    x(ts12vz)    \
+    x(ts13vz)    \
+    x(ts14vz)    \
+    x(ts15vz)    \
+    x(ts16vz)   \
+    x(ts1in)    \
+    x(ts2in)    \
+    x(ts3in)    \
+    x(ts4in)    \
+    x(ts5in)    \
+    x(ts6in)    \
+    x(ts7in)    \
+    x(ts8in)    \
+    x(ts9in)    \
+    x(ts10in)    \
+    x(ts11in)    \
+    x(ts12in)    \
+    x(ts13in)    \
+    x(ts14in)    \
+    x(ts15in)    \
+    x(ts16in)    
+
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
@@ -1124,6 +1233,159 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             printed = snprintf(pcInsert, iInsertLen, "%s", web.irrigation_test_enable?"checked":"");
         }   
         break;
+        case SSI_sp1viz:
+        case SSI_sp2viz:
+        case SSI_sp3viz:
+        case SSI_sp4viz:
+        case SSI_sp5viz:
+        case SSI_sp6viz:
+        case SSI_sp7viz:
+        case SSI_sp8viz:
+        case SSI_sp9viz:
+        case SSI_sp10viz:
+        case SSI_sp11viz:
+        case SSI_sp12viz:
+        {
+            if ((iIndex-SSI_sp1viz)%12 >= config.setpoint_number)
+            {     
+                printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
+            }
+            else
+            {
+                printed = 0;
+            }             
+        }
+        break;         
+        case SSI_sp1nme: //sp1nme
+        case SSI_sp2nme: //sp2nme
+        case SSI_sp3nme: //sp3nme
+        case SSI_sp4nme: //sp4nme
+        case SSI_sp5nme: //sp5nme
+        case SSI_sp6nme: //sp6nme
+        case SSI_sp7nme: //sp7nme
+        case SSI_sp8nme: //sp8nme
+        case SSI_sp9nme: //sp9nme
+        case SSI_sp10nme: //sp10nme
+        case SSI_sp11nme: //sp11nme
+        case SSI_sp12nme: //sp12nme
+        case SSI_sp13nme: //sp13nme
+        case SSI_sp14nme: //sp14nme
+        case SSI_sp15nme: //sp15nme
+        case SSI_sp16nme: //sp16nme
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.setpoint_name[iIndex-SSI_sp1nme]); 
+        }                     
+        break; 
+        case SSI_sp1tmp: //sp1tmp
+        case SSI_sp2tmp: //sp2tmp
+        case SSI_sp3tmp: //sp3tmp
+        case SSI_sp4tmp: //sp4tmp
+        case SSI_sp5tmp: //sp5tmp
+        case SSI_sp6tmp: //sp6tmp
+        case SSI_sp7tmp: //sp7tmp
+        case SSI_sp8tmp: //sp8tmp
+        case SSI_sp9tmp: //sp9tmp
+        case SSI_sp10tmp: //sp10tmp
+        case SSI_sp11tmp: //sp11tmp
+        case SSI_sp12tmp: //sp12tmp
+        case SSI_sp13tmp: //sp13tmp
+        case SSI_sp14tmp: //sp14tmp
+        case SSI_sp15tmp: //sp15tmp
+        case SSI_sp16tmp: //sp16tmp
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.setpoint_temperaturex10[iIndex-SSI_sp1tmp]); 
+        }                     
+        break;
+        case SSI_ts1st:
+        case SSI_ts2st:
+        case SSI_ts3st:
+        case SSI_ts4st:
+        case SSI_ts5st:
+        case SSI_ts6st:
+        case SSI_ts7st:
+        case SSI_ts8st:
+        case SSI_ts9st:
+        case SSI_ts10st:
+        case SSI_ts11st:
+        case SSI_ts12st:
+        case SSI_ts13st:
+        case SSI_ts14st:
+        case SSI_ts15st:
+        case SSI_ts16st:
+        {
+            //printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_period_start_mow[iIndex-SSI_ts1st]); 
+            printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[iIndex-SSI_ts1st]);
+        }
+        break; 
+        case SSI_ts1en:
+        case SSI_ts2en:
+        case SSI_ts3en:
+        case SSI_ts4en:
+        case SSI_ts5en:
+        case SSI_ts6en:
+        case SSI_ts7en:
+        case SSI_ts8en:
+        case SSI_ts9en:
+        case SSI_ts10en:
+        case SSI_ts11en:
+        case SSI_ts12en:
+        case SSI_ts13en:
+        case SSI_ts14en:
+        case SSI_ts15en:
+        case SSI_ts16en:
+        {
+            //printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_period_end_mow[iIndex-SSI_ts1en]); 
+            printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_end_mow[iIndex-SSI_ts1en]);
+        }
+        break;                  
+        case SSI_ts1vz:
+        case SSI_ts2vz:
+        case SSI_ts3vz:
+        case SSI_ts4vz:
+        case SSI_ts5vz:
+        case SSI_ts6vz:
+        case SSI_ts7vz:
+        case SSI_ts8vz:
+        case SSI_ts9vz:
+        case SSI_ts10vz:
+        case SSI_ts11vz:
+        case SSI_ts12vz:
+        case SSI_ts13vz:
+        case SSI_ts14vz:
+        case SSI_ts15vz:
+        case SSI_ts16vz:
+        {
+            if ((iIndex-SSI_ts1vz)%16 >= config.thermostat_period_number)
+            {     
+                printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
+            }
+            else
+            {
+                printed = 0;
+            }             
+        }
+        break;   
+        case SSI_ts1in:
+        case SSI_ts2in:
+        case SSI_ts3in:
+        case SSI_ts4in:
+        case SSI_ts5in:
+        case SSI_ts6in:
+        case SSI_ts7in:
+        case SSI_ts8in:
+        case SSI_ts9in:
+        case SSI_ts10in:
+        case SSI_ts11in:
+        case SSI_ts12in:
+        case SSI_ts13in:
+        case SSI_ts14in:
+        case SSI_ts15in:
+        case SSI_ts16in:
+        {
+            //TODO RANGE CHECKING!!!
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.setpoint_name[config.thermostat_period_setpoint_index[iIndex-SSI_ts1in]]); 
+        }
+        break;               
 
         default:
         {

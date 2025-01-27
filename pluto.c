@@ -7,7 +7,7 @@
 #include "pico/cyw43_arch.h"
 #include "pico/types.h"
 #include "pico/stdlib.h"
-#include "hardware/rtc.h"
+//#include "hardware/rtc.h"
 #include "pico/util/datetime.h"
 #include "hardware/watchdog.h"
 
@@ -52,7 +52,7 @@
 
 #define BOSS_TASK_PRIORITY              ( 0 + 2UL )
 #define WATCHDOG_TASK_PRIORITY          ( 0 + 1UL )
-#define PAUSE_FOR_INITIAL_SNTP_RESPONSE (1)
+#define PAUSE_FOR_INITIAL_SNTP_RESPONSE (0)   //TEST TEST TEST
 
 
 // external variables
@@ -70,6 +70,7 @@ int ap_mode(void);
 int set_web_ip_network_info(void);
 int set_realtime_clock(void);
 int monitor_stacks(void);
+int test_ap_mode(void);
 
 
 /*********************************************************
@@ -149,6 +150,8 @@ int pluto(void)
  */
 void boss_task(__unused void *params) 
 {
+    datetime_t date;  // TEST TEST TEST
+    char buffer[256]; // TEST TEST TEST
     bool led_on = false;
     int worker = 0;
     ip_addr_t ip = {0};
@@ -161,6 +164,11 @@ void boss_task(__unused void *params)
     // get configuration from flash
     config_read();    
 
+    // TEST TEST TEST
+    config.syslog_enable = 0;
+    config.weather_station_enable = 0;
+    config.personality = HVAC_THERMOSTAT;
+    
     //initialise wifi
     while (cyw43_arch_init_with_country(get_wifi_country_code(config.wifi_country)))
     {
@@ -168,6 +176,7 @@ void boss_task(__unused void *params)
          cyw43_arch_deinit();
          SLEEP_MS(1000);       
     } 
+#ifdef MONKEY    
     // enable wifi station mode
     cyw43_arch_enable_sta_mode();
 
@@ -198,6 +207,9 @@ void boss_task(__unused void *params)
         inet_pton(AF_INET, config.gateway, &gw);
         netif_set_addr(netif_default, &(ip), &(nm), &(gw));
     }
+#endif
+    //TEST TEST TEST
+    test_ap_mode();
 
     // initialize the ip info used in the web interface
     set_web_ip_network_info();
@@ -239,7 +251,26 @@ void boss_task(__unused void *params)
         // report watchdog reboot to syslog server
         check_watchdog_reboot();        
 
-        SLEEP_MS(1000);
+        #ifdef FAKE_RTC
+        // maintain fake rtc
+        rtc_update();
+        #endif
+
+        SLEEP_MS(10000);  // TEST TEST TEST - normally 1000
+
+        // if (rtc_get_datetime(&date))
+        // {
+        //     // set day of week since ntp does not provide this TODO check if this is true and/or should be in sdk_callback.c        
+        //     date.dotw = get_day_of_week(date.month, date.day, date.year);
+
+        //     #ifndef FAKE_RTC
+        //     rtc_set_datetime(&date);
+        //     #endif
+        // }
+        rtc_get_datetime(&date);
+        datetime_to_str(buffer, sizeof(buffer), &date);
+        //printf("%s Zulu\n", buffer);
+
 
         if (restart_requested)
         {
@@ -409,7 +440,9 @@ int set_realtime_clock(void)
     int i;   
 
     // initialize realtime clock
+    #ifndef FAKE_RTC
     rtc_init();
+    #endif
     setTimeSec(0);  //1970
 
     // sntp timeservers
@@ -428,12 +461,15 @@ int set_realtime_clock(void)
     for(i=0; i < 2*10; i++)
     {
         SLEEP_MS(500);
-        if (rtc_get_datetime(&date))
-        {
-            // set day of week since ntp does not provide this        
-            date.dotw = get_day_of_week(date.month, date.day, date.year);
-            rtc_set_datetime(&date);
-        }
+        // if (rtc_get_datetime(&date))
+        // {
+        //     // set day of week since ntp does not provide this  TODO check sdk_callback.c      
+        //     date.dotw = get_day_of_week(date.month, date.day, date.year);
+        //     #ifndef FAKE_RTC
+        //     rtc_set_datetime(&date);
+        //     #endif
+        // }
+        rtc_get_datetime(&date);
         datetime_to_str(buffer, sizeof(buffer), &date);
         printf("\r%s Zulu         ", buffer);
 
@@ -504,4 +540,30 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
     {
         printf("stack overflow\n");
     }
+}
+
+int test_ap_mode(void)
+{
+    bool led_on = false;
+    int ap_idle = 0;
+    static ip_addr_t gw;
+    static ip4_addr_t mask;
+    static dhcp_server_t dhcp_server;
+    static dns_server_t dns_server;    
+
+    printf("Initializing AP mode\n");
+    cyw43_arch_enable_ap_mode("pluto", "",	CYW43_AUTH_OPEN); 
+
+    IP4_ADDR(ip_2_ip4(&gw), 192, 168, 4, 1);
+    IP4_ADDR(ip_2_ip4(&mask), 255, 255, 255, 0);
+
+    printf("Connect to WiFi network called: pluto\nPoint web browser to http://192.168.4.1\n");
+
+    // Start the dhcp server
+    dhcp_server_init(&dhcp_server, &gw, &mask);
+
+    // Start the dns server
+    dns_server_init(&dns_server, &gw);
+
+    return(0);
 }

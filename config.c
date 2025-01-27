@@ -221,6 +221,23 @@ void config_v4_to_v5(void)
     config.heating_gpio = -1;
     config.cooling_gpio = -1;
     config.fan_gpio = -1;
+
+    for(i=0; i<NUM_ROWS(config.thermostat_period_end_mow); i++)
+    {
+        config.thermostat_period_start_mow[i] = 0;
+        config.thermostat_period_end_mow[i] = 0;
+        config.thermostat_period_setpoint_index[i] = 0;
+        config.thermostat_period_number = i;
+    }
+
+    for(i=0; i<NUM_ROWS(config.setpoint_name); i++)
+    {
+        config.setpoint_name[i][0] = 0;
+        config.setpoint_temperaturex10[i] = 0;
+        config.setpoint_number = i;
+
+        sprintf(config.setpoint_name[i], "Setpoint%d", i);
+    }
 }
 
 
@@ -267,6 +284,9 @@ int config_read(void)
 
     // read configuration from flash
     flash_read_non_volatile_variables(); 
+
+    printf("TESTING TESTING TESTING: forcing ugrade from v4 to v5\n");
+    config.version = 4;  // TEST TEST TEST
 
     // check and correct configuration
     config_validate();

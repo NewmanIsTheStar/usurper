@@ -110,7 +110,23 @@ typedef struct
     int heating_gpio;
     int cooling_gpio;
     int fan_gpio;
-    
+
+    int heating_to_cooling_lockout_mins;
+    int minimum_heating_om_mins;
+    int minimum_cooling_on_mins;
+    int minimum_heating_off_mins;
+    int minimum_cooling_off_mins;
+
+    int thermostat_mode;
+    int max_cycles_per_hour;
+    int setpoint_number;
+    char setpoint_name[16][32];
+    int setpoint_temperaturex10[16];  
+    int thermostat_period_number;
+    int thermostat_period_start_mow[16];
+    int thermostat_period_end_mow[16];
+    int thermostat_period_setpoint_index[16];
+
     uint16_t crc;
 } NON_VOL_VARIABLES_T;
 

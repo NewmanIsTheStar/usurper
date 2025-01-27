@@ -7,7 +7,7 @@
 #include "pico/cyw43_arch.h"
 #include "pico/types.h"
 #include "pico/stdlib.h"
-#include "hardware/rtc.h"
+//#include "hardware/rtc.h"
 #include "pico/util/datetime.h"
 #include "hardware/watchdog.h"
 
@@ -33,6 +33,7 @@
 #include "flash.h"
 #include "utility.h"
 #include "config.h"
+#include "calendar.h"
 
 
 /*!
@@ -44,6 +45,9 @@
  */
 void setTimeSec(uint32_t sec)
 {
+	#ifdef FAKE_RTC
+	rtc_set_datetime(sec);
+	#else
 	datetime_t date;
 	struct tm * timeinfo;
 	time_t t;
@@ -64,7 +68,9 @@ void setTimeSec(uint32_t sec)
 	date.month = timeinfo->tm_mon + 1;
 	date.year = timeinfo->tm_year + 1900;
 
+    date.dotw = get_day_of_week(date.month, date.day, date.year);
     //printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>SETTING RTC to: year = %u month = %u day = %u hour = %u min = %u sec = %u\n", date.year, date.month, date.day, date.hour, date.min, date.sec);
 
 	rtc_set_datetime (&date);
+	#endif
 }

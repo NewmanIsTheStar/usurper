@@ -15,7 +15,7 @@
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
-#include "hardware/rtc.h"
+//#include "hardware/rtc.h"
 #include "hardware/watchdog.h"
 
 #include "lwip/sockets.h"

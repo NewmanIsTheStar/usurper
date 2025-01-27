@@ -27,7 +27,7 @@ WORKER_TASK_T worker_tasks[] =
     {   weather_task,   "Weather Task",         1024,   3},
     {   led_strip_task, "LED Strip Task",       1024,   4},  
     {   message_task,   "Message Task",         1024,   1},  
-    //{   thermostat_task,"Thermostat Task",      1024,   5},        
+    {   thermostat_task,"Thermostat Task",      1024,   5},        
 
     // end of table
     {   NULL,           NULL,               0,      0,         }

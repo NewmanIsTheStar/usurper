@@ -10,7 +10,7 @@
 #include "pico/types.h"
 #include "pico/stdlib.h"
 #include <string.h>
-#include "hardware/rtc.h"
+//#include "hardware/rtc.h"
 #include "pico/util/datetime.h"
 #include "hardware/watchdog.h"
 
@@ -49,6 +49,7 @@ extern NON_VOL_VARIABLES_T config;
 
 // global variable
 char current_calendar_web_page[50] = "/landscape.shtml";
+uint32_t unix_time;
 
 static int daylight_saving_start_month;
 static int daylight_saving_start_day;
@@ -216,7 +217,7 @@ int set_daylight_saving_dates(void)
    int ok = 0;
 
    // determine current year
-    ok = rtc_get_datetime(&t);
+   ok = rtc_get_datetime(&t);
 
     if (ok)
     {
@@ -733,4 +734,132 @@ int8_t get_real_time_clock_seconds(void)
    rtc_get_datetime(&date);
 
    return(date.sec);
+}
+
+
+/*!
+ * \brief Update fake rtc
+ *
+ * This should only be called from one task!
+ */
+int8_t rtc_update(void)
+{
+   TickType_t current_tick;
+   TickType_t increment;
+   static TickType_t last_tick = 0;
+   static bool initialized = false;   
+
+
+   current_tick = xTaskGetTickCount();
+
+   if(!initialized)
+   {
+      last_tick = current_tick;
+      initialized = true;
+   }
+
+   increment = (current_tick - last_tick)/1000;
+
+   last_tick += increment*1000;   // avoid accumulating rounding errors
+   unix_time += increment;  // TODO make atomic
+
+   return(0);
+}
+
+/*!
+ * \brief Get seconds part of the current real time
+ *
+ * \param[out]   dow day of week, 0-6 where 0 = Sunday  
+ * 
+ * \param[out]   mod minute of day, 0 - 1439    
+ * 
+ * \return 0-59 on success or 0 if unable to read rtc
+ */
+int8_t rtc_get_datetime(datetime_t *date)
+{
+   struct tm * timeinfo;
+   time_t t;
+
+   t = unix_time; // TODO make atomic
+
+	timeinfo = gmtime(&t);
+
+	memset(date, 0, sizeof(datetime_t));
+	date->sec = timeinfo->tm_sec;
+	date->min = timeinfo->tm_min;
+	date->hour = timeinfo->tm_hour;
+	date->day = timeinfo->tm_mday;
+	date->month = timeinfo->tm_mon + 1;
+	date->year = timeinfo->tm_year + 1900;
+
+   date->dotw = get_day_of_week(date->month, date->day, date->year);
+
+   return(0);
+}
+
+/*!
+ * \brief Set fake RTC
+ *
+ */
+int8_t rtc_set_datetime(uint32_t sec)
+{
+    
+   unix_time = sec;
+
+   return(0);
+}
+
+/*!
+ * \brief print mow in human readable form
+ *
+ */
+int mow_to_string(char *string, int length, int mow)
+{
+   int day;
+   int hour;
+   int minute; 
+   
+   day = mow / (60*24);
+   hour = (mow % (60*24))/60;
+   minute = (mow % (60*24))%60;
+
+   CLIP(day, 0, 6);
+   CLIP(hour, 0, 23);
+   CLIP(minute, 0, 59);
+
+   snprintf(string, length, "%s %02d:%02d", weekdays[day], hour, minute);
+
+   return(0);
+}
+
+/*!
+ * \brief string to mow
+ *
+ */
+int string_to_mow(char *string, int length)
+{
+   int i;
+   int mow;
+   int day = 0;
+   int hour = 0;
+   int minute = 0; 
+
+   for(day = 0; day < 6; day++)
+   {
+      if (strcasestr(string, weekdays[day]) == 0)
+      {
+         day = i;
+         break;
+      }
+   }
+   
+   sscanf(string,"%d:%d", &hour, &minute);
+
+   CLIP(day, 0, 6);
+   CLIP(hour, 0, 23);
+   CLIP(minute, 0, 59);
+
+   mow = day*24*60 + hour*60 + minute;
+
+   return(mow);
 }

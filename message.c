@@ -17,7 +17,7 @@
 #include "pico/stdlib.h"
 #include "pico/rand.h"
 #include "pico/util/datetime.h"
-#include "hardware/rtc.h"
+//#include "hardware/rtc.h"
 #include "hardware/watchdog.h"
 
 #include "lwip/opt.h"
