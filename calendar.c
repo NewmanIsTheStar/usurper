@@ -794,7 +794,7 @@ int8_t rtc_get_datetime(datetime_t *date)
 
    date->dotw = get_day_of_week(date->month, date->day, date->year);
 
-   return(0);
+   return(1);
 }
 
 /*!
@@ -806,7 +806,7 @@ int8_t rtc_set_datetime(uint32_t sec)
     
    unix_time = sec;
 
-   return(0);
+   return(1);
 }
 
 /*!

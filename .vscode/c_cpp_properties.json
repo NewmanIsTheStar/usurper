@@ -1,19 +1,20 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "Pico",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}"                          
+                "${userHome}/.pico-sdk/sdk/2.1.0/**"
             ],
-            "defines": [
-                "WIFI_SSID=\"mynetwork\"",
-                "WIFI_PASSWORD=\"mypassword\""
+            "forcedInclude": [
+                "${userHome}/.pico-sdk/sdk/2.1.0/src/common/pico_base_headers/include/pico.h",
+                "${workspaceFolder}/build/generated/pico_base/pico/config_autogen.h"
             ],
-            "compilerPath": "/usr/bin/arm-none-eabi-gcc",
-            "cStandard": "gnu17",
-            "cppStandard": "gnu++14",
+            "defines": [],
+            "compilerPath": "${userHome}/.pico-sdk/toolchain/13_3_Rel1/bin/arm-none-eabi-gcc",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
             "intelliSenseMode": "linux-gcc-arm"
         }
     ],

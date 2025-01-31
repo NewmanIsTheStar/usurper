@@ -402,12 +402,12 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         {
             if (!config.use_archaic_units)
             {
-                printed = snprintf(pcInsert, iInsertLen, "%d.%d", web.outside_temperature/10, web.outside_temperature%10); 
+                printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.outside_temperature<0?'-':'\0', abs(web.outside_temperature/10), abs(web.outside_temperature%10)); 
             }
             else
             {
                 temp = (web.outside_temperature*9)/5 + 320;
-                printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", temp/10, temp%10);
+                printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
             }              
         }
         break;

@@ -63,7 +63,7 @@ typedef enum
 } LIGHT_STATE_T;
 
 // prototypes
-WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *wind_speed, s32_t *daily_rain, s32_t *weekly_rain, u8_t *soil_moisture);
+WEATHER_QUERY_STATUS_T query_weather_station(void);
 int receive_weather_info_from_ecowitt(unsigned char *rx_bytes, int rx_len);
 void hex_dump_to_string(const uint8_t *bptr, uint32_t len, char *out_string, int out_len);
 int accumulate_trailing_seven_day_total_rain(int daily_rain, int weekday);
@@ -193,11 +193,7 @@ void weather_task(void *params)
             if (config.weather_station_enable)
             {
                 // get weather info
-                weather_query_status = query_weather_station((s16_t *)&web.outside_temperature,
-                                                            (s16_t *)&web.wind_speed,
-                                                            (s32_t *)&web.daily_rain,
-                                                            (s32_t *)&web.weekly_rain,
-                                                            (u8_t *)&web.soil_moisture[0]);
+                weather_query_status = query_weather_station();
 
                 switch(weather_query_status)
                 {            
@@ -268,18 +264,14 @@ void weather_task(void *params)
 
 /*!
  * \brief Request weather information and store response
- * 
- * \param[out]   outside_temperature (global) Celcius x 10
- * 
- * \param[out]   wind_speed (global) m/s x 10    
- * 
- * \param[out]   daily_rain (global) mm x 10  
- * 
- * \param[out]   weekly_rain (global) mm x 10    
- * 
+ * \param[out] web.outside_temperature  global variable used by user interface                         
+ * \param[out] web.wind_speed           global variable used by user interface                    
+ * \param[out] web.daily_rain           global variable used by user interface                   
+ * \param[out] web.weekly_rain          global variable used by user interface 
+ * \param[out] web.soil_moisture[0]     global variable used by user interface  
  * \return WEATHER_READ_SUCCESS or WEATHER_READ_FAILED
  */
-WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *wind_speed, s32_t *daily_rain, s32_t *weekly_rain, u8_t *soil_moisture)
+WEATHER_QUERY_STATUS_T query_weather_station(void)
 {
     int err = WEATHER_READ_SUCCESS;
     int ret;
@@ -291,18 +283,16 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
     struct timeval tv;  
     unsigned char rx_buffer[BUF_SIZE];  
     static int ecowitt_socket = -1;
-    //static struct sockaddr_in ecowitt_address; 
+    short short_temp;  // intermediate variable required to make gcc perform type conversion correctly for negative values
 
-    
     // (re)establish socket connection
-    if (ecowitt_socket < 0) ecowitt_socket = establish_socket(config.weather_station_ip, /*&ecowitt_address,*/ 45000, SOCK_STREAM);
+    if (ecowitt_socket < 0) ecowitt_socket = establish_socket(config.weather_station_ip, 45000, SOCK_STREAM);
 
-    
     if(ecowitt_socket >= 0)
     {
         // send a request selected from one row of the aEcowittRequests table
         wrote_bytes = send(ecowitt_socket, aEcowittRequests[msg_to_snd%NUM_ROWS(aEcowittRequests)].request,
-                            aEcowittRequests[msg_to_snd%NUM_ROWS(aEcowittRequests)].request_len, 0);
+                           aEcowittRequests[msg_to_snd%NUM_ROWS(aEcowittRequests)].request_len, 0);
         msg_to_snd++;
 
         if (wrote_bytes > 0)
@@ -329,17 +319,18 @@ WEATHER_QUERY_STATUS_T query_weather_station(s16_t *outside_temperature, s16_t *
                             err = WEATHER_READ_SUCCESS;
                             
                             // store parameters of interest
-                            *outside_temperature = (short)ntohs(*(s16_t *)raw_outsidetemp);                            
-                            *wind_speed = ntohs(*(u16_t *)raw_windspeed);                            
-                            *daily_rain = ntohl(*(u32_t *)raw_dailyrain);                            
-                            *weekly_rain = ntohl(*(u32_t *)raw_weeklyrain);
-                            *soil_moisture = raw_soilmoisture1[0];
+                            short_temp = ntohs(*((s16_t *)raw_outsidetemp));  // if assigned directly to int sign extension doesn't work!  
+                            web.outside_temperature = short_temp;   
+                            web.wind_speed          = ntohs(*(u16_t *)raw_windspeed);                            
+                            web.daily_rain          = ntohl(*(u32_t *)raw_dailyrain);                            
+                            web.weekly_rain         = ntohl(*(u32_t *)raw_weeklyrain);
+                            web.soil_moisture[0]    = raw_soilmoisture1[0];
                             
                             // clip parameters to sane ranges
-                            CLIP(*outside_temperature, -1000, 600);
-                            CLIP(*wind_speed, 0, 1100);
-                            CLIP(*daily_rain, 0, 2000);
-                            CLIP(*weekly_rain, 0, 7*2000);                                                                                                                                          
+                            CLIP(web.outside_temperature, -1000, 600);
+                            CLIP(web.wind_speed, 0, 1100);
+                            CLIP(web.daily_rain, 0, 2000);
+                            CLIP(web.soil_moisture[0], 0, 7*2000);                                                                                                                                        
                             break;
                         }
                     }

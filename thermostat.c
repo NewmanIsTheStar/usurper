@@ -170,7 +170,7 @@ void thermostat_task(void *params)
     config.cooling_gpio = 8;
     config.fan_gpio = 9;
 
-    printf("thermostat_task started!!!!\n");
+    printf("thermostat_task started!\n");
     
     // initialize data structures for climate metrics
     initialize_climate_metrics();

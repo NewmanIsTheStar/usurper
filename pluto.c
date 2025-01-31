@@ -52,7 +52,7 @@
 
 #define BOSS_TASK_PRIORITY              ( 0 + 2UL )
 #define WATCHDOG_TASK_PRIORITY          ( 0 + 1UL )
-#define PAUSE_FOR_INITIAL_SNTP_RESPONSE (0)   //TEST TEST TEST
+#define PAUSE_FOR_INITIAL_SNTP_RESPONSE (1) 
 
 
 // external variables
@@ -98,6 +98,12 @@ int pluto(void)
     stdio_init_all();
 
     printf("\n%s version ", APP_NAME);
+
+    // for(;;)
+    // {
+    //     printf("I am a little teapot\n");
+    //     sleep_ms(1000);
+    // }
 
 #ifdef USE_GIT_HASH_AS_VERSION
     printf("%s\n", GITHASH);
@@ -165,9 +171,9 @@ void boss_task(__unused void *params)
     config_read();    
 
     // TEST TEST TEST
-    config.syslog_enable = 0;
-    config.weather_station_enable = 0;
-    config.personality = HVAC_THERMOSTAT;
+    // config.syslog_enable = 0;
+    // config.weather_station_enable = 0;
+    // config.personality = HVAC_THERMOSTAT;
     
     //initialise wifi
     while (cyw43_arch_init_with_country(get_wifi_country_code(config.wifi_country)))
@@ -176,7 +182,7 @@ void boss_task(__unused void *params)
          cyw43_arch_deinit();
          SLEEP_MS(1000);       
     } 
-#ifdef MONKEY    
+#ifndef TEST_AP_MODE    
     // enable wifi station mode
     cyw43_arch_enable_sta_mode();
 
@@ -207,9 +213,10 @@ void boss_task(__unused void *params)
         inet_pton(AF_INET, config.gateway, &gw);
         netif_set_addr(netif_default, &(ip), &(nm), &(gw));
     }
-#endif
-    //TEST TEST TEST
+#elif
+    // use this mode for development when a wifi network is not available
     test_ap_mode();
+#endif    
 
     // initialize the ip info used in the web interface
     set_web_ip_network_info();
@@ -256,7 +263,7 @@ void boss_task(__unused void *params)
         rtc_update();
         #endif
 
-        SLEEP_MS(10000);  // TEST TEST TEST - normally 1000
+        SLEEP_MS(1000);
 
         // if (rtc_get_datetime(&date))
         // {
@@ -542,6 +549,13 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
     }
 }
 
+/*!
+ * \brief Test AP mode used for development without access to a wifi network
+ *
+ * \param none
+ *
+ * \return 0
+ */
 int test_ap_mode(void)
 {
     bool led_on = false;

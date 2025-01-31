@@ -285,8 +285,8 @@ int config_read(void)
     // read configuration from flash
     flash_read_non_volatile_variables(); 
 
-    printf("TESTING TESTING TESTING: forcing ugrade from v4 to v5\n");
-    config.version = 4;  // TEST TEST TEST
+    //printf("TESTING TESTING TESTING: forcing ugrade from v4 to v5\n");
+    //config.version = 4;  // TEST TEST TEST
 
     // check and correct configuration
     config_validate();
