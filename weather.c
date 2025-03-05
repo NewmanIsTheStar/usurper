@@ -283,7 +283,6 @@ WEATHER_QUERY_STATUS_T query_weather_station(void)
     struct timeval tv;  
     unsigned char rx_buffer[BUF_SIZE];  
     static int ecowitt_socket = -1;
-    short short_temp;  // intermediate variable required to make gcc perform type conversion correctly for negative values
 
     // (re)establish socket connection
     if (ecowitt_socket < 0) ecowitt_socket = establish_socket(config.weather_station_ip, 45000, SOCK_STREAM);
@@ -317,10 +316,9 @@ WEATHER_QUERY_STATUS_T query_weather_station(void)
                         if (!receive_weather_info_from_ecowitt(rx_buffer, read_bytes))
                         {
                             err = WEATHER_READ_SUCCESS;
-                            
+
                             // store parameters of interest
-                            short_temp = ntohs(*((s16_t *)raw_outsidetemp));  // if assigned directly to int sign extension doesn't work!  
-                            web.outside_temperature = short_temp;   
+                            web.outside_temperature = (s16_t)ntohs(*((s16_t *)raw_outsidetemp));
                             web.wind_speed          = ntohs(*(u16_t *)raw_windspeed);                            
                             web.daily_rain          = ntohl(*(u32_t *)raw_dailyrain);                            
                             web.weekly_rain         = ntohl(*(u32_t *)raw_weeklyrain);

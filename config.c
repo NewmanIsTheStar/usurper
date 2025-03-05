@@ -238,6 +238,18 @@ void config_v4_to_v5(void)
 
         sprintf(config.setpoint_name[i], "Setpoint%d", i);
     }
+
+    config.powerwall_ip[0] = 0;
+    STRNCPY(config.powerwall_hostname, "powerwall", sizeof(config.powerwall_hostname));
+    config.powerwall_password[0] = 0;
+
+    config.grid_down_heating_setpoint_decrease = 10;
+    config.grid_down_cooling_setpoint_increase = 10;
+    config.grid_down_heating_disable_battery_level = 40;
+    config.grid_down_heating_enable_battery_level = 60;
+    config.grid_down_cooling_disable_battery_level = 70;
+    config.grid_down_cooling_enable_battery_level = 90;
+
 }
 
 

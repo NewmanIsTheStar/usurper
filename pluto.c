@@ -63,6 +63,8 @@ extern WORKER_TASK_T worker_tasks[];
 // static variables
 static bool restart_requested = false;
 
+long long atomic_variable = 0;
+
 // prototypes
 int pluto(void);
 void boss_task(__unused void *params);
@@ -71,6 +73,8 @@ int set_web_ip_network_info(void);
 int set_realtime_clock(void);
 int monitor_stacks(void);
 int test_ap_mode(void);
+void atomic_write_task(__unused void *params);
+void atomic_read_task(__unused void *params);
 
 
 /*********************************************************
@@ -98,12 +102,6 @@ int pluto(void)
     stdio_init_all();
 
     printf("\n%s version ", APP_NAME);
-
-    // for(;;)
-    // {
-    //     printf("I am a little teapot\n");
-    //     sleep_ms(1000);
-    // }
 
 #ifdef USE_GIT_HASH_AS_VERSION
     printf("%s\n", GITHASH);
@@ -135,9 +133,14 @@ int pluto(void)
 
     // initialize boss task
     xTaskCreate(boss_task, "Boss Task", 1024, NULL, BOSS_TASK_PRIORITY, &task);
+    // xTaskCreate(atomic_write_task, "Atomic Write Task", 1024, NULL, BOSS_TASK_PRIORITY, &task);
+    // xTaskCreate(atomic_read_task, "Atomic Read Task", 1024, NULL, BOSS_TASK_PRIORITY, &task);    
 
     // start boss task
     vTaskStartScheduler();
+
+    printf("Scheduler Exited!\n");
+    for(;;) sleep_ms(10000);
 
     // we should never get here -- if we do then drop dead
     watchdog_enable(1, 1);
@@ -581,3 +584,75 @@ int test_ap_mode(void)
 
     return(0);
 }
+
+void atomic_write_task(__unused void *params)
+{
+    int i = 0;
+    int j = 0;
+    int write_core = 0;
+
+    write_core = portGET_CORE_ID();
+    
+    printf("Atomic Write Test starting on core %d!\n", write_core);
+    
+    for(;;)
+    {
+        if (i)
+        {
+            atomic_variable = 0xAAAAAAAAAAAAAAAA;
+        }
+        else
+        {
+            atomic_variable = 0xCCCCCCCCCCCCCCCC;
+        }
+
+        i = !i;
+
+        if (++j>=1000000000)
+        {
+            if (write_core != portGET_CORE_ID())
+            {
+                printf("WRITE CORE CHANGED!\n");
+                write_core = portGET_CORE_ID();
+            }
+            printf("*MARK*  One billion writes\n");
+            atomic_variable = 0;
+            j = 0;
+        }        
+    }
+
+} 
+
+void atomic_read_task(__unused void *params)
+{
+    long long i = 0;
+    int j = 0;
+    int read_core = 0;
+
+    read_core = portGET_CORE_ID();    
+
+    printf("Atomic Read Test starting on core %d!\n", read_core);
+
+    for(;;)
+    {
+        i = atomic_variable;
+
+        if ((i != 0xAAAAAAAAAAAAAAAA) && (i != 0xCCCCCCCCCCCCCCCC))
+        {
+            printf("%llx\n", i);
+            sleep_ms(1000);
+        }
+
+        if (++j>=1000000000)
+        {
+            if (read_core != portGET_CORE_ID())
+            {
+                printf("READ CORE CHANGED!\n");
+                read_core = portGET_CORE_ID();
+            }
+            printf("*MARK*  One billion reads\n");
+            j = 0;
+        }
+    }
+
+} 

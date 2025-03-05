@@ -31,7 +31,7 @@ void setTimeSec(uint32_t sec);
 #define MEM_LIBC_MALLOC             0
 #endif
 #define MEM_ALIGNMENT               4
-#define MEM_SIZE                    4000  // newman set to 4000
+#define MEM_SIZE                    12288 //4000  // newman set to 4000
 #define MEMP_NUM_TCP_SEG            32
 #define MEMP_NUM_ARP_QUEUE          10
 #define MEMP_NUM_UDP_PCB            (16)  // newman added
@@ -40,7 +40,7 @@ void setTimeSec(uint32_t sec);
 #define LWIP_ETHERNET               1
 #define LWIP_ICMP                   1
 #define LWIP_RAW                    1
-#define TCP_WND                     (8 * TCP_MSS) 
+#define TCP_WND                     16384 // newman increased for TLS (8 * TCP_MSS) 
 #define TCP_MSS                     1460
 #define TCP_SND_BUF                 (8 * TCP_MSS)
 #define TCP_SND_QUEUELEN            ((4 * (TCP_SND_BUF) + (TCP_MSS - 1)) / (TCP_MSS))
@@ -60,14 +60,19 @@ void setTimeSec(uint32_t sec);
 #define LWIP_UDP                    1
 #define LWIP_DNS                    1
 #define LWIP_TCP_KEEPALIVE          1
+// newman found these suggestions on the internet to use with keepalive
+#define TCP_KEEPIDLE_DEFAULT    1000 // keep_idle : dont' send keep-alive until keep_idle after connecting
+#define TCP_KEEPCNT_DEFAULT     9U // keep_cnt : increase when no response after sending keep-alive every keep_intvl
+
 #define LWIP_NETIF_TX_SINGLE_PBUF   1
 #define DHCP_DOES_ARP_CHECK         0
 #define LWIP_DHCP_DOES_ACD_CHECK    0
 #define LWIP_IGMP                   1 // Newman added this row and enabled
 
-#define LWIP_ALTCP               0  // Newman used for TLS testing
-#define LWIP_ALTCP_TLS           0  // Newman used for TLS testing 
-#define LWIP_ALTCP_TLS_MBEDTLS   0  // Newman used for TLS testing
+#define LWIP_ALTCP               1  // Newman used for TLS testing
+#define LWIP_ALTCP_TLS           1  // Newman used for TLS testing 
+#define LWIP_ALTCP_TLS_MBEDTLS   1  // Newman used for TLS testing
+#define ALTCP_MBEDTLS_AUTHMODE      MBEDTLS_SSL_VERIFY_NONE // MBEDTLS_SSL_VERIFY_REQUIRED  // Newman used for TLS testing
 
 #ifndef NDEBUG 
 #define LWIP_DEBUG                  1
@@ -111,11 +116,12 @@ void setTimeSec(uint32_t sec);
 
 //****************************************************************
 
-#define TCPIP_THREAD_STACKSIZE 4096  // original 1024
-#define DEFAULT_THREAD_STACKSIZE 4096  // original 1024
+#define TCPIP_THREAD_STACKSIZE 12288  //4096 // original 1024
+#define DEFAULT_THREAD_STACKSIZE 12288  // 4096 // original 1024
 #define DEFAULT_RAW_RECVMBOX_SIZE 8
 #define TCPIP_MBOX_SIZE 8
 #define LWIP_TIMEVAL_PRIVATE 0
+#define LWIP_TCP_CLOSE_TIMEOUT_MS_DEFAULT   2000 // newman added
 
 // not necessary, can be done either way
 #define LWIP_TCPIP_CORE_LOCKING_INPUT 0  // newman changed to zero
@@ -123,5 +129,20 @@ void setTimeSec(uint32_t sec);
 // ping_thread sets socket receive timeout, so enable this feature
 #define LWIP_SO_RCVTIMEO 1
 
+
+/* Debug options **************************************************************/
+
+// // Enable lwIP debugging
+// #define LWIP_DEBUG                  1
+
+// // Enable ALTCP-compatible TLS port debugging
+// #define ALTCP_MBEDTLS_DEBUG         LWIP_DBG_ON
+
+// // Enable Mbed TLS debugging
+// #define ALTCP_MBEDTLS_LIB_DEBUG     LWIP_DBG_ON
+
+// //newman debug options
+// #define MEM_DEBUG                   LWIP_DBG_ON
+// #define TCP_DEBUG                   LWIP_DBG_ON
 
 #endif

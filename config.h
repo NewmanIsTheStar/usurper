@@ -110,13 +110,11 @@ typedef struct
     int heating_gpio;
     int cooling_gpio;
     int fan_gpio;
-
     int heating_to_cooling_lockout_mins;
     int minimum_heating_om_mins;
     int minimum_cooling_on_mins;
     int minimum_heating_off_mins;
     int minimum_cooling_off_mins;
-
     int thermostat_mode;
     int max_cycles_per_hour;
     int setpoint_number;
@@ -126,7 +124,16 @@ typedef struct
     int thermostat_period_start_mow[16];
     int thermostat_period_end_mow[16];
     int thermostat_period_setpoint_index[16];
-
+    char powerwall_ip[32];
+    char powerwall_hostname[32];  // for sni may differ from dns
+    char powerwall_password[32];
+    int grid_down_heating_setpoint_decrease;
+    int grid_down_cooling_setpoint_increase;
+    int grid_down_heating_disable_battery_level;
+    int grid_down_heating_enable_battery_level;
+    int grid_down_cooling_disable_battery_level;
+    int grid_down_cooling_enable_battery_level;
+    
     uint16_t crc;
 } NON_VOL_VARIABLES_T;
 

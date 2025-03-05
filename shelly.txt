@@ -1,0 +1,518 @@
+
+https://shelly.guide/webhooks-https-requests/
+
+Status request:
+http://192.168.xxx.xxx/status
+
+Settings request:
+http://192.168.xxx.xxx/settings
+
+Actions request:
+http://192.168.xxx.xxx/settings/actions
+
+Update request:
+http://192.168.xxx.xxx/ota?update=1
+
+Reboot:
+http://192.168.xxx.xxx/reboot
+
+Factory reset:
+http://192.168.xxx.xxx/reset
+
+
+
+Get status:
+http://192.168.xxx.xxx/rpc/Shelly.GetStatus
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+
+
+Get status:
+http://192.168.xxx.xxx/rpc/Shelly.GetStatus
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+Get status:
+http://192.168.xxx.xxx/rpc/Switch.GetStatus?id=0
+0 = channel 1
+1 = channel 2
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+0 = channel 1
+1 = channel 2
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+0 = channel 1
+1 = channel 2
+
+Toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+0 = channel 1
+1 = channel 2
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+0 = channel 1
+1 = channel 2
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+0 = channel 1
+1 = channel 2
+
+Cover configuration:
+http://192.168.xxx.xxx/rpc/Cover.GetConfig?id=0
+
+Cover state:
+http://192.168.xxx.xxx/rpc/Cover.GetStatus?id=0
+
+Cover open:
+http://192.168.xxx.xxx/roller/0?go=open
+
+Cover close:
+http://192.168.xxx.xxx/roller/0?go=close
+
+Cover stop:
+http://192.168.xxx.xxx/roller/0?go=stop
+
+Cover open with timer (in seconds):
+http://192.168.xxx.xxx/roller/0?go=open&duration=10
+10 = 10 seconds
+
+Cover close with timer (in seconds):
+http://192.168.xxx.xxx/roller/0?go=close&duration=10
+10 = 10 seconds
+
+Cover position in %:
+http://192.168.xxx.xxx/roller/0?go=to_pos&roller_pos=75
+75 = 75 %
+
+Cover calibration:
+http://192.168.xxx.xxx/rpc/Cover.Calibrate?id=0
+
+
+
+Light on:
+http://192.168.xxx.xxx/light/0?turn=on
+
+Light off:
+http://192.168.xxx.xxx/light/0?turn=off
+
+Light toggle:
+http://192.168.xxx.xxx/light/0?turn=toggle
+
+Light on with timer (in seconds):
+http://192.168.xxx.xxx/light/0?turn=on&timer=30
+
+Light off with timer (in seconds):
+http://192.168.xxx.xxx/light/0?turn=off&timer=30
+
+Light on and set brightness in %:
+http://192.168.xxx.xxx/light/0?turn=on&brightness=70
+
+Set brightness in %:
+http://192.168.xxx.xxx/light/0?brightness=70
+
+Increase brightness
+http://192.168.xxx.xxx/light/0?dim=up&step=10
+Will increase brightness until another command is received.
+
+Decrease brightness:
+http://192.168.xxx.xxx/light/0?dim=down&step=10
+Will decrease brightness until another command is received.
+
+Stop dimming:
+http://192.168.xxx.xxx/light/0?dim=stop
+
+Light on:
+http://192.168.xxx.xxx/color/0?turn=on
+
+Light off:
+http://192.168.xxx.xxx/color/0?turn=off
+
+Light toggle:
+http://192.168.xxx.xxx/color/0?turn=toggle
+
+Light on with timer (in seconds):
+http://192.168.xxx.xxx/color/0?turn=on&timer=30
+
+Light off with timer (in seconds):
+http://192.168.xxx.xxx/color/0?turn=off&timer=30
+
+Light on and set RGBW colors (red, green, blue, white):
+http://192.168.xxx.xxx/color/0?turn=on&red=255&green=86&blue=112&white=0
+
+Light on and set white only:
+http://192.168.xxx.xxx/color/0?turn=on&white=20
+
+Light on and set intensity:
+http://192.168.xxx.xxx/color/0?turn=on&gain=27
+
+Channel 1: 0/R
+Channel 2: 1/G
+Channel 3: 2/B
+Channel 4: 3/W
+
+Light on:
+http://192.168.xxx.xxx/white/0?turn=on
+
+Light off:
+http://192.168.xxx.xxx/white/0?turn=off
+
+Light toggle:
+http://192.168.xxx.xxx/white/0?turn=toggle
+
+Light on and set brightness in %:
+http://192.168.xxx.xxx/white/0?brightness=70
+
+Set brightness in %:
+http://192.168.xxx.xxx/white/0?brightness=70
+
+Switch on with timer (in seconds):
+http://192.168.xxx.xxx/white/0?turn=on&timer=30
+
+Switch off with timer (in seconds):
+http://192.168.xxx.xxx/white/0?turn=off&timer=30
+
+Get status:
+http://192.168.xxx.xxx/rpc/Shelly.GetStatus
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+
+Get status:
+http://192.168.xxx.xxx/rpc/Shelly.GetStatus
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+
+
+
+Channel 1: 0
+Channel 2: 1
+
+Get status:
+http://192.168.xxx.xxx/rpc/Shelly.GetStatus
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+
+
+Channel 1: 0
+Channel 2: 1
+
+Get status:
+http://192.168.xxx.xxx/rpc/Shelly.GetStatus
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+
+
+Channel 1: 0
+Channel 2: 1
+Channel 3: 2
+
+Get status:
+http://192.168.xxx.xxx/rpc/Shelly.GetStatus
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+
+
+Channel 1: 0
+Channel 2: 1
+Channel 3: 2
+Channel 4: 3
+
+Get status:
+http://192.168.xxx.xxx/rpc/Shelly.GetStatus
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+Set display brightness (0-100)
+http://192.168.xxx.xxx/rpc/Ui.SetConfig?config={“idle_brightness”:10}
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+Read values from channel 0:
+http://192.168.xxx.xxx/emeter/0/3em_data
+
+Read values from channel 1:
+http://192.168.xxx.xxx/emeter/1/3em_data
+
+Read values from channel 2:
+http://192.168.xxx.xxx/emeter/2/3em_data
+
+Download .csv file from channel 0:
+http://192.168.xxx.xxx/emeter/0/3em_data.csv
+
+Download .csv file from channel 1:
+http://192.168.xxx.xxx/emeter/1/3em_data.csv
+
+Download .csv file from channel 2:
+http://192.168.xxx.xxx/emeter/2/3em_data.csv
+
+
+
+Channel 1: 0
+Channel 2: 1
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+
+
+
+Relay on:
+http://192.168.xxx.xxx/relay/0?turn=on
+
+Relay off:
+http://192.168.xxx.xxx/relay/0?turn=off
+
+Relay toggle:
+http://192.168.xxx.xxx/relay/0?turn=toggle
+
+Relay on with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=on&timer=30
+
+Relay off with timer (in seconds):
+http://192.168.xxx.xxx/relay/0?turn=off&timer=30
+
+Light on:
+http://192.168.xxx.xxx/color/0?turn=on
+
+Light off:
+http://192.168.xxx.xxx/color/0?turn=off
+
+Light toggle:
+http://192.168.xxx.xxx/color/0?turn=toggle
+
+Light on with timer (in seconds):
+http://192.168.xxx.xxx/color/0?turn=on&timer=30
+
+Light off with timer (in seconds):
+http://192.168.xxx.xxx/color/0?turn=off&timer=30
+
+Light on and set RGB colors (red, green, blue):
+http://192.168.xxx.xxx/color/0?turn=on&red=255&green=86&blue=112
+
+Light on and set intensity:
+http://192.168.xxx.xxx/color/0?turn=on&gain=27
+
+Light on:
+http://192.168.xxx.xxx/light/0?turn=on
+
+Light off:
+http://192.168.xxx.xxx/light/0?turn=off
+
+Light toggle:
+http://192.168.xxx.xxx/light/0?turn=toggle
+
+Light on and set brightness in %:
+http://192.168.xxx.xxx/light/0?brightness=70
+
+Set brightness in %:
+http://192.168.xxx.xxx/light/0?brightness=70
+
+Switch on with timer (in seconds):
+http://192.168.xxx.xxx/light/0?turn=on&timer=30
+
+Switch off with timer (in seconds):
+http://192.168.xxx.xxx/light/0?turn=off&timer=30
+
+
+
+Light on:
+http://192.168.xxx.xxx/light/0?turn=on
+
+Light off:
+http://192.168.xxx.xxx/light/0?turn=off
+
+Light toggle:
+http://192.168.xxx.xxx/light/0?turn=toggle
+
+Light on and set brightness in %:
+http://192.168.xxx.xxx/light/0?brightness=70
+
+Set brightness in %:
+http://192.168.xxx.xxx/light/0?brightness=70
+
+Switch on with timer (in seconds):
+http://192.168.xxx.xxx/light/0?turn=on&timer=30
+
+Switch off with timer (in seconds):
+http://192.168.xxx.xxx/light/0?turn=off&timer=30
+
+
+
+
+Auto temperature control:
+http://192.168.xxx.xxx/settings/thermostat/0/?target_t_enabled=1
+On: 1
+Off: 0
+
+Auto temperature control on and set target temp:
+http://192.168.xxx.xxx/settings/thermostat/0?target_t_enabled=1&target_t=10
+Target temp: 4-31
+
+Auto temp off and set valve position:
+http://192.168.xxx.xxx/thermostat/0?pos=10
+Valve position: 0-100 %
+
+Schedule on/off:
+http://192.168.xxx.xxx/settings/thermostat/0?schedule=0
+On: 1
+Off: 0
+
+Boost start (in minutes):
+http://192.168.xxx.xxx/thermostat/0?boost_minutes=10
+
+Calibration:
+http://192.168.xxx.xxx/calibrate
+
+
+PICO HOSTNAME CHANGE
+<initialize cyw43 driver>
+...
+cyw43_arch_enable_sta_mode();
+...
+cyw43_arch_lwip_begin();
+struct netif *n = &cyw43_state.netif[CYW43_ITF_STA];
+netif_set_hostname(n, my_hostname);
+netif_set_up(n);
+cyw43_arch_lwip_end();
+...
+<connect to Wifi using cyw43_arch_wifi_connect_(), etc...>
+

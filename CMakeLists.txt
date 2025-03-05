@@ -18,9 +18,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
+set(sdkVersion 2.1.1)
+set(toolchainVersion 14_2_Rel1)
+set(picotoolVersion 2.1.1)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -76,6 +76,8 @@ add_executable(gumbo
         udp.c
         wifi.c
         thermostat.c
+        powerwall.c
+        shelly.c
         )      
 
 # Add executable. Default name is the project name, version 0.1
@@ -91,13 +93,15 @@ pico_enable_stdio_usb(gumbo 0)
 
 target_include_directories(gumbo PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${USERHOME}/.pico-sdk/sdk/2.1.0/lib/lwip/contrib/ports/freertos/include 
+        ${USERHOME}/.pico-sdk/sdk/2.1.1/lib/lwip/contrib/ports/freertos/include 
         #${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
         ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/include        
         ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
-        ${USERHOME}/.pico-sdk/sdk/2.1.0/src/rp2_common/pico_cyw43_arch/include
-        ${USERHOME}/.pico-sdk/sdk/2.1.0/lib/cyw43-driver/src/
-        ${USERHOME}/.pico-sdk/sdk/2.1.0/src/rp2_common/pico_cyw43_driver/include/
+        ${USERHOME}/.pico-sdk/sdk/2.1.1/src/rp2_common/pico_cyw43_arch/include
+        ${USERHOME}/.pico-sdk/sdk/2.1.1/lib/cyw43-driver/src/
+        ${USERHOME}/.pico-sdk/sdk/2.1.1/src/rp2_common/pico_cyw43_driver/include/
+        ${USERHOME}/.pico-sdk/sdk/2.1.1/lib/lwip/src/apps/altcp_tls
+        ${USERHOME}/.pico-sdk/sdk/2.1.1/lib/mbedtls/include
         )
 target_link_libraries(gumbo
         pico_cyw43_arch_lwip_sys_freertos
@@ -112,6 +116,8 @@ target_link_libraries(gumbo
         pico_flash
         hardware_pio
         hardware_i2c
+        pico_lwip_mbedtls
+        pico_mbedtls
         )
 
 

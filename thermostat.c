@@ -36,6 +36,8 @@
 #include "config.h"
 #include "led_strip.h"
 #include "message.h"
+#include "altcp_tls_mbedtls_structs.h"
+#include "powerwall.h"
 #include "pluto.h"
 
 typedef enum
@@ -160,6 +162,7 @@ void thermostat_task(void *params)
     long int humidityx10;
     uint8_t aht10_temp_humidity[7];
     int retry = 0;
+    int oneshot = false;
 
 
     //TEST TEST TEST
@@ -182,9 +185,17 @@ void thermostat_task(void *params)
     gpio_pull_up(14);
     gpio_pull_up(15);
 
+    powerwall_init();
+    
     while (true)
     {
-        if ((config.personality == HVAC_THERMOSTAT))
+        if(1 /*!oneshot*/)
+        {
+            powerwall_test();
+            oneshot = true;
+        }
+        
+        if ((config.personality == 99/*HVAC_THERMOSTAT*/))
         {
             i2c_error = false;
 
