@@ -355,8 +355,26 @@ extern NON_VOL_VARIABLES_T config;
     x(ts13in)    \
     x(ts14in)    \
     x(ts15in)    \
-    x(ts16in)    
+    x(ts16in)    \
+    x(pwip)      \
+    x(pwhost)    \
+    x(pwpass)    \
+    x(pwgdhd)    \
+    x(pwgdci)    \
+    x(pwblhd)    \
+    x(pwblhe)    \
+    x(pwblcd)    \
+    x(pwblce)    
 
+    char powerwall_ip[32];
+    char powerwall_hostname[32];  // for sni may differ from dns
+    char powerwall_password[32];
+    int grid_down_heating_setpoint_decrease;
+    int grid_down_cooling_setpoint_increase;
+    int grid_down_heating_disable_battery_level;
+    int grid_down_heating_enable_battery_level;
+    int grid_down_cooling_disable_battery_level;
+    int grid_down_cooling_enable_battery_level;
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
@@ -1385,13 +1403,57 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             //TODO RANGE CHECKING!!!
             printed = snprintf(pcInsert, iInsertLen, "%s", config.setpoint_name[config.thermostat_period_setpoint_index[iIndex-SSI_ts1in]]); 
         }
-        break;               
-
+        break;                      
+        case SSI_pwip:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.powerwall_ip);
+        }
+        break;
+        case SSI_pwhost:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.powerwall_hostname);
+        }
+        break; 
+        case SSI_pwpass:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.powerwall_password);
+        }
+        break;
+        case SSI_pwgdhd:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_heating_setpoint_decrease/10, grid_down_heating_setpoint_decrease%10);
+        }
+        break;        
+        case SSI_pwgdci:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_cooling_setpoint_increase/10, grid_down_cooling_setpoint_increase%10);            
+        }
+        break;
+        case SSI_pwblhd:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_heating_disable_battery_level/10, grid_down_heating_disable_battery_level%10);            
+        }
+        break;        
+        case SSI_pwblhe:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_heating_enable_battery_level/10, grid_down_heating_enable_battery_level%10);            
+        }
+        break;
+        case SSI_pwblcd:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_cooling_disable_battery_level/10, grid_down_cooling_disable_battery_level%10);            
+        }
+        break;   
+        case SSI_pwblce:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_cooling_enable_battery_level/10, grid_down_cooling_enable_battery_level%10);            
+        }
+        break;  
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    
         }
-        break;        
+        break;                 
     }
 
 

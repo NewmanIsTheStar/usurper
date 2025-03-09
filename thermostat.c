@@ -189,13 +189,13 @@ void thermostat_task(void *params)
     
     while (true)
     {
-        if(1 /*!oneshot*/)
-        {
-            powerwall_test();
-            oneshot = true;
-        }
+        // if(1 /*!oneshot*/)
+        // {
+        //     powerwall_test();
+        //     oneshot = true;
+        // }
         
-        if ((config.personality == 99/*HVAC_THERMOSTAT*/))
+        if ((config.personality == HVAC_THERMOSTAT))
         {
             i2c_error = false;
 

@@ -93,11 +93,11 @@
      </style>
 
     <head>
-        <title>Sprinkler Controller</title>
+        <title>HVAC Controller</title>
         <link rel="icon" type="image/x-icon" href="/sprinkler.ico">
     </head>
     <body>
-        <h1 style="font-family:Lato,sans-serif; color: #070000;">Sprinkler Controller</h1>
+        <h1 style="font-family:Lato,sans-serif; color: #070000;">HVAC Controller</h1>
         <br>
         <div class="btn-group-title" style="width:100%">
           <a href="/sunday.cgi?day=0">   <button style="width:2%">&nbsp;</button></a> 
@@ -218,6 +218,6 @@
             <a href="/friday.shtml?day=5">   <button <!--#z8bviz-->><!--#z8d6d--> min</button></a> 
             <a href="/saturday.shtml?day=6">   <button <!--#z8bviz-->><!--#z8d7d--> min</button></a> 
           </div> 
-          <p><a href="/network.shtml" style="text-decoration:none">&#9881 <small>Settings</small></a></p>                           
+          <p><a href="/powerwall.shtml" style="text-decoration:none">&#9881 <small>Settings</small></a></p>                           
     </body>
 </html>

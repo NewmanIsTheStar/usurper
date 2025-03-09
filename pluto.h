@@ -7,8 +7,8 @@
 #ifndef PLUTO_H
 #define PLUTO_H
 
-#define PLUTO_VER "01.00.01"            //manually maintained version
-#define USE_GIT_HASH_AS_VERSION (1)     //use git hash as version
+//#define PLUTO_VER "01.00.00"          // release version set in CMakeLists.txt
+#define USE_GIT_HASH_AS_VERSION         // use git hash as version during development
 
 #define STRNCPY(dst, src, size)  {strncpy((dst), (src), (size)); *((dst)+(size)-1)=0;}
 //#define STRNCAT(dst, src, size)  {if ((size) > 0) {*((dst)+(size)-1)=0; strncat((dst), (src), (size)-strlen((dst))-1);};}

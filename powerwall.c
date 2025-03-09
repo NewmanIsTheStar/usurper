@@ -126,11 +126,6 @@ void powerwall_test(void)
     char cookie[1024];
     char grid_status[256];
     char authorization_token[256];
-       
-    // TEMPORARY!!!!
-    config.personality = HVAC_THERMOSTAT;
-    STRNCPY(config.powerwall_ip, "powerwall.badnet", sizeof(config.powerwall_ip)); 
-    STRNCPY(config.powerwall_password, "JWVTC", sizeof(config.powerwall_password));  
 
     // check if retry limit reached
     if (retry >= max_retries)
@@ -305,7 +300,7 @@ void powerwall_test(void)
 
         case PW_LOGOUT:
             // send logout request to powerwall
-            printf("Sending login request\n");
+            printf("Sending logout request\n");
             if(!powerwall_logout(pcb, authorization_token, cookie))
             {        
                 printf("Failed to send logout request\n");
@@ -333,7 +328,7 @@ void powerwall_test(void)
             printf("Awaited response\n");
 
             // Response: HTTP/2 204  date: Thu, 03 Oct 2019 13:48:10 GMT
-            printf("parse json\n");
+            printf("Checking response\n");
             if (strcasestr(copy_buffer, "date"))
             {
                 printf("LOGOUT OK\n");
