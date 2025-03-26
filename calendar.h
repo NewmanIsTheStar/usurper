@@ -30,7 +30,10 @@ int get_daylight_saving_month_and_day(int year, char *date_description, int *day
 int set_calendar_html_page(void);
 int8_t get_real_time_clock_seconds(void);
 int mow_to_string(char *string, int length, int mow);
+int mow_to_time_string(char *string, int length, int mow);
+int get_day_from_mow(int mow);
 int string_to_mow(char *string, int length);
+int time_string_to_mow(char *string, int length, int day);
 
 #ifdef FAKE_RTC
 int8_t rtc_update(void);

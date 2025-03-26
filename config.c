@@ -21,6 +21,7 @@
 #include "flash.h"
 
 #define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
+//#define DISABLE_CONFIG_VALIDATION (1)
 
 
 int config_validate(void);
@@ -221,10 +222,15 @@ void config_v4_to_v5(void)
     config.heating_gpio = -1;
     config.cooling_gpio = -1;
     config.fan_gpio = -1;
+    config.heating_to_cooling_lockout_mins = 1;
+    config.minimum_heating_on_mins = 1;
+    config.minimum_cooling_on_mins = 1;
+    config.minimum_heating_off_mins = 1;
+    config.minimum_cooling_off_mins = 1;
 
     for(i=0; i<NUM_ROWS(config.thermostat_period_end_mow); i++)
     {
-        config.thermostat_period_start_mow[i] = 0;
+        config.thermostat_period_start_mow[i] = -1;
         config.thermostat_period_end_mow[i] = 0;
         config.thermostat_period_setpoint_index[i] = 0;
         config.thermostat_period_number = i;
@@ -233,7 +239,7 @@ void config_v4_to_v5(void)
     for(i=0; i<NUM_ROWS(config.setpoint_name); i++)
     {
         config.setpoint_name[i][0] = 0;
-        config.setpoint_temperaturex10[i] = 0;
+        config.setpoint_temperaturex10[i] = 21;
         config.setpoint_number = i;
 
         sprintf(config.setpoint_name[i], "Setpoint%d", i);
@@ -250,6 +256,10 @@ void config_v4_to_v5(void)
     config.grid_down_cooling_disable_battery_level = 70;
     config.grid_down_cooling_enable_battery_level = 90;
 
+    for(i=0; i<NUM_ROWS(config.gpio_default); i++)
+    {
+        config.gpio_default[i] = GP_UNINITIALIZED;
+    }
 }
 
 
@@ -297,11 +307,12 @@ int config_read(void)
     // read configuration from flash
     flash_read_non_volatile_variables(); 
 
-    //printf("TESTING TESTING TESTING: forcing ugrade from v4 to v5\n");
-    //config.version = 4;  // TEST TEST TEST
-
+#ifdef DISABLE_CONFIG_VALIDATION
+    printf("Configuration validation disabled!  Using whatever random garbage happens to be in flash...\n");
+#else
     // check and correct configuration
     config_validate();
+#endif
 
     return(err);
 }

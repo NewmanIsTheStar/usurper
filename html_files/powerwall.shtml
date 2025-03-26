@@ -66,21 +66,23 @@ body {
   <form action="/powerwall.cgi">    
       <label for="pwip">Powerwall Address</label>
       <input type="text" id="pwip" name="pwip" value="<!--#pwip-->"><br><br>
-      <label for="pwhost">Powerwall Hostname (Used for SNI -- Do not change!)</label>
+      <label for="pwhost">Powerwall Hostname (TLS SNI)</label>
       <input type="text" id="pwhost" name="pwhost" value="<!--#pwhost-->"><br><br>
       <label for="pwpass">Powerwall Password</label>
       <input type="text" id="pwpass" name="pwpass" value="<!--#pwpass-->"><br><br>
-      <label for="pwgdhd">Grid Down Heating Setpoint Decrease</label>
+      <label for="pwgdhd"><b>Grid Down Temperature</b></label><br>
+      <label for="pwgdhd">Heating Setpoint Decrease</label>
       <input type="text" id="pwgdhd" name="pwgdhd" value="<!--#pwgdhd-->"><br><br>
-      <label for="pwgdci">Grid Down Cooling Setpoint Increase</label>
+      <label for="pwgdci">Cooling Setpoint Increase</label>
       <input type="text" id="pwgdci" name="pwgdci" value="<!--#pwgdci-->"><br><br>
-      <label for="pwblhd">Grid Down Battery Level Heating Disable</label>
+      <label for="pwgdhd"><b>Grid Down Battery Level</b></label><br>
+      <label for="pwblhd">Heating Disable %</label>
       <input type="text" id="pwblhd" name="pwblhd" value="<!--#pwblhd-->"><br><br>
-      <label for="pwblhe">Grid Down Battery Level Heating Enable</label>
+      <label for="pwblhe">Heating Enable %</label>
       <input type="text" id="pwblhe" name="pwblhe" value="<!--#pwblhe-->"><br><br>
-      <label for="pwblcd">Grid Down Battery Level Cooling Disable</label>
+      <label for="pwblcd">Cooling Disable %</label>
       <input type="text" id="pwblcd" name="pwblcd" value="<!--#pwblcd-->"><br><br>
-      <label for="pwblce">Grid Down Battery Level Cooling Disable</label>
+      <label for="pwblce">Cooling Enable %</label>
       <input type="text" id="pwblce" name="pwblce" value="<!--#pwblce-->"><br><br>                                    
       <br>
       <input type="submit" value="Save" style="font-size: 25px;">

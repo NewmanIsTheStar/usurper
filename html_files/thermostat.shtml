@@ -97,126 +97,104 @@
         <link rel="icon" type="image/x-icon" href="/sprinkler.ico">
     </head>
     <body>
-        <h1 style="font-family:Lato,sans-serif; color: #070000;">HVAC Controller</h1>
+        <h1 style="font-family:Lato,sans-serif; color: #070000;">HVAC &nbsp;&nbsp;&nbsp;<!--#tct--></h1>
         <br>
         <div class="btn-group-title" style="width:100%">
-          <a href="/sunday.cgi?day=0">   <button style="width:2%">&nbsp;</button></a> 
-            <a href="/sunday.cgi?day=0">   <button style="width:13%">Sunday</button></a>        
-            <a href="/monday.cgi?day=1">   <button style="width:13%">Monday</button></a>     
-            <a href="/tuesday.cgi?day=2">  <button style="width:13%">Tuesday</button></a>     
-            <a href="/wednesday.cgi?day=3"><button style="width:13%">Wednesday</button></a>     
-            <a href="/thursday.cgi?day=4"> <button style="width:13%">Thursday</button></a>     
-            <a href="/friday.cgi?day=5">   <button style="width:13%">Friday</button></a>     
-            <a href="/saturday.cgi?day=6"> <button style="width:13%">Saturday</button></a>     
-          </div>
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%">&nbsp;</button></a> 
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%">Sunday</button></a>        
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%">Monday</button></a>     
+            <a href="/t_schedule.cgi?day=2">  <button style="width:13%">Tuesday</button></a>     
+            <a href="/t_schedule.cgi?day=3"><button style="width:13%">Wednesday</button></a>     
+            <a href="/t_schedule.cgi?day=4"> <button style="width:13%">Thursday</button></a>     
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%">Friday</button></a>     
+            <a href="/t_schedule.cgi?day=6"> <button style="width:13%">Saturday</button></a>     
+          </div>              
           <div class="btn-group" style="width:100%">
-            <a href="/sunday.cgi?day=0">   <button style="width:2%">&nbsp;</button></a> 
-            <a href="/sunday.cgi?day=0">   <button style="width:13%"><!--#sun--></button></a> 
-            <a href="/monday.cgi?day=1">   <button style="width:13%"><!--#mon--></button></a> 
-            <a href="/tuesday.cgi?day=2">  <button style="width:13%"><!--#tue--></button></a> 
-            <a href="/wednesday.cgi?day=3"><button style="width:13%"><!--#wed--></button></a> 
-            <a href="/thursday.cgi?day=4"> <button style="width:13%"><!--#thu--></button></a> 
-            <a href="/friday.cgi?day=5">   <button style="width:13%"><!--#fri--></button></a> 
-            <a href="/saturday.cgi?day=6"> <button style="width:13%"><!--#sat--></button></a> 
-          </div>  
-         
-          <div class="btn-group" style="width:100%">
-            <a href="/sunday.shtml?day=0">   <button style="width:2%">S</button></a> 
-            <a href="/sunday.shtml?day=0">   <button style="width:13%"><!--#strt1--></button></a> 
-            <a href="/monday.shtml?day=1">   <button style="width:13%"><!--#strt2--></button></a> 
-            <a href="/tuesday.shtml?day=2">   <button style="width:13%"><!--#strt3--></button></a> 
-            <a href="/wednesday.shtml?day=3">   <button style="width:13%"><!--#strt4--></button></a> 
-            <a href="/thursday.shtml?day=4">   <button style="width:13%"><!--#strt5--></button></a> 
-            <a href="/friday.shtml?day=5">   <button style="width:13%"><!--#strt6--></button></a> 
-            <a href="/saturday.shtml?day=6">   <button style="width:13%"><!--#strt7--></button></a> 
-          </div>            
-
-          <div class="btn-group" style="width:100%">
-            <a href="/relay_test_start.cgi?x=0">   <button <!--#z1zviz-->>1</button></a>             
-            <a href="/sunday.shtml?day=0">   <button <!--#z1bviz-->><!--#z1d1d--> min</button></a> 
-            <a href="/monday.shtml?day=1">   <button <!--#z1bviz-->><!--#z1d2d--> min</button></a> 
-            <a href="/tuesday.shtml?day=2">   <button <!--#z1bviz-->><!--#z1d3d--> min</button></a> 
-            <a href="/wednesday.shtml?day=3">   <button <!--#z1bviz-->><!--#z1d4d--> min</button></a> 
-            <a href="/thursday.shtml?day=4">   <button <!--#z1bviz-->><!--#z1d5d--> min</button></a> 
-            <a href="/friday.shtml?day=5">   <button <!--#z1bviz-->><!--#z1d6d--> min</button></a> 
-            <a href="/saturday.shtml?day=6">   <button <!--#z1bviz-->><!--#z1d7d--> min</button></a> 
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%"><!--#tg0_0--></button></a>             
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg0_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg0_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg0_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg0_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg0_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg0_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg0_7--> </button></a> 
           </div>
           
           <div class="btn-group" style="width:100%">
-            <a href="/relay_test_start.cgi?x=1">   <button <!--#z2zviz-->>2</button></a>              
-            <a href="/sunday.shtml?day=0">   <button  <!--#z2bviz--> ><!--#z2d1d--> min</button></a> 
-            <a href="/monday.shtml?day=1">   <button  <!--#z2bviz--> ><!--#z2d2d--> min</button></a> 
-            <a href="/tuesday.shtml?day=2">   <button <!--#z2bviz--> ><!--#z2d3d--> min</button></a> 
-            <a href="/wednesday.shtml?day=3">   <button  <!--#z2bviz--> ><!--#z2d4d--> min</button></a> 
-            <a href="/thursday.shtml?day=4">   <button  <!--#z2bviz--> ><!--#z2d5d--> min</button></a> 
-            <a href="/friday.shtml?day=5">   <button  <!--#z2bviz--> ><!--#z2d6d--> min</button></a> 
-            <a href="/saturday.shtml?day=6">   <button  <!--#z2bviz--> ><!--#z2d7d--> min</button></a> 
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%"><!--#tg1_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg1_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg1_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg1_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg1_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg1_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg1_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg1_7--> </button></a> 
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/relay_test_start.cgi?x=2">   <button <!--#z3zviz-->>3</button></a>              
-            <a href="/sunday.shtml?day=0">   <button <!--#z3bviz-->><!--#z3d1d--> min</button></a> 
-            <a href="/monday.shtml?day=1">   <button <!--#z3bviz-->><!--#z3d2d--> min</button></a> 
-            <a href="/tuesday.shtml?day=2">   <button <!--#z3bviz-->><!--#z3d3d--> min</button></a> 
-            <a href="/wednesday.shtml?day=3">   <button <!--#z3bviz-->><!--#z3d4d--> min</button></a> 
-            <a href="/thursday.shtml?day=4">   <button <!--#z3bviz-->><!--#z3d5d--> min</button></a> 
-            <a href="/friday.shtml?day=5">   <button <!--#z3bviz-->><!--#z3d6d--> min</button></a> 
-            <a href="/saturday.shtml?day=6">   <button <!--#z3bviz-->><!--#z3d7d--> min</button></a> 
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%"><!--#tg2_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg2_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg2_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg2_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg2_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg2_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg2_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg2_7--> </button></a> 
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/relay_test_start.cgi?x=3">  <button <!--#z4zviz-->>4</button></a>              
-            <a href="/sunday.shtml?day=0">   <button <!--#z4bviz-->><!--#z4d1d--> min</button></a> 
-            <a href="/monday.shtml?day=1">   <button <!--#z4bviz-->><!--#z4d2d--> min</button></a> 
-            <a href="/tuesday.shtml?day=2">   <button <!--#z4bviz-->><!--#z4d3d--> min</button></a> 
-            <a href="/wednesday.shtml?day=3">   <button <!--#z4bviz-->><!--#z4d4d--> min</button></a> 
-            <a href="/thursday.shtml?day=4">   <button <!--#z4bviz-->><!--#z4d5d--> min</button></a> 
-            <a href="/friday.shtml?day=5">   <button <!--#z4bviz-->><!--#z4d6d--> min</button></a> 
-            <a href="/saturday.shtml?day=6">   <button <!--#z4bviz-->><!--#z4d7d--> min</button></a> 
+            <a href="/t_schedule.cgi?day=0">  <button style="width:9%"><!--#tg3_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg3_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg3_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg3_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg3_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg3_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg3_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg3_7--> </button></a> 
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/relay_test_start.cgi?x=4">    <button <!--#z5zviz-->>5</button></a>              
-            <a href="/sunday.shtml?day=0">   <button <!--#z5bviz-->><!--#z5d1d--> min</button></a> 
-            <a href="/monday.shtml?day=1">   <button <!--#z5bviz-->><!--#z5d2d--> min</button></a> 
-            <a href="/tuesday.shtml?day=2">   <button <!--#z5bviz-->><!--#z5d3d--> min</button></a> 
-            <a href="/wednesday.shtml?day=3">   <button <!--#z5bviz-->><!--#z5d4d--> min</button></a> 
-            <a href="/thursday.shtml?day=4">   <button <!--#z5bviz-->><!--#z5d5d--> min</button></a> 
-            <a href="/friday.shtml?day=5">   <button <!--#z5bviz-->><!--#z5d6d--> min</button></a> 
-            <a href="/saturday.shtml?day=6">   <button <!--#z5bviz-->><!--#z5d7d--> min</button></a> 
+            <a href="/t_schedule.cgi?day=0">    <button style="width:9%"><!--#tg4_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg4_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg4_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg4_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg4_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg4_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg4_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg4_7--> </button></a> 
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/relay_test_start.cgi?x=5">  <button <!--#z6zviz-->>6</button></a>              
-            <a href="/sunday.shtml?day=0">   <button <!--#z6bviz-->><!--#z6d1d--> min</button></a> 
-            <a href="/monday.shtml?day=1">   <button <!--#z6bviz-->><!--#z6d2d--> min</button></a> 
-            <a href="/tuesday.shtml?day=2">   <button <!--#z6bviz-->><!--#z6d3d--> min</button></a> 
-            <a href="/wednesday.shtml?day=3">   <button <!--#z6bviz-->><!--#z6d4d--> min</button></a> 
-            <a href="/thursday.shtml?day=4">   <button <!--#z6bviz-->><!--#z6d5d--> min</button></a> 
-            <a href="/friday.shtml?day=5">   <button <!--#z6bviz-->><!--#z6d6d--> min</button></a> 
-            <a href="/saturday.shtml?day=6">   <button <!--#z6bviz-->><!--#z6d7d--> min</button></a> 
+            <a href="/t_schedule.cgi?day=0">  <button style="width:9%"><!--#tg5_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg5_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg5_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg5_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg5_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg5_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg5_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg5_7--> </button></a> 
           </div>
 
           <div class="btn-group" style="width:100%">
-            <a href="/relay_test_start.cgi?x=6">    <button <!--#z7zviz-->>7</button></a>              
-            <a href="/sunday.shtml?day=0">   <button <!--#z7bviz-->><!--#z7d1d--> min</button></a> 
-            <a href="/monday.shtml?day=1">   <button <!--#z7bviz-->><!--#z7d2d--> min</button></a> 
-            <a href="/tuesday.shtml?day=2">   <button <!--#z7bviz-->><!--#z7d3d--> min</button></a> 
-            <a href="/wednesday.shtml?day=3">   <button <!--#z7bviz-->><!--#z7d4d--> min</button></a> 
-            <a href="/thursday.shtml?day=4">   <button <!--#z7bviz-->><!--#z7d5d--> min</button></a> 
-            <a href="/friday.shtml?day=5">   <button <!--#z7bviz-->><!--#z7d6d--> min</button></a> 
-            <a href="/saturday.shtml?day=6">   <button <!--#z7bviz-->><!--#z7d7d--> min</button></a> 
+            <a href="/t_schedule.cgi?day=0">    <button style="width:9%"><!--#tg6_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg6_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg6_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg6_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg6_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg6_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg6_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg6_7--> </button></a> 
           </div>
            
           <div class="btn-group" style="width:100%">
-            <a href="/relay_test_start.cgi?x=7">   <button <!--#z8zviz-->>8</button></a>              
-            <a href="/sunday.shtml?day=0">   <button <!--#z8bviz-->><!--#z8d1d--> min</button></a> 
-            <a href="/monday.shtml?day=1">   <button <!--#z8bviz-->><!--#z8d2d--> min</button></a> 
-            <a href="/tuesday.shtml?day=2">   <button <!--#z8bviz-->><!--#z8d3d--> min</button></a> 
-            <a href="/wednesday.shtml?day=3">   <button <!--#z8bviz-->><!--#z8d4d--> min</button></a> 
-            <a href="/thursday.shtml?day=4">   <button <!--#z8bviz-->><!--#z8d5d--> min</button></a> 
-            <a href="/friday.shtml?day=5">   <button <!--#z8bviz-->><!--#z8d6d--> min</button></a> 
-            <a href="/saturday.shtml?day=6">   <button <!--#z8bviz-->><!--#z8d7d--> min</button></a> 
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%"><!--#tg7_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg7_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg7_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg7_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg7_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg7_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg7_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg7_7--> </button></a> 
           </div> 
           <p><a href="/powerwall.shtml" style="text-decoration:none">&#9881 <small>Settings</small></a></p>                           
     </body>

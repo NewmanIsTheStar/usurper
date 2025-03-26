@@ -8,7 +8,7 @@ set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 
 # Set board type
-#set(PICO_BOARD pico_w CACHE STRING "Board type")
+#set(PICO_BOARD pico_w CACHE STRING "Board type")  # no longer supported -- lacks RAM
 set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # ====================================================================================
 
@@ -24,6 +24,7 @@ else()
     set(USERHOME $ENV{HOME})
 endif()
 set(sdkVersion 2.1.1)
+
 set(toolchainVersion 14_2_Rel1)
 set(picotoolVersion 2.1.1)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
@@ -44,6 +45,7 @@ add_compile_definitions(FAKE_RTC)
 # initialize pico-sdk from submodule
 include(pico-sdk/pico_sdk_init.cmake)
 
+# set the project name ${PROJECT_NAME}
 project(usurper C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
@@ -64,7 +66,7 @@ execute_process(COMMAND
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         )
         
-add_executable(usurper
+add_executable(${PROJECT_NAME}
         pluto.c
         weather.c
         flash.c
@@ -88,23 +90,26 @@ add_executable(usurper
         )      
 
 # Add executable. Default name is the project name, version 0.1
-pico_set_program_name(usurper "usurper")
-pico_set_program_version(usurper ${APP_VERSION})
+pico_set_program_name(${PROJECT_NAME} "usurper")
+pico_set_program_version(${PROJECT_NAME} ${APP_VERSION})
 
 # Enable/disable output over UART/USB
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        pico_enable_stdio_usb(usurper 1)
-        pico_enable_stdio_uart(usurper 0)
+        pico_enable_stdio_usb(${PROJECT_NAME} 1)
+        pico_enable_stdio_uart(${PROJECT_NAME} 0)
 else() 
-        pico_enable_stdio_usb(usurper 0)
-        pico_enable_stdio_uart(usurper 1)
+        pico_enable_stdio_usb(${PROJECT_NAME} 0)
+        pico_enable_stdio_uart(${PROJECT_NAME} 1)
 endif()
 
-target_include_directories(usurper PRIVATE
+target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/ 
-        #${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
-        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/include/        
+        if(PICO_BOARD STREQUAL "pico_w")
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
+        else()
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/include/
+        endif()        
         ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_arch/include/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/cyw43-driver/src/
@@ -112,7 +117,7 @@ target_include_directories(usurper PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/src/apps/altcp_tls/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/mbedtls/include/
         )
-target_link_libraries(usurper
+target_link_libraries(${PROJECT_NAME}
         pico_cyw43_arch_lwip_sys_freertos
         pico_lwip_freertos
         pico_lwip_api        
@@ -130,7 +135,7 @@ target_link_libraries(usurper
         )
 
 # create uf2 
-pico_add_extra_outputs(usurper)
+pico_add_extra_outputs(${PROJECT_NAME})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/generated)
 

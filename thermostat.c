@@ -120,8 +120,7 @@ int accumlate_temperature_metrics(long int temperaturex10);
 void mark_hvac_off(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void track_hvac_extrema(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type);
-int get_current_setpoint_temperaturex10(void);
-
+void log_climate_change(int temperaturex10, int humidityx10);
 
 
 // external variables
@@ -163,21 +162,53 @@ void thermostat_task(void *params)
     uint8_t aht10_temp_humidity[7];
     int retry = 0;
     int oneshot = false;
+    int i;
 
 
     //TEST TEST TEST
-    web.thermostat_set_point = 260;
-    web.thermostat_hysteresis = 10; 
-    config.thermostat_enable = 1;
-    config.heating_gpio = 7;
-    config.cooling_gpio = 8;
-    config.fan_gpio = 9;
+    // web.thermostat_set_point = 260;
+    // web.thermostat_hysteresis = 10; 
+    // config.thermostat_enable = 1;
+    // config.heating_gpio = 18;
+    // config.cooling_gpio = 19;
+    // config.fan_gpio = 20;
+    // for(i=0; i<NUM_ROWS(config.gpio_default); i++)
+    // {
+    //     config.gpio_default[i] = GP_UNINITIALIZED;
+    // }
+    // config.gpio_default[21] = GP_OUTPUT_LOW;
+
+    //TODO Add advanced config web page to control these parameters
+    config.heating_to_cooling_lockout_mins = 1;
+    config.minimum_heating_on_mins = 1;
+    config.minimum_cooling_on_mins = 1;
+    config.minimum_heating_off_mins = 1;
+    config.minimum_cooling_off_mins = 1;
+
 
     printf("thermostat_task started!\n");
     
     // initialize data structures for climate metrics
     initialize_climate_metrics();
     
+    //initialize relay gpio
+    gpio_init(config.heating_gpio);
+    gpio_put(config.heating_gpio, 0);
+    gpio_set_dir(config.heating_gpio, true);
+
+    gpio_init(config.cooling_gpio);
+    gpio_put(config.cooling_gpio, 0);
+    gpio_set_dir(config.cooling_gpio, true);  
+    
+    gpio_init(config.fan_gpio);
+    gpio_put(config.fan_gpio, 0);
+    gpio_set_dir(config.fan_gpio, true);    
+
+    //TEST TEST TEST
+    // gpio_init(21);    
+    // gpio_put(21, 0);
+    // gpio_set_dir(21, true);      
+
     // initialize i2c
     i2c_init(i2c1, 100000);
     gpio_set_function(14, GPIO_FUNC_I2C);
@@ -186,15 +217,12 @@ void thermostat_task(void *params)
     gpio_pull_up(15);
 
     powerwall_init();
+
+    // create the schedule grid used in web inteface
+    make_schedule_grid();
     
     while (true)
-    {
-        // if(1 /*!oneshot*/)
-        // {
-        //     powerwall_test();
-        //     oneshot = true;
-        // }
-        
+    {        
         if ((config.personality == HVAC_THERMOSTAT))
         {
             i2c_error = false;
@@ -267,6 +295,11 @@ void thermostat_task(void *params)
                     // convert native temperature to Celsius x 10 (range -50C to +150C)
                     temperaturex10 = ((long int)temperature_native*2000)/1048576 - 500;
 
+                    if (!config.use_archaic_units)
+                    {
+                        temperaturex10 = (temperaturex10*9)/5 + 320;
+                    }
+
                     // extract 20-bit raw humidity data (2^20 steps from 0% to 100%)
                     humidity_native = (((uint32_t) aht10_temp_humidity[1] << 16) | ((uint16_t) aht10_temp_humidity[2] << 8) | (aht10_temp_humidity[3])) >> 4; 
 
@@ -274,12 +307,16 @@ void thermostat_task(void *params)
                     humidityx10 = ((long int)humidity_native*1000)/1048576;
 
                     //printf("Temperature = %ld.%ld Humidity = %ld.%ld\n", temperaturex10/10, temperaturex10%10, humidityx10/10, humidityx10%10);
-                    send_syslog_message("temperature", "Temperature = %ld.%ld Humidity = %ld.%ld\n", temperaturex10/10, temperaturex10%10, humidityx10/10, humidityx10%10);                    
+                    //send_syslog_message("temperature", "Temperature = %ld.%ld Humidity = %ld.%ld\n", temperaturex10/10, temperaturex10%10, humidityx10/10, humidityx10%10);                    
+                    log_climate_change(temperaturex10, humidityx10);
 
                     track_hvac_extrema(COOLING_MOMENTUM, temperaturex10);
                     track_hvac_extrema(HEATING_MOMENTUM, temperaturex10);                     
                     control_thermostat_relays(temperaturex10);
                     accumlate_temperature_metrics(temperaturex10);
+
+                    // update web ui
+                    web.thermostat_temperature = temperaturex10;
                 }
                 else
                 {
@@ -327,11 +364,11 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
     static TickType_t lockout_period_ticks = 0;
     TickType_t now_tick = 0;
     static THERMOSTAT_STATE_T last_active = HEATING_AND_COOLING_OFF;
+    static int fake_state = 0;
    
     now_tick = xTaskGetTickCount();
 
-    if (lockout_period_ticks && 
-        ((now_tick - lockout_start_tick) > lockout_period_ticks))
+    if ((lockout_period_ticks == 0) || (lockout_period_ticks && ((now_tick - lockout_start_tick) > lockout_period_ticks))) 
     {
         // disable lockout
         lockout_period_ticks = 0;
@@ -377,10 +414,10 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                     thermostat_state = HEATING_IN_PROGRESS;
                     
                     // lockout state changes
-                    lockout_period_ticks = config.minimum_heating_om_mins*60*1000;
+                    lockout_period_ticks = config.minimum_heating_on_mins*60*1000;
                     lockout_start_tick = now_tick;
 
-                    set_hvac_momentum(COOLING_MOMENTUM);  
+                    set_hvac_momentum(HEATING_MOMENTUM);  
                 }
                 else
                 {
@@ -430,10 +467,20 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                 send_syslog_message("thermostat", "Duct purge complete");            
                 snprintf(web.status_message, sizeof(web.status_message), "Duct purge completed"); 
 
+                // disable lockout
+                lockout_period_ticks = 0;
+
                 thermostat_state = HEATING_AND_COOLING_OFF;
             } 
             break;            
         }
+
+        // DEBUG DEBUG DEBUG
+        // printf("Setting fake thermostat state\n");
+        // fake_state++;
+        // thermostat_state = fake_state%3;
+        // lockout_period_ticks = 10*1000;
+        // lockout_start_tick = now_tick;
 
         // set the gpio output connected to the relay
         if (config.thermostat_enable && gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
@@ -442,31 +489,35 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             {
             default:
             case HEATING_AND_COOLING_OFF:
-                //printf("Heating, Cooling and Fan off\n");
-                // gpio_put(config.heating_gpio, 0);
-                // gpio_put(config.cooling_gpio, 0);
-                // gpio_put(config.fan_gpio, 0);   
+                printf("Heating, Cooling and Fan off\n");
+                gpio_put(config.heating_gpio, 0);
+                gpio_put(config.cooling_gpio, 0);
+                gpio_put(config.fan_gpio, 0);   
                 break;
             case HEATING_IN_PROGRESS:
-                //printf("Heating on, Cooling and Fan off\n");
-                // gpio_put(config.heating_gpio, 1);
-                // gpio_put(config.cooling_gpio, 0);
-                // gpio_put(config.fan_gpio, 1);   
+                printf("Heating on, Cooling and Fan off\n");
+                gpio_put(config.heating_gpio, 1);
+                gpio_put(config.cooling_gpio, 0);
+                gpio_put(config.fan_gpio, 0);   
                 break;
             case COOLING_IN_PROGRESS:
-                //printf("Cooling on, Heating and Fan off\n");
-                // gpio_put(config.heating_gpio, 0);
-                // gpio_put(config.cooling_gpio, 1);
-                // gpio_put(config.fan_gpio, 1);   
+                printf("Cooling on, Heating and Fan off\n");
+                gpio_put(config.heating_gpio, 0);
+                gpio_put(config.cooling_gpio, 1);
+                gpio_put(config.fan_gpio, 0);   
                 break;            
             case DUCT_PURGE:
-                //printf("Heating and Cooling off and Fan on\n");
-                // gpio_put(config.heating_gpio, 0);
-                // gpio_put(config.cooling_gpio, 0);
-                // gpio_put(config.fan_gpio, 1);   
+                printf("Heating and Cooling off and Fan on\n");
+                gpio_put(config.heating_gpio, 0);
+                gpio_put(config.cooling_gpio, 0);
+                gpio_put(config.fan_gpio, 1);   
                 break; 
             }
         }                                
+    }
+    else
+    {
+        printf("HVAC locked out! %d %d\n", lockout_period_ticks, now_tick - lockout_start_tick);
     }
 
     return(thermostat_state);
@@ -534,12 +585,12 @@ int accumlate_temperature_metrics(long int temperaturex10)
 
     if ((climate_trend.deltas[NEGATIVE_DELTA]>= 1) && (climate_trend.deltas[POSITIVE_DELTA] == 0))
     {
-        printf("Trending down @ %d per sample\n", gradient);
+        //printf("Trending down @ %d per sample\n", gradient);
         if (climate_trend.current_trend != TREND_DOWN)
         {
             climate_trend.current_tick = xTaskGetTickCount();
             climate_trend.trend_length = climate_trend.current_tick - climate_trend.trend_start_tick;
-            printf("Trend changed at tick %lu.  Trend lasted %lu. Maximum = %d\n", climate_trend.current_tick, climate_trend.trend_length, climate_trend.trend_up_max);
+            //printf("Trend changed at tick %lu.  Trend lasted %lu. Maximum = %d\n", climate_trend.current_tick, climate_trend.trend_length, climate_trend.trend_up_max);
 
             climate_trend.current_trend = TREND_DOWN;
             climate_trend.trend_down_min = 1500;
@@ -555,12 +606,12 @@ int accumlate_temperature_metrics(long int temperaturex10)
     } 
     else if ((climate_trend.deltas[POSITIVE_DELTA] >= 1) && (climate_trend.deltas[NEGATIVE_DELTA] == 0))
     {
-        printf("Trending up @ %d per sample\n", gradient);
+        //printf("Trending up @ %d per sample\n", gradient);
         if (climate_trend.current_trend != TREND_UP)
         {
             climate_trend.current_tick = xTaskGetTickCount();
             climate_trend.trend_length = climate_trend.current_tick - climate_trend.trend_start_tick;
-            printf("Trend changed at tick %lu.  Trend lasted %lu. Minimum = %d\n", climate_trend.current_tick, climate_trend.trend_length, climate_trend.trend_down_min);
+            //printf("Trend changed at tick %lu.  Trend lasted %lu. Minimum = %d\n", climate_trend.current_tick, climate_trend.trend_length, climate_trend.trend_down_min);
 
             climate_trend.current_trend  = TREND_UP;
             climate_trend.trend_up_max = -500;
@@ -580,7 +631,7 @@ int accumlate_temperature_metrics(long int temperaturex10)
     }
     else
     {
-        printf("No trend detected\n");
+        //printf("No trend detected\n");
     } 
 
     return(climate_trend.moving_average.temperaturex10);
@@ -648,7 +699,7 @@ void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type)
 
         // add sanity check / constraints
 
-        printf("MOMENTUM LAST CYCLE:  Extrema occured %lu ms after HVAC shut off and temperature change was %ld\n", climate_momentum.momentum_delay[momentum_type], climate_momentum.momentum_temperature_delta[momentum_type]);
+        //printf("MOMENTUM LAST CYCLE:  Extrema occured %lu ms after HVAC shut off and temperature change was %ld\n", climate_momentum.momentum_delay[momentum_type], climate_momentum.momentum_temperature_delta[momentum_type]);
     }
 }
 
@@ -670,9 +721,142 @@ int get_current_setpoint_temperaturex10(void)
             if ((mow >= config.thermostat_period_start_mow[i]) &&
                 (mow < config.thermostat_period_end_mow[i]))
             {
-                setpointtemperaturex10 = config.setpoint_temperaturex10[config.thermostat_period_setpoint_index[i]];
+                setpointtemperaturex10 = config.setpoint_temperaturex10[i];
             }
         }
     }
     return(setpointtemperaturex10);
+}
+
+/*!
+ * \brief Create thermostat schedule grid
+ * 
+ * \return nothing
+ */
+int make_schedule_grid(void)
+{
+    int i, j, x, y;
+    int key_mow = 0;
+    int key_temp = 0;
+    //int mow;
+    int mod;
+    int setpointtemperaturex10 = 0;
+    bool found = false;
+    int populated_rows = 0;
+    int mow[16];
+    int temp[16];
+
+    // erase start time colum
+    for(y=0;y<8; y++)
+    {
+        web.thermostat_grid[0][y]= -1;
+    }
+
+    // set all temperatures invalid
+    for(x=1; x<8; x++)
+    {
+        for (y=0; y<8; y++)
+        {
+            web.thermostat_grid[x][y] = -300; 
+        }
+    }
+
+    // copy schedule to local arrays for sorting
+    for(i=0; i<16; i++)
+    {
+        mow[i] = config.thermostat_period_start_mow[i];
+        temp[i] = config.setpoint_temperaturex10[i];
+    }
+
+    // sort the schedule into ascending order by time of day (tod)
+    for(i=1; i<NUM_ROWS(mow); i++)
+    {
+        key_mow = mow[i];
+        key_temp = temp[i];        
+        j = i - 1;
+
+        while ((j >= 0) && ((mow[j]%(60*24)) > (key_mow%(60*24))))
+        {
+            mow[j+1] = mow[j];
+            temp[j+1] = temp[j];            
+            j = j - 1;
+        }
+
+        mow[j+1] = key_mow;
+        temp[j+1] = key_temp;            
+    }
+
+    // scan list of configured setpoints
+    for (i=0; i<16; i++)
+    {
+        if ((mow[i] >= 0) && (mow[i] < 60*24*7))
+        {
+            x = mow[i]/(60*24) + 1;  // day + 1
+            mod = mow[i]%(60*24);        
+            
+            found = false;
+
+            for(y=0; y < populated_rows; y++)
+            {
+                if (web.thermostat_grid[0][y] == mod)
+                {
+                    //insert into existing grid row
+                    CLIP(x, 1, 7);
+                    web.thermostat_grid[x][y] = temp[i];
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                if (populated_rows < 7)
+                {
+                    web.thermostat_grid[0][populated_rows] = mod;
+                    web.thermostat_grid[x][populated_rows] = temp[i];
+
+                    populated_rows++;
+                }
+            }
+        }
+    }
+
+    // // dump grid
+    // for(y=0; y<8; y++)
+    // {
+    //     printf("\nGRID: ");
+    //     for (x=0; x<8; x++)
+    //     {
+    //          printf("[%d]", web.thermostat_grid[x][y]);
+    //     }
+    // } 
+    // printf("\n");
+
+    return(0);
+}
+
+/*!
+ * \brief Send a syslog message
+ *
+ * \param[in]   log_name      name of log file on server
+ * \param[in]   format, ...   variable parameters printf style  
+ * 
+ * \return num bytes sent or -1 on error
+ */
+void log_climate_change(int temperaturex10, int humidityx10)
+{
+    static int sent_temperaturex10 = 0;
+    static int sent_humidityx10 = 0;
+
+    // check if values changed
+    if ((temperaturex10 != sent_temperaturex10) || (humidityx10 != sent_humidityx10))
+    {
+        send_syslog_message("temperature", "Temperature = %ld.%ld Humidity = %ld.%ld\n", temperaturex10/10, temperaturex10%10, humidityx10/10, humidityx10%10);
+
+        // remember what we sent
+        sent_temperaturex10 = temperaturex10;
+        sent_humidityx10 = humidityx10;
+    }
+    
+    return;
 }

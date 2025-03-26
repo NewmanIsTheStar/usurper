@@ -649,6 +649,24 @@ const char *day_name(int day)
    return(name);
 }
 
+/*!
+ * \brief Return pointer to string with weekday name give minute of week (mow)
+ *
+ * \param[in]  day         0 - 6 day of week, beginning Sunday at midnight
+ * 
+ * \return pointer to string containing name of day or NULL on error
+ */
+int get_day_from_mow(int mow)
+{
+   int day;
+
+   day = mow/(24*60);
+
+   CLIP(day, 0 , 6);
+
+   return(day);   
+}
+
 
 /*!
  * \brief Get minute-of-week in local timezone
@@ -810,7 +828,7 @@ int8_t rtc_set_datetime(uint32_t sec)
 }
 
 /*!
- * \brief print mow in human readable form
+ * \brief print mow in human readable form e.g. "Monday 11:00"
  *
  */
 int mow_to_string(char *string, int length, int mow)
@@ -818,6 +836,7 @@ int mow_to_string(char *string, int length, int mow)
    int day;
    int hour;
    int minute; 
+   int printed = 0;
    
    day = mow / (60*24);
    hour = (mow % (60*24))/60;
@@ -827,9 +846,37 @@ int mow_to_string(char *string, int length, int mow)
    CLIP(hour, 0, 23);
    CLIP(minute, 0, 59);
 
-   snprintf(string, length, "%s %02d:%02d", weekdays[day], hour, minute);
+   printed = snprintf(string, length, "%s %02d:%02d", weekdays[day], hour, minute);
 
-   return(0);
+   return(printed);
+}
+
+/*!
+ * \brief print mow time in human readable form e.g. "11:00"
+ *
+ */
+int mow_to_time_string(char *string, int length, int mow)
+{
+   int hour;
+   int minute; 
+   int printed = 0;
+   
+   if ((mow >= 0) && (mow < 60*24*7))
+   {
+      hour = (mow % (60*24))/60;
+      minute = (mow % (60*24))%60;
+
+      CLIP(hour, 0, 23);
+      CLIP(minute, 0, 59);
+
+      printed = snprintf(string, length, "%02d:%02d", hour, minute);
+   }
+   else
+   {
+      printed = snprintf(string, length, "&nbsp;");  //TODO -- don't like this webUI stuff here
+   }
+
+   return(printed);
 }
 
 /*!
@@ -838,7 +885,6 @@ int mow_to_string(char *string, int length, int mow)
  */
 int string_to_mow(char *string, int length)
 {
-   int i;
    int mow;
    int day = 0;
    int hour = 0;
@@ -846,14 +892,39 @@ int string_to_mow(char *string, int length)
 
    for(day = 0; day < 6; day++)
    {
-      if (strcasestr(string, weekdays[day]) == 0)
+      if (strcasestr(string, weekdays[day]))
       {
-         day = i;
+         string += strlen(weekdays[day]);
          break;
       }
    }
    
    sscanf(string,"%d:%d", &hour, &minute);
+   sscanf(string,"%d%%3A%d", &hour, &minute);     
+
+   CLIP(day, 0, 6);
+   CLIP(hour, 0, 23);
+   CLIP(minute, 0, 59);
+
+   mow = day*24*60 + hour*60 + minute;
+
+   return(mow);
+}
+
+/*!
+ * \brief time string to mow
+ *
+ */
+int time_string_to_mow(char *string, int length, int day)
+{
+   int mow;
+   int hour = 0;
+   int minute = 0; 
+   
+   sscanf(string,"%d:%d", &hour, &minute);
+   sscanf(string,"%d%%3A%d", &hour, &minute);   
+
+   printf(">>>>>AFTER SCANF %d %d\n", hour, minute);
 
    CLIP(day, 0, 6);
    CLIP(hour, 0, 23);

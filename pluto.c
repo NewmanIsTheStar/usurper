@@ -75,6 +75,7 @@ int monitor_stacks(void);
 int test_ap_mode(void);
 void atomic_write_task(__unused void *params);
 void atomic_read_task(__unused void *params);
+int set_gpio_defaults(void);
 
 
 /*********************************************************
@@ -159,8 +160,8 @@ int pluto(void)
  */
 void boss_task(__unused void *params) 
 {
-    datetime_t date;  // TEST TEST TEST
-    char buffer[256]; // TEST TEST TEST
+    //datetime_t date;  // TEST TEST TEST
+    //char buffer[256]; // TEST TEST TEST
     bool led_on = false;
     int worker = 0;
     ip_addr_t ip = {0};
@@ -171,12 +172,32 @@ void boss_task(__unused void *params)
     xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
 
     // get configuration from flash
-    config_read();    
+    config_read(); 
+    
+    // default gpio settings  -- primarily for unused hardware connected to gpios
+    set_gpio_defaults();
 
     // TEST TEST TEST
     // config.syslog_enable = 0;
     // config.weather_station_enable = 0;
     // config.personality = HVAC_THERMOSTAT;
+    // {
+    //     int i,j;
+    //     for(i=0; i<8; i++)
+    //     {
+    //         for(j=0; j<8; j++)
+    //         {
+    //             printf("x(tg%d_%d) \\\n", i, j);
+    //         }
+    //     }
+    //     for(i=0; i<8; i++)
+    //     {
+    //         for(j=0; j<8; j++)
+    //         {
+    //             printf("case SSI_tg%d_%d:\n", i, j);
+    //         }
+    //     }        
+    // }
     
     //initialise wifi
     while (cyw43_arch_init_with_country(get_wifi_country_code(config.wifi_country)))
@@ -277,8 +298,8 @@ void boss_task(__unused void *params)
         //     rtc_set_datetime(&date);
         //     #endif
         // }
-        rtc_get_datetime(&date);
-        datetime_to_str(buffer, sizeof(buffer), &date);
+        // rtc_get_datetime(&date);
+        // datetime_to_str(buffer, sizeof(buffer), &date);
         //printf("%s Zulu\n", buffer);
 
 
@@ -656,3 +677,54 @@ void atomic_read_task(__unused void *params)
     }
 
 } 
+
+
+/*!
+ * \brief GPIO defaults for pins that are unused but connected to hardware
+ *
+ * \param none
+ *
+ * \return 0
+ */
+int set_gpio_defaults(void)
+{
+    int i;
+
+    printf("SETTING GPIO DEFAULTS\n");
+
+    for(i=0; i<NUM_ROWS(config.gpio_default); i++)
+    {
+        switch(config.gpio_default[i])
+        {
+        default:
+        case GP_UNINITIALIZED:
+            break;
+        case GP_INPUT_FLOATING:
+            gpio_init(i);
+            gpio_set_input_enabled(i, true);
+            break;
+        case GP_INPUT_PULLED_HIGH:
+            gpio_init(i);
+            gpio_set_input_enabled(i, true);
+            gpio_set_pulls (i, true, false);
+            break;
+        case GP_INPUT_PULLED_LOW:
+            gpio_init(i);
+            gpio_set_input_enabled(i, true);
+            gpio_set_pulls (i, false, true);
+            break;
+        case GP_OUTPUT_HIGH:
+            gpio_init(i);
+            gpio_set_dir (i, true);
+            gpio_put (i, true);
+            printf("Set GPIO %d to high\n", i);
+            break;
+        case GP_OUTPUT_LOW:
+            gpio_init(i);
+            gpio_set_dir (i, true);
+            gpio_put (i, false);
+            printf("Set GPIO %d to low\n", i);
+            break;            
+        }
+    }
+}

@@ -23,7 +23,7 @@ typedef enum
     LED_STRIP_CONTROLLER       =   2,             // allows remote control of an led strip
     HVAC_THERMOSTAT            =   3,             // wifi confrolled thermostat
     
-    NO_PERSONALITY             =   4294967295,    // force enum to be 4 bytes long 
+    NO_PERSONALITY             =   4294967295     // force enum to be 4 bytes long 
 } PERSONALITY_E;
 
 // non-vol structure conversion info
@@ -34,6 +34,19 @@ typedef struct
     size_t crc_offset;
     void (*upgrade_function)(void);
 } NON_VOL_CONVERSION_T;
+
+// gpio defaults
+typedef enum
+{
+    GP_UNINITIALIZED          =   0,         
+    GP_INPUT_FLOATING         =   1,              
+    GP_INPUT_PULLED_HIGH      =   2,             
+    GP_INPUT_PULLED_LOW       =   3,
+    GP_OUTPUT_HIGH            =   4,
+    GP_OUTPUT_LOW             =   5,
+    
+    GP_LAST                   =   4294967295     // force enum to be 4 bytes long 
+} GPIO_DEFAULT_T;
 
 /*
 * current non-volatile memory structure
@@ -111,7 +124,7 @@ typedef struct
     int cooling_gpio;
     int fan_gpio;
     int heating_to_cooling_lockout_mins;
-    int minimum_heating_om_mins;
+    int minimum_heating_on_mins;
     int minimum_cooling_on_mins;
     int minimum_heating_off_mins;
     int minimum_cooling_off_mins;
@@ -133,7 +146,7 @@ typedef struct
     int grid_down_heating_enable_battery_level;
     int grid_down_cooling_disable_battery_level;
     int grid_down_cooling_enable_battery_level;
-    
+    GPIO_DEFAULT_T gpio_default[29];
     uint16_t crc;
 } NON_VOL_VARIABLES_T;
 

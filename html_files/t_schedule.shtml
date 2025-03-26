@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" type="image/x-icon" href="/sprinkler.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+<div class="sidenav">
+  <a href="/t_schedule.cgi?day=0">Sunday</a>     
+  <a href="/t_schedule.cgi?day=1">Monday</a>
+  <a href="/t_schedule.cgi?day=2">Tuesday</a>
+  <a href="/t_schedule.cgi?day=3">Wednesday</a>
+  <a href="/t_schedule.cgi?day=4">Thursday</a>
+  <a href="/t_schedule.cgi?day=5">Friday</a>
+  <a href="/t_schedule.cgi?day=6">Saturday</a>
+  <a href="/network.shtml">&#9881 Settings</a>  
+  <p><a href="/index.shtml">&#8629</a></p>       
+</div>
+
+<div class="main">
+  <h2><!--#tday--> Schedule</h2>             
+  <fieldset>                   
+      <div class="form-group" <!--#ts1vz--> >
+        <label for="events1"><!--#ts1st--> </label>
+        <label for="eventi1">&nbsp;&nbsp;<!--#sp1tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=0">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=0">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts2vz--> >
+        <label for="events2"><!--#ts2st--> </label>
+        <label for="eventi2">&nbsp;&nbsp;<!--#sp2tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=1">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=1">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts3vz--> >
+        <label for="events3"><!--#ts3st--> </label>
+        <label for="eventi3">&nbsp;&nbsp;<!--#sp3tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=2">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=2">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts4vz--> >
+        <label for="events4"><!--#ts4st--> </label>
+        <label for="eventi4">&nbsp;&nbsp;<!--#sp4tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=3">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=3">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts5vz--> >
+        <label for="events5"><!--#ts5st--> </label>
+        <label for="eventi5">&nbsp;&nbsp;<!--#sp5tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=4">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=4">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts6vz--> >
+        <label for="events6"><!--#ts6st--> </label>
+        <label for="eventi6">&nbsp;&nbsp;<!--#sp6tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=5">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=5">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts7vz--> >
+        <label for="events7"><!--#ts7st--> </label>
+        <label for="eventi7">&nbsp;&nbsp;<!--#sp7tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=6">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=6">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts8vz--> >
+        <label for="events8"><!--#ts8st--> </label>
+        <label for="eventi8">&nbsp;&nbsp;<!--#sp8tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=7">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=7">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts9vz--> >
+        <label for="events9"><!--#ts9st--> </label>
+        <label for="eventi9">&nbsp;&nbsp;<!--#sp9tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=8">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=8">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts10vz--> >
+        <label for="events10"><!--#ts10st--> </label>
+        <label for="eventi10">&nbsp;&nbsp;<!--#sp10tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=9">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=9">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts11vz--> >
+        <label for="events11"><!--#ts11st--> </label>
+        <label for="eventi11">&nbsp;&nbsp;<!--#sp11tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=10">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=10">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts12vz--> >
+        <label for="events12"><!--#ts12st--> </label>
+        <label for="eventi12">&nbsp;&nbsp;<!--#sp12tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=11">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=11">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts13vz--> >
+        <label for="events13"><!--#ts13st--> </label>
+        <label for="eventi13">&nbsp;&nbsp;<!--#sp13tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=12">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=12">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts14vz--> >
+        <label for="events14"><!--#ts14st--> </label>
+        <label for="eventi14">&nbsp;&nbsp;<!--#sp14tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=13">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=13">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts15vz--> >
+        <label for="events15"><!--#ts15st--> </label>
+        <label for="eventi15">&nbsp;&nbsp;<!--#sp15tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=14">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=14">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#ts16vz--> >
+        <label for="events16"><!--#ts16st--> </label>
+        <label for="eventi16">&nbsp;&nbsp;<!--#sp16tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=15">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=15">   <button style="width:13%">Delete</button></a>           
+      </div>
+      <div class="form-group" <!--#tsaddvz--> >
+        <a href="/tp_add.cgi?x=99">   <button style="width:13%">Add</button></a>       
+      </div>      
+  </fieldset> 
+</div>
+   
+</body>
+</html> 
+

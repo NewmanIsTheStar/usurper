@@ -174,15 +174,18 @@ void weather_task(void *params)
 
     printf("weather_task started\n");
 
-    // initialize irigation relay gpio pins
-    for (zone = 0; zone < 16; zone++)
+    if ((config.personality == SPRINKLER_USURPER) || (config.personality == SPRINKLER_CONTROLLER))
     {
-        if (gpio_valid(config.zone_gpio[zone]))
+        // initialize irigation relay gpio pins
+        for (zone = 0; zone < 16; zone++)
         {
-            if (!initialize_relay_gpio(config.zone_gpio[zone]))
+            if (gpio_valid(config.zone_gpio[zone]))
             {
-                gpio_put(config.zone_gpio[zone], config.relay_normally_open?0:1);
-            }  
+                if (!initialize_relay_gpio(config.zone_gpio[zone]))
+                {
+                    gpio_put(config.zone_gpio[zone], config.relay_normally_open?0:1);
+                }  
+            }
         }
     }
 

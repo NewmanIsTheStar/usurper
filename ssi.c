@@ -13,6 +13,7 @@
 #include "calendar.h"
 #include "utility.h"
 #include "config.h"
+#include "thermostat.h"
 
 #include "pluto.h"
 #include "led_strip.h"
@@ -364,7 +365,78 @@ extern NON_VOL_VARIABLES_T config;
     x(pwblhd)    \
     x(pwblhe)    \
     x(pwblcd)    \
-    x(pwblce)    
+    x(pwblce)    \
+    x(tday)      \
+    x(tpst)      \
+    x(tptmp)     \
+    x(tsaddvz)   \
+    x(tg0_0) \
+    x(tg0_1) \
+    x(tg0_2) \
+    x(tg0_3) \
+    x(tg0_4) \
+    x(tg0_5) \
+    x(tg0_6) \
+    x(tg0_7) \
+    x(tg1_0) \
+    x(tg1_1) \
+    x(tg1_2) \
+    x(tg1_3) \
+    x(tg1_4) \
+    x(tg1_5) \
+    x(tg1_6) \
+    x(tg1_7) \
+    x(tg2_0) \
+    x(tg2_1) \
+    x(tg2_2) \
+    x(tg2_3) \
+    x(tg2_4) \
+    x(tg2_5) \
+    x(tg2_6) \
+    x(tg2_7) \
+    x(tg3_0) \
+    x(tg3_1) \
+    x(tg3_2) \
+    x(tg3_3) \
+    x(tg3_4) \
+    x(tg3_5) \
+    x(tg3_6) \
+    x(tg3_7) \
+    x(tg4_0) \
+    x(tg4_1) \
+    x(tg4_2) \
+    x(tg4_3) \
+    x(tg4_4) \
+    x(tg4_5) \
+    x(tg4_6) \
+    x(tg4_7) \
+    x(tg5_0) \
+    x(tg5_1) \
+    x(tg5_2) \
+    x(tg5_3) \
+    x(tg5_4) \
+    x(tg5_5) \
+    x(tg5_6) \
+    x(tg5_7) \
+    x(tg6_0) \
+    x(tg6_1) \
+    x(tg6_2) \
+    x(tg6_3) \
+    x(tg6_4) \
+    x(tg6_5) \
+    x(tg6_6) \
+    x(tg6_7) \
+    x(tg7_0) \
+    x(tg7_1) \
+    x(tg7_2) \
+    x(tg7_3) \
+    x(tg7_4) \
+    x(tg7_5) \
+    x(tg7_6) \
+    x(tg7_7) \
+    x(tct)   \
+    x(tcs)
+    
 
     char powerwall_ip[32];
     char powerwall_hostname[32];  // for sni may differ from dns
@@ -399,6 +471,10 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
     char timestamp[50];
     uint32_t us_now;
     long temp;
+    int i;
+    bool new_thermostat_period_found = false;
+    int grid_x = 0;
+    int grid_y = 0;
 
     switch(iIndex) {
         case SSI_usurped:  // usurped
@@ -1239,6 +1315,12 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             case SPRINKLER_CONTROLLER:
                 printed = snprintf(pcInsert, iInsertLen, "Sprinkler Controller");
                 break;
+            case LED_STRIP_CONTROLLER:
+                printed = snprintf(pcInsert, iInsertLen, "LED Controller");
+                break;
+            case HVAC_THERMOSTAT:
+                printed = snprintf(pcInsert, iInsertLen, "HVAC Controller");
+                break;                                 
             default:
             case NO_PERSONALITY:
                 printed = snprintf(pcInsert, iInsertLen, "No personality");
@@ -1311,7 +1393,13 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_sp15tmp: //sp15tmp
         case SSI_sp16tmp: //sp16tmp
         {
-            printed = snprintf(pcInsert, iInsertLen, "%d", config.setpoint_temperaturex10[iIndex-SSI_sp1tmp]); 
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.setpoint_temperaturex10[iIndex-SSI_sp1tmp]/10); 
+
+            if (strlen(pcInsert) < 2)
+            {
+                // add leading space to maintain column alignment  -- sensible indoor temperatures are 2 digits!
+                printed = snprintf(pcInsert, iInsertLen, "&nbsp;&nbsp;%d", config.setpoint_temperaturex10[iIndex-SSI_sp1tmp]/10);    
+            }
         }                     
         break;
         case SSI_ts1st:
@@ -1331,8 +1419,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_ts15st:
         case SSI_ts16st:
         {
-            //printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_period_start_mow[iIndex-SSI_ts1st]); 
-            printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[iIndex-SSI_ts1st]);
+            //printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[iIndex-SSI_ts1st]);
+            printed = mow_to_time_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[iIndex-SSI_ts1st]);            
         }
         break; 
         case SSI_ts1en:
@@ -1373,7 +1461,10 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_ts15vz:
         case SSI_ts16vz:
         {
-            if ((iIndex-SSI_ts1vz)%16 >= config.thermostat_period_number)
+            //printf("row = %d web.day= %d mow = %d dfm = %d\n", (iIndex-SSI_ts1vz)%16, web.thermostat_day, config.thermostat_period_start_mow[iIndex-SSI_ts1vz], get_day_from_mow(config.thermostat_period_start_mow[iIndex-SSI_ts1vz]));
+            //if ((iIndex-SSI_ts1vz)%16 >= config.thermostat_period_number)
+            if ((get_day_from_mow(config.thermostat_period_start_mow[iIndex-SSI_ts1vz]) != web.thermostat_day) ||
+                (config.thermostat_period_start_mow[iIndex-SSI_ts1vz] <0))
             {     
                 printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
             }
@@ -1448,7 +1539,154 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         {
             printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_cooling_enable_battery_level/10, grid_down_cooling_enable_battery_level%10);            
         }
-        break;  
+        break; 
+        case SSI_tday:
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", day_name(web.thermostat_day));            
+        }
+        break;   
+        case SSI_tpst:
+        {
+            CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.thermostat_period_start_mow));
+            //printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[web.thermostat_period_row]);
+            printed = mow_to_time_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[web.thermostat_period_row]);            
+        }
+        break; 
+        case SSI_tptmp:
+        {
+            CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_temperaturex10));
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.setpoint_temperaturex10[web.thermostat_period_row]/10); 
+        }
+        break;         
+        case SSI_tsaddvz:
+        {
+            for(i=0; i < NUM_ROWS(config.thermostat_period_start_mow); i++)
+            {
+                if (config.thermostat_period_start_mow[i] < 0)
+                {
+                    new_thermostat_period_found = true;
+                    break;
+                }
+            }
+            if (!new_thermostat_period_found)
+            {     
+                printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
+            }
+            else
+            {
+                printed = 0;
+            }            
+        }
+        break;
+        case SSI_tg0_0:
+        case SSI_tg0_1:
+        case SSI_tg0_2:
+        case SSI_tg0_3:
+        case SSI_tg0_4:
+        case SSI_tg0_5:
+        case SSI_tg0_6:
+        case SSI_tg0_7:
+        case SSI_tg1_0:
+        case SSI_tg1_1:
+        case SSI_tg1_2:
+        case SSI_tg1_3:
+        case SSI_tg1_4:
+        case SSI_tg1_5:
+        case SSI_tg1_6:
+        case SSI_tg1_7:
+        case SSI_tg2_0:
+        case SSI_tg2_1:
+        case SSI_tg2_2:
+        case SSI_tg2_3:
+        case SSI_tg2_4:
+        case SSI_tg2_5:
+        case SSI_tg2_6:
+        case SSI_tg2_7:
+        case SSI_tg3_0:
+        case SSI_tg3_1:
+        case SSI_tg3_2:
+        case SSI_tg3_3:
+        case SSI_tg3_4:
+        case SSI_tg3_5:
+        case SSI_tg3_6:
+        case SSI_tg3_7:
+        case SSI_tg4_0:
+        case SSI_tg4_1:
+        case SSI_tg4_2:
+        case SSI_tg4_3:
+        case SSI_tg4_4:
+        case SSI_tg4_5:
+        case SSI_tg4_6:
+        case SSI_tg4_7:
+        case SSI_tg5_0:
+        case SSI_tg5_1:
+        case SSI_tg5_2:
+        case SSI_tg5_3:
+        case SSI_tg5_4:
+        case SSI_tg5_5:
+        case SSI_tg5_6:
+        case SSI_tg5_7:
+        case SSI_tg6_0:
+        case SSI_tg6_1:
+        case SSI_tg6_2:
+        case SSI_tg6_3:
+        case SSI_tg6_4:
+        case SSI_tg6_5:
+        case SSI_tg6_6:
+        case SSI_tg6_7:
+        case SSI_tg7_0:
+        case SSI_tg7_1:
+        case SSI_tg7_2:
+        case SSI_tg7_3:
+        case SSI_tg7_4:
+        case SSI_tg7_5:
+        case SSI_tg7_6:
+        case SSI_tg7_7:
+        {
+            grid_x = (iIndex-SSI_tg0_0)%8;  //TODO: compute array length
+            grid_y = (iIndex-SSI_tg0_0)/8;
+
+            CLIP(grid_x, 0, 7);
+            CLIP(grid_y, 0, 7);
+
+            switch(grid_x)
+            {
+            case 0:
+                printed = mow_to_time_string(pcInsert, iInsertLen, web.thermostat_grid[grid_x][grid_y]);
+                break;
+            default:
+                if (web.thermostat_grid[grid_x][grid_y] > -300)
+                {
+                    printed = snprintf(pcInsert, iInsertLen, "%d&deg;", web.thermostat_grid[grid_x][grid_y]/10); 
+                }
+                else
+                {
+                    printed = snprintf(pcInsert, iInsertLen, "&nbsp;"); 
+                }
+                break;
+            }
+        }                     
+        break; 
+        case SSI_tct:  // thermostat current temperature
+        {
+            if (!config.use_archaic_units)
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.thermostat_temperature<0?'-':'\0', abs(web.thermostat_temperature/10), abs(web.thermostat_temperature%10)); 
+            }
+            else
+            {
+                temp = (web.thermostat_temperature*9)/5 + 320;
+                printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
+            }  
+        }       
+        break;        
+        case SSI_tcs:  // thermostat current setpoint
+        {
+            temp = get_current_setpoint_temperaturex10();
+
+            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));                           
+        }
+        break;
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    

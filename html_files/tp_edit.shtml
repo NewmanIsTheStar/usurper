@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" type="image/x-icon" href="/sprinkler.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+<div class="sidenav">
+  <a href="/t_schedule.cgi?day=0">Sunday</a>     
+  <a href="/t_schedule.cgi?day=1">Monday</a>
+  <a href="/t_schedule.cgi?day=2">Tuesday</a>
+  <a href="/t_schedule.cgi?day=3">Wednesday</a>
+  <a href="/t_schedule.cgi?day=4">Thursday</a>
+  <a href="/t_schedule.cgi?day=5">Friday</a>
+  <a href="/t_schedule.cgi?day=6">Saturday</a>
+  <a href="/network.shtml">&#9881 Settings</a>  
+  <p><a href="/index.shtml">&#8629</a></p>       
+</div>
+
+<div class="main">
+  <h2>Edit Climate Period</h2> 
+
+  <form action="/ts_change.cgi" method="get" name="events">                
+    <fieldset>                   
+        <div class="form-group">          
+          <label for="tpedit"> <!--#tday--> </label>
+          <input name="tpst" id="tspst" <!--#tpst--> value="<!--#tpst-->"/>
+          <input name="tptmp" id="tptmp" <!--#tptmp--> value="<!--#tptmp-->"/>  
+          <a href="/t_schedule.shtml">   <button type=button style="width:13%">Cancel</button></a>                   
+        </div>                    
+    </fieldset>                                                                                   
+    <fieldset>
+        <input type="submit" style="font-size: 28px;" value="Save">
+    </fieldset>                                  
+</form>
+</div>
+  
+</body>
+</html> 
+
