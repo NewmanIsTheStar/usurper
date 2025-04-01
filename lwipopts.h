@@ -69,10 +69,12 @@ void setTimeSec(uint32_t sec);
 #define LWIP_DHCP_DOES_ACD_CHECK    0
 #define LWIP_IGMP                   1 // Newman added this row and enabled
 
+#ifdef INCORPORATE_THERMOSTAT
 #define LWIP_ALTCP               1  // Newman used for TLS testing
 #define LWIP_ALTCP_TLS           1  // Newman used for TLS testing 
 #define LWIP_ALTCP_TLS_MBEDTLS   1  // Newman used for TLS testing
 #define ALTCP_MBEDTLS_AUTHMODE      MBEDTLS_SSL_VERIFY_NONE // MBEDTLS_SSL_VERIFY_REQUIRED  // Newman used for TLS testing
+#endif
 
 #ifndef NDEBUG 
 #define LWIP_DEBUG                  1

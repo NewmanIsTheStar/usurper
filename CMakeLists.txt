@@ -4,12 +4,12 @@ cmake_minimum_required(VERSION 3.13..3.27)
 # Set release type
 set(APP_VERSION "01.00.02")
 # Set release type
-set(CMAKE_BUILD_TYPE "Debug")
-#set(CMAKE_BUILD_TYPE "Release")
+#set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 
 # Set board type
-#set(PICO_BOARD pico_w CACHE STRING "Board type")  # no longer supported -- lacks RAM
-set(PICO_BOARD pico2_w CACHE STRING "Board type")
+set(PICO_BOARD pico_w CACHE STRING "Board type")
+#set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # ====================================================================================
 
 set(CMAKE_C_STANDARD 11)
@@ -41,6 +41,9 @@ add_compile_definitions(PLUTO_VER="${APP_VERSION}")
 add_compile_definitions(PICO_CYW43_ARCH_FREERTOS)
 add_compile_definitions(PICO_INCLUDE_RTC_DATETIME)
 add_compile_definitions(FAKE_RTC)
+if(NOT PICO_BOARD STREQUAL "pico_w") 
+add_compile_definitions(INCORPORATE_THERMOSTAT)
+endif()
 
 # initialize pico-sdk from submodule
 include(pico-sdk/pico_sdk_init.cmake)
@@ -51,8 +54,11 @@ project(usurper C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+if(NOT PICO_BOARD STREQUAL "pico_w") 
 include(FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/FreeRTOS_Kernel_import.cmake)
-#include(FreeRTOS_Kernel_import.cmake)
+else()
+include(FreeRTOS_Kernel_import.cmake)
+endif()
 
 message("Creating githash.h")
 execute_process(COMMAND
@@ -65,9 +71,9 @@ execute_process(COMMAND
         ./makefsdata.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         )
-        
-add_executable(${PROJECT_NAME}
-        pluto.c
+
+set(usurper_source_files
+         pluto.c
         weather.c
         flash.c
         ssi.c
@@ -83,11 +89,16 @@ add_executable(${PROJECT_NAME}
         worker_tasks.c
         message.c
         udp.c
-        wifi.c
+        wifi.c)
+
+if(NOT PICO_BOARD STREQUAL "pico_w")
+        set(usurper_source_files ${usurper_source_files}        
         thermostat.c
         powerwall.c
-        shelly.c
-        )      
+        shelly.c)        
+endif()  
+
+add_executable(${PROJECT_NAME} ${usurper_source_files})      
 
 # Add executable. Default name is the project name, version 0.1
 pico_set_program_name(${PROJECT_NAME} "usurper")
@@ -100,6 +111,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 else() 
         pico_enable_stdio_usb(${PROJECT_NAME} 0)
         pico_enable_stdio_uart(${PROJECT_NAME} 1)
+        add_compile_definitions(USE_GIT_HASH_AS_VERSION)
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -117,7 +129,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/src/apps/altcp_tls/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/mbedtls/include/
         )
-target_link_libraries(${PROJECT_NAME}
+
+set(usurper_link_libraries
         pico_cyw43_arch_lwip_sys_freertos
         pico_lwip_freertos
         pico_lwip_api        
@@ -126,13 +139,18 @@ target_link_libraries(${PROJECT_NAME}
         pico_stdlib
         pico_rand
         FreeRTOS-Kernel-Heap4
-       # hardware_rtc
+        # hardware_rtc
         pico_flash
         hardware_pio
-        hardware_i2c
-        pico_lwip_mbedtls
-        pico_mbedtls
-        )
+        hardware_i2c)
+
+if(NOT PICO_BOARD STREQUAL "pico_w")
+        set(usurper_link_libraries ${usurper_link_libraries}        
+                pico_lwip_mbedtls
+                pico_mbedtls)        
+endif()
+
+target_link_libraries(${PROJECT_NAME} ${usurper_link_libraries})
 
 # create uf2 
 pico_add_extra_outputs(${PROJECT_NAME})

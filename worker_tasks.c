@@ -27,8 +27,9 @@ WORKER_TASK_T worker_tasks[] =
     {   weather_task,   "Weather Task",         1024,   3},
     {   led_strip_task, "LED Strip Task",       1024,   4},  
     {   message_task,   "Message Task",         1024,   1},  
+#ifdef INCORPORATE_THERMOSTAT    
     {   thermostat_task,"Thermostat Task",      8096,   5},        
-
+#endif
     // end of table
     {   NULL,           NULL,               0,      0,         }
 };

@@ -1679,7 +1679,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                 printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
             }  
         }       
-        break;        
+        break;  
+#ifdef INCORPORATE_THERMOSTAT              
         case SSI_tcs:  // thermostat current setpoint
         {
             temp = get_current_setpoint_temperaturex10();
@@ -1687,6 +1688,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));                           
         }
         break;
+#endif
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    

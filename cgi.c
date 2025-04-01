@@ -2145,6 +2145,7 @@ const char * cgi_periods_handler(int iIndex, int iNumParams, char *pcParam[], ch
  */
 const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+#ifdef INCORPORATE_THERMOSTAT
     int i = 0;
     int j = 0;
     int key_mow = 0;
@@ -2284,7 +2285,7 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
 
     // write config changes to flash
     config_changed();
-
+#endif
     // Send the next page back to the user
     return "/t_schedule.shtml";
     
