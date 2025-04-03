@@ -23,10 +23,8 @@ mkdir build
 cd build
 cmake ..
 make
-
-**NB:** The default board target is Pico2_W.  If you wish to build for Pico_W then change the board in CMakeLists.txt.
 ```
-Upon completion of a successful build the file usurper.uf2 should be created.  This may be loaded onto the Pico W in the usual manner.
+Upon completion of a successful build the file usurper.uf2 should be created.  This may be loaded onto the Pico2 W in the usual manner.  **NB:** The default board target is Pico2_W.  If you wish to build for Pico_W then change the board in CMakeLists.txt before building.
 
 ## Initial Configuration
 - The Pico W will initially create a WiFi network called **pluto**.  Connect to this WiFi network and then point your web browser to http://192.168.4.1
