@@ -18,6 +18,6 @@ typedef enum
 //prototypes
 void thermostat_task(__unused void *params);
 int make_schedule_grid(void);
-int get_current_setpoint_temperaturex10(void);
+int update_current_setpoints(void);
 
 #endif

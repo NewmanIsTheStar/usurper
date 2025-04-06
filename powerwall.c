@@ -22,6 +22,10 @@
 #include "altcp_tls_mbedtls_structs.h"
 #include "lwip/prot/iana.h"         // HTTPS port number
 
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "task.h"
+
 // from ssl_client1.c example program
 #include "mbedtls_config.h"  //local copy from https example for pico
 #include "mbedtls/platform.h"
@@ -45,18 +49,28 @@
 // Pico HTTPS request example
 #include "shelly.h"
 #include "powerwall.h"              // Options, macros, forward declarations
-
+#include "weather.h"
 #include "config.h"
 #include "pluto.h"
 
 
 #define GET_REQUEST "GET / HTTP/1.0\r\n\r\n"
 
+// prototypes
+int wait_for_packet(TickType_t ticks);
+
+
+// external variables
+extern NON_VOL_VARIABLES_T config;
+extern WEB_VARIABLES_T web;
 extern char shelly_value[255][128];
 extern NON_VOL_VARIABLES_T config;
 
+// global variables
 char copy_buffer[2048];
-//har request_buffer[512];
+int copy_ready = 0;
+
+//char request_buffer[512];
 
 //#define USE_RTOS_MBEDTLS_INTERFACE
 #ifdef USE_RTOS_MBEDTLS_INTERFACE
@@ -69,8 +83,10 @@ typedef enum
     PW_CONNECT,
     PW_LOGIN,
     PW_CONFIRM_LOGIN,
-    PW_GET_STATUS,
-    PW_CONFIRM_STATUS,
+    PW_GET_GRID_STATUS,
+    PW_CONFIRM_GRID_STATUS,
+    PW_GET_BATTERY,
+    PW_CONFIRM_BATTERY,
     PW_LOGOUT,
     PW_CONFIRM_LOGOUT,
     PW_TEAR_DOWN
@@ -114,7 +130,7 @@ int strip_first_last_quotes(char *token, int length)
 }
 
 
-void powerwall_test(void)
+void powerwall_poll(void)
 {
     static PW_STATE_T powerwall_connection_state = PW_INITIATE;
     static int retry = 0;
@@ -125,7 +141,10 @@ void powerwall_test(void)
     int i;
     char cookie[1024];
     char grid_status[256];
+    char battery_percentage[256];    
     char authorization_token[256];
+
+    //TODO: -- sanity check on config, prevent multiple login failures
 
     // check if retry limit reached
     if (retry >= max_retries)
@@ -141,10 +160,10 @@ void powerwall_test(void)
             // resolve server hostname
             ip_addr_t ipaddr;
             char* char_ipaddr;
-            printf("Resolving %s\n", PICOHTTPS_HOSTNAME);
+            //printf("Resolving %s\n", PICOHTTPS_HOSTNAME);
             if(!resolve_hostname(&ipaddr))
             {
-                printf("Failed to resolve %s\n", PICOHTTPS_HOSTNAME);
+                printf("Failed to resolve powerwall hostname = %s\n", PICOHTTPS_HOSTNAME);
                 break;
             } 
             else
@@ -152,7 +171,7 @@ void powerwall_test(void)
                 cyw43_arch_lwip_begin();
                 char_ipaddr = ipaddr_ntoa(&ipaddr);
                 cyw43_arch_lwip_end();
-                printf("Resolved %s (%s)\n", PICOHTTPS_HOSTNAME, char_ipaddr);
+                //printf("Resolved %s (%s)\n", PICOHTTPS_HOSTNAME, char_ipaddr);
 
                 powerwall_connection_state = PW_CONNECT;
             } 
@@ -161,16 +180,16 @@ void powerwall_test(void)
         case PW_CONNECT:
             // connect to powerwall
             pcb = NULL;
-            printf("Connecting to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
+            //printf("Connecting to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
             if(!connect_to_host(&ipaddr, &pcb))
             {
-                printf("Failed to connect to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
+                printf("Failed to connect to powerwall at https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
                 retry++;
                 break;
             }
             else
             {
-                printf("Connected to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
+                //printf("Connected to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
                 retry = 0;
                 powerwall_connection_state = PW_LOGIN;
             }
@@ -179,10 +198,10 @@ void powerwall_test(void)
 
         case PW_LOGIN:
             // send login request to powerwall
-            printf("Sending login request\n");
+            //printf("Sending login request\n");
             if(!powerwall_login(pcb))
             {        
-                printf("Failed to send login request\n");
+                printf("Failed to send powerwall login request\n");
 
                 // tear down connection
                 tear_down(pcb);
@@ -193,7 +212,7 @@ void powerwall_test(void)
             }
             else
             {
-                printf("Sent login request to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
+                //printf("Sent login request to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
                 //retry = 0;
                 powerwall_connection_state = PW_CONFIRM_LOGIN;                
             }
@@ -202,13 +221,14 @@ void powerwall_test(void)
 
         case PW_CONFIRM_LOGIN:            
             // Await HTTP response
-            printf("Awaiting login confirmation\n");
-            sleep_ms(5000);
-            printf("Awaited response\n");
+            //printf("Awaiting login confirmation\n");
+            //sleep_ms(5000);
+            wait_for_packet(5000);
+            //printf("Awaited response\n");
 
             http_extract_cookies(copy_buffer, cookie, sizeof(cookie));
 
-            printf("parse json\n");
+            //printf("parse json\n");
             start_of_json = strcasestr(copy_buffer, "\r\n{");
             if (start_of_json)
             {
@@ -233,19 +253,19 @@ void powerwall_test(void)
             else            
             {
                 strip_first_last_quotes(authorization_token, sizeof(authorization_token));
-                printf("Login successful.  Authorization token is = %s\n", authorization_token);
+                //printf("Login successful.  Authorization token is = %s\n", authorization_token);
                 retry = 0;
-                powerwall_connection_state = PW_GET_STATUS; 
+                powerwall_connection_state = PW_GET_GRID_STATUS; 
             } 
            
             // deliberate fallthrough
 
-        case PW_GET_STATUS:
+        case PW_GET_GRID_STATUS:
             // send status request to powerwall
-            printf("Sending status request to powerwall\n");
+            //printf("Sending grid status request to powerwall\n");
             if(!powerwall_get_grid_status(pcb, authorization_token, cookie))
             {        
-                printf("Failed to send grid status request\n");
+                printf("Failed to send powewall grid status request\n");
 
                 // tear down connection
                 tear_down(pcb);
@@ -256,20 +276,21 @@ void powerwall_test(void)
             }
             else
             {
-                printf("Sent status request in to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
+                //printf("Sent status request in to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
                 //retry = 0;
-                powerwall_connection_state = PW_CONFIRM_STATUS;                
+                powerwall_connection_state = PW_CONFIRM_GRID_STATUS;                
             }
 
             // deliberate fallthrough
 
-        case PW_CONFIRM_STATUS:  
+        case PW_CONFIRM_GRID_STATUS:  
             // Await status response
-            printf("Awaiting status response\n");
-            sleep_ms(5000);
-            printf("Awaited response\n");
+            //printf("Awaiting grid status response\n");
+            //sleep_ms(5000);
+            wait_for_packet(5000);
+            //printf("Awaited response\n");
 
-            printf("parse json\n");
+            //printf("parse json\n");
             start_of_json = strcasestr(copy_buffer, "\r\n{");
             if (start_of_json)
             {
@@ -280,7 +301,42 @@ void powerwall_test(void)
 
             if (json_get_value("root.\"grid_status\"", grid_status, sizeof(grid_status), false))
             {
-                printf("FAILED TO GET GRID STATUS\n");
+                printf("FAILED TO GET powerwall GRID STATUS\n");
+
+                // tear down connection
+                tear_down(pcb);
+                pcb = NULL;
+
+                powerwall_connection_state = PW_INITIATE;             
+                break;
+            }
+            else
+            {
+                printf("Powerwall Grid Status is = %s\n", grid_status);
+                
+                if (strcasestr(grid_status, "SystemGridConnected"))
+                {
+                    web.powerwall_grid_up = 1;
+                }
+                else
+                {
+                    web.powerwall_grid_up = 0;
+                }
+                
+                //printf("==> %d\n", web.powerwall_grid_up);
+
+                retry = 0;
+                //powerwall_connection_state = PW_LOGOUT;
+            }
+
+            // deliberate fallthrough
+
+        case PW_GET_BATTERY:
+            // send battery request to powerwall
+            //printf("Sending battery request to powerwall\n");
+            if(!powerwall_get_battery_percentage(pcb, authorization_token, cookie))
+            {        
+                printf("Failed to send powerwall battery status request\n");
 
                 // tear down connection
                 tear_down(pcb);
@@ -291,19 +347,60 @@ void powerwall_test(void)
             }
             else
             {
-                printf("Grid Status from JSON cache is = %s\n", grid_status);
-                retry = 0;
-                powerwall_connection_state = PW_LOGOUT;
-            }     
+                //printf("Sent status request in to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
+                //retry = 0;
+                powerwall_connection_state = PW_CONFIRM_GRID_STATUS;                
+            }
 
             // deliberate fallthrough
 
+        case PW_CONFIRM_BATTERY:  
+            // Await status response
+            //printf("Awaiting battery response\n");
+            //sleep_ms(5000);
+            wait_for_packet(5000);
+            //printf("Awaited battery response\n");
+
+            //printf("parse json\n");
+            start_of_json = strcasestr(copy_buffer, "\r\n{");
+            if (start_of_json)
+            {
+                start_of_json += 2; // point to opening brace
+
+                parse_shelly_json(start_of_json);
+            }
+
+            if (json_get_value("root.\"percentage\"", battery_percentage, sizeof(battery_percentage), false))
+            {
+                printf("FAILED TO GET powerwall BATTERY PERCENTAGE\n");
+
+                // tear down connection
+                tear_down(pcb);
+                pcb = NULL;
+
+                powerwall_connection_state = PW_INITIATE;            
+                break;
+            }
+            else
+            {
+                printf("Powerwall Battery Percentage is = %s\n", battery_percentage);
+
+                sscanf(battery_percentage, "%d.", &(web.powerwall_battery_percentage));
+
+                //printf("==> %d\n", web.powerwall_battery_percentage);
+
+                retry = 0;
+                //powerwall_connection_state = PW_LOGOUT;
+            }
+            
+            //deleberate fallthrough
+
         case PW_LOGOUT:
             // send logout request to powerwall
-            printf("Sending logout request\n");
+            //printf("Sending logout request\n");
             if(!powerwall_logout(pcb, authorization_token, cookie))
             {        
-                printf("Failed to send logout request\n");
+                printf("Failed to send powerwall logout request\n");
 
                 // tear down connection
                 tear_down(pcb);
@@ -314,7 +411,7 @@ void powerwall_test(void)
             }
             else
             {
-                printf("Sent login request to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
+                //printf("Sent login request to https://%s:%d\n", char_ipaddr, LWIP_IANA_PORT_HTTPS);
                 //retry = 0;
                 powerwall_connection_state = PW_CONFIRM_LOGIN;                
             }
@@ -323,15 +420,16 @@ void powerwall_test(void)
             
         case PW_CONFIRM_LOGOUT:  
             // Await status response
-            printf("Awaiting logout response\n");
-            sleep_ms(5000);
-            printf("Awaited response\n");
+            //printf("Awaiting logout response\n");
+            //sleep_ms(5000);
+            wait_for_packet(5000);
+            //printf("Awaited response\n");
 
             // Response: HTTP/2 204  date: Thu, 03 Oct 2019 13:48:10 GMT
-            printf("Checking response\n");
+            //printf("Checking response\n");
             if (strcasestr(copy_buffer, "date"))
             {
-                printf("LOGOUT OK\n");
+                //printf("LOGOUT OK\n");
             }
             else
             {
@@ -352,6 +450,7 @@ void powerwall_test(void)
     // TEST TEST TEST
     initialize_shelly_cache();
     sprintf(grid_status, "UNKNOWN");
+    sprintf(battery_percentage, "UNKNOWN");
     sprintf(copy_buffer, "XXXXXXXXXXXXXXXXXXXXXXXXX");
 
     printf("Exiting\n");
@@ -671,17 +770,18 @@ lwip_err_t callback_altcp_recv(
                 {
                     for(i = 0; i < buf->len; i++)
                     {
-                        putchar(((char*)buf->payload)[i]);
+                        //putchar(((char*)buf->payload)[i]);
                         if (copy_index < sizeof(copy_buffer)) copy_buffer[copy_index++] = ((char*)buf->payload)[i];
                     } 
                     buf = buf->next;
                 }
                 for(i = 0; i < buf->len; i++)
                 {
-                    putchar(((char*)buf->payload)[i]);
+                    //putchar(((char*)buf->payload)[i]);
                     if (copy_index < sizeof(copy_buffer)) copy_buffer[copy_index++] = ((char*)buf->payload)[i];
                 } 
                 copy_buffer[copy_index] = 0; // ensure zero termination
+                copy_ready++;
                 assert(buf->next == NULL);
 
                 // Advertise data reception
@@ -701,7 +801,7 @@ lwip_err_t callback_altcp_recv(
 
     }
 
-    printf("\nRCV CALLBACK COMPLETED err = %d\n", err);
+    //printf("\nRCV CALLBACK COMPLETED err = %d\n", err);
     // Return error
     return err;
 
@@ -798,7 +898,7 @@ bool http_request(struct altcp_pcb* pcb, HTTP_REQUEST_TYPE_T type, char *url, ch
 
     if(!err)
     {
-        printf("SEND [%d bytes]\n%s\n", length, request); 
+        //printf("SEND [%d bytes]\n%s\n", length, request); 
         
         // Check send buffer and queue length
         //
@@ -870,6 +970,15 @@ int powerwall_get_grid_status(struct altcp_pcb* pcb, char *auth_token, char *coo
     return(err);
 }
 
+int powerwall_get_battery_percentage(struct altcp_pcb* pcb, char *auth_token, char *cookies)
+{
+    int err = 0;   
+
+    err = http_request(pcb, HTTP_GET, "/api/system_status/soe", config.powerwall_hostname, NULL, auth_token, cookies);
+    
+    return(err);
+}
+
 int powerwall_logout(struct altcp_pcb* pcb, char *auth_token, char *cookies)
 {
     int err = 0;   
@@ -902,7 +1011,7 @@ int http_extract_cookies(const char *http_packet, char *cookies, int length)
             source = strcasestr(source, "Set-Cookie: ");
             if (source)
             {
-                printf("GOT COOKIE: ");
+                //printf("GOT COOKIE: ");
 
                 // inject a space between cookies
                 if (j > 0)
@@ -915,7 +1024,7 @@ int http_extract_cookies(const char *http_packet, char *cookies, int length)
                 source += strlen("Set-Cookie: ");
                 for (i=0; source[i] && (j < (length - 1)); i++, j++)
                 {
-                    printf("%c", source[i]);
+                    //printf("%c", source[i]);
                     cookies[j] = source[i];
 
                     if (source[i] == ';')
@@ -926,7 +1035,7 @@ int http_extract_cookies(const char *http_packet, char *cookies, int length)
                     } 
                 }
 
-                printf("\n"); 
+                //printf("\n"); 
                 
                 // move source pointer past copied cookie
                 source += i;
@@ -943,6 +1052,27 @@ int http_extract_cookies(const char *http_packet, char *cookies, int length)
     return(err);
 }
 
+
+int wait_for_packet(TickType_t ticks)
+{
+    int err = 0;   
+    TickType_t wait_time = 0;
+    static int last_copy_ready = 0;
+
+    do 
+    {
+        if (last_copy_ready != copy_ready)
+        {
+            last_copy_ready = copy_ready;
+            break;
+        }
+
+        SLEEP_MS(50);
+        wait_time += 50;
+    } while(wait_time < ticks);
+    
+    return(err);
+}
 
 #ifdef USE_RTOS_MBEDTLS_INTERFACE
 // apparently the standard mbedtls code does not support lwip sockets, so would have to create that to use the interface below

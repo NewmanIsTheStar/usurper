@@ -312,6 +312,7 @@ void thermostat_task(void *params)
 
                     track_hvac_extrema(COOLING_MOMENTUM, temperaturex10);
                     track_hvac_extrema(HEATING_MOMENTUM, temperaturex10);                     
+                    //powerwall_poll();
                     control_thermostat_relays(temperaturex10);
                     accumlate_temperature_metrics(temperaturex10);
 
@@ -373,15 +374,18 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         // disable lockout
         lockout_period_ticks = 0;
 
-        // determine current setpoint based on schedule
-        web.thermostat_set_point = get_current_setpoint_temperaturex10();
+        // determine powerwall status
+        powerwall_poll();
+
+        // determine current setpoints based on schedule and powerwall status
+        update_current_setpoints();
 
         // update thermostat state
         switch(thermostat_state)
         {
         default:    
         case HEATING_AND_COOLING_OFF:
-            if (temperaturex10 > (web.thermostat_set_point + web.thermostat_hysteresis))
+            if (temperaturex10 > (web.thermostat_cooling_set_point + web.thermostat_hysteresis))
             {
                 if (last_active != HEATING_IN_PROGRESS)
                 {
@@ -404,7 +408,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                     lockout_period_ticks = config.heating_to_cooling_lockout_mins*60*1000;
                     lockout_start_tick = now_tick;                     
                 }
-            } else if (temperaturex10 < (web.thermostat_set_point - web.thermostat_hysteresis))
+            } else if (temperaturex10 < (web.thermostat_heating_set_point - web.thermostat_hysteresis))
             {
                 if (last_active != COOLING_IN_PROGRESS)
                 {
@@ -430,7 +434,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             }
             break;
         case HEATING_IN_PROGRESS:
-            if (temperaturex10 > (web.thermostat_set_point + web.thermostat_hysteresis))
+            if (temperaturex10 > (web.thermostat_heating_set_point + web.thermostat_hysteresis))
             {
                 send_syslog_message("thermostat", "Heating completed");            
                 snprintf(web.status_message, sizeof(web.status_message), "Heating completed");  
@@ -446,7 +450,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             } 
             break;
         case COOLING_IN_PROGRESS:
-            if (temperaturex10 < (web.thermostat_set_point - web.thermostat_hysteresis))
+            if (temperaturex10 < (web.thermostat_cooling_set_point - web.thermostat_hysteresis))
             {
                 send_syslog_message("thermostat", "Cooling completed");            
                 snprintf(web.status_message, sizeof(web.status_message), "Cooling completed"); 
@@ -704,16 +708,19 @@ void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type)
 }
 
 /*!
- * \brief Set momentum based on tracked extrema
+ * \brief Compute the current heating and cooling setpoints
  * 
  * \return nothing
  */
-int get_current_setpoint_temperaturex10(void)
+int update_current_setpoints(void)
 {
     int i;
     int mow;
     int setpointtemperaturex10 = 0;
+    static bool cooling_disabled = false;
+    static bool heating_disabled = false;
 
+    // get setpoint according to schedule
     if (!get_mow_local_tz(&mow))
     {
         for (i=0; i<16; i++)
@@ -725,6 +732,52 @@ int get_current_setpoint_temperaturex10(void)
             }
         }
     }
+
+    // set points
+    web.thermostat_set_point = setpointtemperaturex10;
+    web.thermostat_heating_set_point = setpointtemperaturex10;
+    web.thermostat_cooling_set_point = setpointtemperaturex10;
+
+    // adjust setpoint according to powerwall status
+    if (!web.powerwall_grid_up)
+    {
+        // grid down setpoint adjustments -- relax setpoints when grid down
+        web.thermostat_heating_set_point -= config.grid_down_heating_setpoint_decrease;
+        web.thermostat_cooling_set_point += config.grid_down_cooling_setpoint_increase;
+
+        // disable cooling if battery level too low -- keep disabled until satisfactory level reached
+        if ((web.powerwall_battery_percentage < config.grid_down_cooling_disable_battery_level) || cooling_disabled)
+        {
+            web.thermostat_cooling_set_point = 1500;  //max temp so that cooling is disabled
+            cooling_disabled = true;
+        }
+
+        // disable heating if battery level too low -- keep disabled until satisfactory level reached
+        if ((web.powerwall_battery_percentage < config.grid_down_heating_disable_battery_level) || heating_disabled)
+        {
+            web.thermostat_heating_set_point = -1000;  //min temp so that heating is disabled
+            heating_disabled = true;
+        }
+
+        // enable cooling if battery level satisfactory
+        if ((web.powerwall_battery_percentage > config.grid_down_cooling_enable_battery_level))
+        {
+            cooling_disabled = false;
+        }    
+
+        // enable heating if battery level satisfactory
+        if ((web.powerwall_battery_percentage > config.grid_down_heating_enable_battery_level))
+        {
+            heating_disabled = false;
+        }          
+
+    }
+    else
+    {
+        cooling_disabled = false;
+        heating_disabled= false;
+    }
+
     return(setpointtemperaturex10);
 }
 

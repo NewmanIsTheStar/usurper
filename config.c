@@ -106,10 +106,13 @@ void config_blank_to_v1(void)
 
     // led string settings
     config.led_number = 0;
-    config.led_pattern = 1;
+    config.led_pattern = 0;
+    config.led_pattern_when_irrigation_active = 0;
+    config.led_pattern_when_irrigation_usurped = 0;    
     config.led_speed = 100;
     config.led_rgbw = 0;
     config.led_pin = 7;
+    config.led_sustain_duration = 0;
 
     // moodlight settings
     config.use_govee_to_indicate_irrigation_status = 0;

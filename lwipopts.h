@@ -73,7 +73,7 @@ void setTimeSec(uint32_t sec);
 #define LWIP_ALTCP               1  // Newman used for TLS testing
 #define LWIP_ALTCP_TLS           1  // Newman used for TLS testing 
 #define LWIP_ALTCP_TLS_MBEDTLS   1  // Newman used for TLS testing
-#define ALTCP_MBEDTLS_AUTHMODE      MBEDTLS_SSL_VERIFY_NONE // MBEDTLS_SSL_VERIFY_REQUIRED  // Newman used for TLS testing
+#define ALTCP_MBEDTLS_AUTHMODE      MBEDTLS_SSL_VERIFY_NONE // MBEDTLS_SSL_VERIFY_REQUIRED -- Newman used for TLS testing
 #endif
 
 #ifndef NDEBUG 

@@ -2548,6 +2548,96 @@ const char * cgi_thermostat_schedule_handler(int iIndex, int iNumParams, char *p
     return "/t_schedule.shtml";    
 }
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_powerwall_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL; 
+
+    // despicable but necessary as we only receive parameter when checked
+    config.weather_station_enable = 0;
+       
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+ 
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            //printf("Parameter: %s has Value: %s\n", param, value);
+
+
+            if (strcasecmp("pwip", param) == 0)
+            {
+                STRNCPY(config.powerwall_ip, value, sizeof(config.powerwall_ip));
+            }
+
+            if (strcasecmp("pwhost", param) == 0)
+            {
+                STRNCPY(config.powerwall_hostname, value, sizeof(config.powerwall_hostname));
+            }      
+            
+            if (strcasecmp("pwpass", param) == 0)
+            {
+                if (strcasecmp(value, "********") != 0)
+                {
+                    STRNCPY(config.powerwall_password, value, sizeof(config.powerwall_password));
+                }
+            }              
+            
+            if (strcasecmp("pwgdhd", param) == 0)
+            {
+                config.grid_down_heating_setpoint_decrease = get_int_with_tenths_from_string(value);  
+                printf("CGI setting grid down heating setpoint decrease to %d\n", config.grid_down_heating_setpoint_decrease);
+            }
+
+            if (strcasecmp("pwgdci", param) == 0)
+            {
+                config.grid_down_cooling_setpoint_increase = get_int_with_tenths_from_string(value);  
+            }
+
+            if (strcasecmp("pwblhd", param) == 0)
+            {
+                config.grid_down_heating_disable_battery_level = get_int_with_tenths_from_string(value);  
+            }
+
+            if (strcasecmp("pwblhe", param) == 0)
+            {
+                config.grid_down_heating_enable_battery_level = get_int_with_tenths_from_string(value);  
+            } 
+            
+            if (strcasecmp("pwblcd", param) == 0)
+            {
+                config.grid_down_cooling_disable_battery_level = get_int_with_tenths_from_string(value);  
+            }     
+
+            if (strcasecmp("pwblce", param) == 0)
+            {
+                config.grid_down_cooling_enable_battery_level = get_int_with_tenths_from_string(value);  
+            }                                       
+        }
+
+        i++;
+    }
+
+    // Send the next page back to the user
+    config_changed();
+    return "/powerwall.shtml";
+}
+
 
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
@@ -2591,8 +2681,8 @@ static const tCGI cgi_handlers[] = {
     {"/tp_add.cgi",                     cgi_thermostat_period_add_handler}, 
     {"/tp_edit.cgi",                    cgi_thermostat_period_edit_handler},   
     {"/tp_cancel.cgi",                  cgi_thermostat_period_cancel_handler},    
-    {"/t_schedule.cgi",                 cgi_thermostat_schedule_handler},          
-                                                              
+    {"/t_schedule.cgi",                 cgi_thermostat_schedule_handler}, 
+    {"/powerwall.cgi",                  cgi_powerwall_handler},                                                                   
 };
 
 /*!

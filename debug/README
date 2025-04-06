@@ -6,7 +6,8 @@ watchlog    - display stdout from the pi pico, this shows you any printf output 
 To start step through debugging in VSCode, first click on the "Run and Debug" icon on the left side of the window, then click on the green triangle icon to start the program.  The first time you do this you might get a drop down list of options, choose "launch.json"
 
 NOTES
-1. Under no circumstances should you click on "Import Project" if using the VSCode Pi Pico Extension -- this will entirely screw up the project.
-2. If you build the code using make from the command line, then it will fail to build from within VSCode until you remove the remnants of the previous build from the build directory:
+1. By default the debugserver script is set to work with pico2_w.  You can switch to pico_w by editing the file.
+2. Under no circumstances should you click on "Import Project" if using the VSCode Pi Pico Extension -- this will entirely screw up the project.
+3. If you build the code using make from the command line, then it will fail to build from within VSCode until you remove the remnants of the previous build from the build directory:
     rm CMakeCache.txt 
     rm -rf CMakeFiles/

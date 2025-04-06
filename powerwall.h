@@ -427,6 +427,7 @@ bool send_grid_status_request(struct altcp_pcb* pcb, char *cookie, char *cookie2
 bool http_request(struct altcp_pcb* pcb, HTTP_REQUEST_TYPE_T type, char *url, char *host, char *content, char *auth_token, char *cookies);
 int powerwall_login(struct altcp_pcb* pcb);
 int powerwall_get_grid_status(struct altcp_pcb* pcb, char *auth_token, char *cookies);
+int powerwall_get_battery_percentage(struct altcp_pcb* pcb, char *auth_token, char *cookies);
 int http_extract_cookies(const char *http_packet, char *cookies, int length);
 int powerwall_logout(struct altcp_pcb* pcb, char *auth_token, char *cookies);
 
@@ -505,7 +506,7 @@ lwip_err_t callback_altcp_connect(
     lwip_err_t err
 );
 
-void powerwall_test(void);
+void powerwall_poll(void);
 int powerwall_init(void);
 
 

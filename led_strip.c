@@ -147,14 +147,17 @@ void led_strip_task(void *params)
 
             if (!err)
             {
-                set_led_pattern_local(config.led_pattern); 
-
                 CLIP(config.led_pattern , 0, count_of(pattern_table));
-                CLIP(config.led_speed, 0, 30000);
+                CLIP(config.led_pattern_when_irrigation_active , 0, count_of(pattern_table));
+                CLIP(config.led_pattern_when_irrigation_usurped , 0, count_of(pattern_table));
                 CLIP(live_pattern, 0, count_of(pattern_table));
 
+                CLIP(config.led_speed, 0, 30000);
+                
+                set_led_pattern_local(config.led_pattern); 
+
                 int t = 0;
-                while (1) 
+                while (true) 
                 {
                     int dir = (rand() >> 30) & 1 ? 1 : -1;
 

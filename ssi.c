@@ -438,16 +438,6 @@ extern NON_VOL_VARIABLES_T config;
     x(tcs)
     
 
-    char powerwall_ip[32];
-    char powerwall_hostname[32];  // for sni may differ from dns
-    char powerwall_password[32];
-    int grid_down_heating_setpoint_decrease;
-    int grid_down_cooling_setpoint_increase;
-    int grid_down_heating_disable_battery_level;
-    int grid_down_heating_enable_battery_level;
-    int grid_down_cooling_disable_battery_level;
-    int grid_down_cooling_enable_battery_level;
-
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
 {
@@ -1507,37 +1497,38 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break; 
         case SSI_pwpass:
         {
-            printed = snprintf(pcInsert, iInsertLen, "%s", config.powerwall_password);
+            //printed = snprintf(pcInsert, iInsertLen, "%s", config.powerwall_password);
+            printed = snprintf(pcInsert, iInsertLen, "********");
         }
         break;
         case SSI_pwgdhd:
         {
-            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_heating_setpoint_decrease/10, grid_down_heating_setpoint_decrease%10);
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", config.grid_down_heating_setpoint_decrease/10, config.grid_down_heating_setpoint_decrease%10);
         }
         break;        
         case SSI_pwgdci:
         {
-            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_cooling_setpoint_increase/10, grid_down_cooling_setpoint_increase%10);            
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", config.grid_down_cooling_setpoint_increase/10, config.grid_down_cooling_setpoint_increase%10);            
         }
         break;
         case SSI_pwblhd:
         {
-            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_heating_disable_battery_level/10, grid_down_heating_disable_battery_level%10);            
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", config.grid_down_heating_disable_battery_level/10, config.grid_down_heating_disable_battery_level%10);            
         }
         break;        
         case SSI_pwblhe:
         {
-            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_heating_enable_battery_level/10, grid_down_heating_enable_battery_level%10);            
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", config.grid_down_heating_enable_battery_level/10, config.grid_down_heating_enable_battery_level%10);            
         }
         break;
         case SSI_pwblcd:
         {
-            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_cooling_disable_battery_level/10, grid_down_cooling_disable_battery_level%10);            
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", config.grid_down_cooling_disable_battery_level/10, config.grid_down_cooling_disable_battery_level%10);            
         }
         break;   
         case SSI_pwblce:
         {
-            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", grid_down_cooling_enable_battery_level/10, grid_down_cooling_enable_battery_level%10);            
+            printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", config.grid_down_cooling_enable_battery_level/10, config.grid_down_cooling_enable_battery_level%10);            
         }
         break; 
         case SSI_tday:
@@ -1683,7 +1674,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
 #ifdef INCORPORATE_THERMOSTAT              
         case SSI_tcs:  // thermostat current setpoint
         {
-            temp = get_current_setpoint_temperaturex10();
+            temp = update_current_setpoints();
 
             printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));                           
         }
