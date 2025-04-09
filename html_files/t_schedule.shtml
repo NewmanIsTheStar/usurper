@@ -163,8 +163,8 @@ body {
         <a href="/tp_add.cgi?x=99">   <button style="width:13%">Add</button></a>       
       </div>      
   </fieldset> 
+  <a href="/t_copy.shtml">   <button style="width:13%">Copy schedule to another day</button></a> 
 </div>
-   
 </body>
 </html> 
 

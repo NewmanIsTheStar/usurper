@@ -506,7 +506,7 @@ lwip_err_t callback_altcp_connect(
     lwip_err_t err
 );
 
-void powerwall_poll(void);
+void powerwall_check(void);
 int powerwall_init(void);
 
 

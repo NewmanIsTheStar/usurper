@@ -2639,6 +2639,71 @@ const char * cgi_powerwall_handler(int iIndex, int iNumParams, char *pcParam[], 
 }
 
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_thermostat_copy_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int new_relay_normally_open = 0; 
+    int new_irrigation_test_enable = 0;      
+    int new_gpio = 0;
+    int period_number = -1;  
+    int setpoint_index = -1;
+    int new_zone_max = 0;
+    int len = 0;
+    int copy_destination;
+       
+
+
+    printf("Got request to copy thermostat schedule from day %sd\n", web.thermostat_day);
+
+    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            printf("Parameter: %s has Value: %s\n", param, value);    
+
+            len = strlen(param);
+            if ((len >= 3) && (param[0] == 'd') && (param[1] == 'a') && (param[2] == 'y'))
+            { 
+                sscanf(value, "%d", &(web.thermostat_day));
+                CLIP(web.thermostat_day, 0, 6);  
+            } 
+
+            len = strlen(param);
+            if (strcasecmp("tscpy", param) == 0)
+            { 
+                sscanf(value, "%d", &(copy_destination));
+                CLIP(copy_destination, 0, 9);  
+
+                printf("copy destination is %d\n", copy_destination);
+                copy_schedule(web.thermostat_day, copy_destination);
+            }             
+        }
+        i++;
+    }
+
+ 
+    // Send the next page back to the user
+    return "/t_schedule.shtml";    
+}
+
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
     {"/schedule.cgi",                   cgi_schedule_handler},
@@ -2682,7 +2747,8 @@ static const tCGI cgi_handlers[] = {
     {"/tp_edit.cgi",                    cgi_thermostat_period_edit_handler},   
     {"/tp_cancel.cgi",                  cgi_thermostat_period_cancel_handler},    
     {"/t_schedule.cgi",                 cgi_thermostat_schedule_handler}, 
-    {"/powerwall.cgi",                  cgi_powerwall_handler},                                                                   
+    {"/powerwall.cgi",                  cgi_powerwall_handler},   
+    {"/t_copy.cgi",                     cgi_thermostat_copy_handler},
 };
 
 /*!

@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.13..3.27)
 
 # ====================================================================================
-# Set release type
+# Set release version
 set(APP_VERSION "01.00.02")
-# Set release type
+
+# Set build type
 set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 
@@ -73,7 +74,7 @@ execute_process(COMMAND
         )
 
 set(usurper_source_files
-         pluto.c
+        pluto.c
         weather.c
         flash.c
         ssi.c

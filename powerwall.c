@@ -58,7 +58,7 @@
 
 // prototypes
 int wait_for_packet(TickType_t ticks);
-
+void powerwall_poll(void);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -453,9 +453,23 @@ void powerwall_poll(void)
     sprintf(battery_percentage, "UNKNOWN");
     sprintf(copy_buffer, "XXXXXXXXXXXXXXXXXXXXXXXXX");
 
-    printf("Exiting\n");
     return;
 }
+
+
+void powerwall_check(void)
+{
+    static TickType_t last_poll= 0;
+    TickType_t now = 0;
+
+    now = xTaskGetTickCount();
+
+    if ((now - last_poll) > 1000*60*15)
+    {
+        powerwall_poll();
+    }
+}
+
 
 void tear_down(struct altcp_pcb* pcb)
 {

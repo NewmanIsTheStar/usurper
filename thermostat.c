@@ -121,6 +121,9 @@ void mark_hvac_off(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void track_hvac_extrema(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type);
 void log_climate_change(int temperaturex10, int humidityx10);
+int get_free_schedule_row(void);
+bool schedule_row_valid(int row);
+bool day_compare(int day1, int day2);
 
 
 // external variables
@@ -374,8 +377,8 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         // disable lockout
         lockout_period_ticks = 0;
 
-        // determine powerwall status
-        powerwall_poll();
+        // check powerwall status
+        powerwall_check();
 
         // determine current setpoints based on schedule and powerwall status
         update_current_setpoints();
@@ -412,7 +415,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             {
                 if (last_active != COOLING_IN_PROGRESS)
                 {
-                    send_syslog_message("thermostat", "Heatinging commenced");            
+                    send_syslog_message("thermostat", "Heating commenced");            
                     snprintf(web.status_message, sizeof(web.status_message), "Heating in progress");            
 
                     thermostat_state = HEATING_IN_PROGRESS;
@@ -889,7 +892,180 @@ int make_schedule_grid(void)
 }
 
 /*!
- * \brief Send a syslog message
+ * \brief Copy daily schedule to other day(s)
+ * 
+ * \return nothing
+ */
+int copy_schedule(int source_day, int destination_day)
+{
+    int i, j, k, x, y;
+    int key_mow = 0;
+    int key_temp = 0;
+    //int mow;
+    int mod;
+    int setpointtemperaturex10 = 0;
+    bool found = false;
+    int populated_rows = 0;
+    int mow[16];
+    int temp[16];
+    int day = 0;
+
+    CLIP(source_day, 0, 6);
+
+    // erase existing entries on destination days
+    for(i=0; i<16; i++)
+    {
+        if ((config.thermostat_period_start_mow[i] >= 0) && (config.thermostat_period_start_mow[i] < 60*24*7))
+        {
+            day = config.thermostat_period_start_mow[i]/(60*24);
+            CLIP(day, 0, 6);
+        }
+
+        // 0-6 = sunday to saturday, 7 = everyday, 8 = weekdays, 9 = weekend days
+        if ((day != source_day) && (!day_compare(day, destination_day)))                                                                      
+        {
+            // mark unused    
+            config.thermostat_period_start_mow[i] = -1;
+            config.setpoint_temperaturex10[i] = -2000;
+        }
+    }
+
+
+    for (day = 0; day < 7; day++)   // day to copy into
+    {
+        for (i=0; i < 16; i++)  // scan existing schedule
+        {
+            if (schedule_row_valid(i))
+            {
+                j = config.thermostat_period_start_mow[i]/(60*24);
+                mod = config.thermostat_period_start_mow[i]%(60*24);
+                CLIP(j, 0, 6);
+                CLIP(mod, 0, 60*24);
+
+                // 0-6 = sunday to saturday, 7 = everyday, 8 = weekdays, 9 = weekend days
+                if ((day != source_day) && (j == source_day) && (!day_compare(day, destination_day)))
+                {
+                    k = get_free_schedule_row();
+
+                    if ((k >= 0) && (k < 16))
+                    {
+                        // copy schedule
+                        config.thermostat_period_start_mow[k] = day*(60*24) + mod;
+                        config.setpoint_temperaturex10[k] = config.setpoint_temperaturex10[i];
+
+                        printf("Copied row. New row %d [dest day = %d source day j = %d source row i = %d]\n", k, day, j, i);
+                    }
+                }
+             }
+        }
+    }
+
+    return(0);
+}
+
+/*!
+ * \brief check if day matchs
+ * 
+ * \return return false if match, true if diffeent
+ */
+bool day_compare(int day1, int day2)
+{
+    bool diff = true;
+    int multi_day = 0;
+    int compare_day = 0;
+
+    if (day1 == day2)
+    {
+        diff = false;
+    }
+
+    if (day1 > 6)
+    {
+        multi_day = day1;
+        compare_day = day2;
+    }
+    else
+    {
+        multi_day = day2;
+        compare_day = day1;    
+    }
+
+    switch(multi_day)
+    {
+        case 7: // everyday
+            diff = false;
+            break;
+        case 8: // weekday
+            if ((compare_day >=1) && (compare_day <= 5))
+            {
+                diff = false;
+            } 
+            break;
+        case 9: // weekend
+            if ((compare_day == 0) || (compare_day == 6))
+            {
+                diff = false;
+            }
+            break;
+    }
+    
+    return(diff);
+}
+
+/*!
+ * \brief check if temperature schedule row is valid
+ * 
+ * \return true if temperature schedule entry is valid
+ */
+bool schedule_row_valid(int row)
+{
+    bool valid = true;
+
+
+    if ((row < 0) || (row > 15))
+    {
+        valid = false;
+    }
+    else if ((config.thermostat_period_start_mow[row] < 0) ||  (config.thermostat_period_start_mow[row] > (60*24*7))) 
+    {
+        valid = false;
+    }
+    else if ((config.setpoint_temperaturex10[row] < (-1000)) ||  (config.setpoint_temperaturex10[row] > (1000))) 
+    {
+        valid = false;
+    }    
+
+    printf("ROW %d mow = %d temp = %d %s\n", row, config.thermostat_period_start_mow[row], config.setpoint_temperaturex10[row], valid?"TRUE":"FALSE");
+
+    return(valid);
+}
+
+/*!
+ * \brief Copy daily schedule to other day(s)
+ * 
+ * \return nothing
+ */
+int get_free_schedule_row(void)
+{
+    int i = 0;
+    bool found = false;
+
+    for(i=0; i<16; i++)
+    {
+        if (!schedule_row_valid(i))
+        {
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) i = -1;
+
+    return(i);
+}
+
+/*!
+ * \brief Send a climate syslog message
  *
  * \param[in]   log_name      name of log file on server
  * \param[in]   format, ...   variable parameters printf style  
