@@ -719,6 +719,7 @@ int update_current_setpoints(void)
 {
     int i;
     int mow;
+    int candidate_start_mow = 0;
     int setpointtemperaturex10 = 0;
     static bool cooling_disabled = false;
     static bool heating_disabled = false;
@@ -726,12 +727,13 @@ int update_current_setpoints(void)
     // get setpoint according to schedule
     if (!get_mow_local_tz(&mow))
     {
-        for (i=0; i<16; i++)
+        for(i=0; i < NUM_ROWS(config.setpoint_temperaturex10); i++)
         {
-            if ((mow >= config.thermostat_period_start_mow[i]) &&
-                (mow < config.thermostat_period_end_mow[i]))
+            if ((config.setpoint_start_mow[i] < mow) &&
+                (config.setpoint_start_mow[i] > candidate_start_mow))
             {
                 setpointtemperaturex10 = config.setpoint_temperaturex10[i];
+                candidate_start_mow = config.setpoint_start_mow[i];
             }
         }
     }
@@ -799,8 +801,8 @@ int make_schedule_grid(void)
     int setpointtemperaturex10 = 0;
     bool found = false;
     int populated_rows = 0;
-    int mow[16];
-    int temp[16];
+    int mow[NUM_ROWS(config.setpoint_start_mow)];
+    int temp[NUM_ROWS(config.setpoint_start_mow)];
 
     // erase start time colum
     for(y=0;y<8; y++)
@@ -818,9 +820,9 @@ int make_schedule_grid(void)
     }
 
     // copy schedule to local arrays for sorting
-    for(i=0; i<16; i++)
+    for(i=0; i<NUM_ROWS(config.setpoint_start_mow); i++)
     {
-        mow[i] = config.thermostat_period_start_mow[i];
+        mow[i] = config.setpoint_start_mow[i];
         temp[i] = config.setpoint_temperaturex10[i];
     }
 
@@ -843,7 +845,7 @@ int make_schedule_grid(void)
     }
 
     // scan list of configured setpoints
-    for (i=0; i<16; i++)
+    for (i=0; i<NUM_ROWS(mow); i++)
     {
         if ((mow[i] >= 0) && (mow[i] < 60*24*7))
         {
@@ -906,18 +908,18 @@ int copy_schedule(int source_day, int destination_day)
     int setpointtemperaturex10 = 0;
     bool found = false;
     int populated_rows = 0;
-    int mow[16];
-    int temp[16];
+    int mow[NUM_ROWS(config.setpoint_start_mow)];
+    int temp[NUM_ROWS(config.setpoint_start_mow)];
     int day = 0;
 
     CLIP(source_day, 0, 6);
 
     // erase existing entries on destination days
-    for(i=0; i<16; i++)
+    for(i=0; i<NUM_ROWS(config.setpoint_start_mow); i++)
     {
-        if ((config.thermostat_period_start_mow[i] >= 0) && (config.thermostat_period_start_mow[i] < 60*24*7))
+        if ((config.setpoint_start_mow[i] >= 0) && (config.setpoint_start_mow[i] < 60*24*7))
         {
-            day = config.thermostat_period_start_mow[i]/(60*24);
+            day = config.setpoint_start_mow[i]/(60*24);
             CLIP(day, 0, 6);
         }
 
@@ -925,7 +927,7 @@ int copy_schedule(int source_day, int destination_day)
         if ((day != source_day) && (!day_compare(day, destination_day)))                                                                      
         {
             // mark unused    
-            config.thermostat_period_start_mow[i] = -1;
+            config.setpoint_start_mow[i] = -1;
             config.setpoint_temperaturex10[i] = -2000;
         }
     }
@@ -933,12 +935,12 @@ int copy_schedule(int source_day, int destination_day)
 
     for (day = 0; day < 7; day++)   // day to copy into
     {
-        for (i=0; i < 16; i++)  // scan existing schedule
+        for (i=0; i < NUM_ROWS(config.setpoint_start_mow); i++)  // scan existing schedule
         {
             if (schedule_row_valid(i))
             {
-                j = config.thermostat_period_start_mow[i]/(60*24);
-                mod = config.thermostat_period_start_mow[i]%(60*24);
+                j = config.setpoint_start_mow[i]/(60*24);
+                mod = config.setpoint_start_mow[i]%(60*24);
                 CLIP(j, 0, 6);
                 CLIP(mod, 0, 60*24);
 
@@ -947,13 +949,13 @@ int copy_schedule(int source_day, int destination_day)
                 {
                     k = get_free_schedule_row();
 
-                    if ((k >= 0) && (k < 16))
+                    if ((k >= 0) && (k < NUM_ROWS(config.setpoint_start_mow)))
                     {
                         // copy schedule
-                        config.thermostat_period_start_mow[k] = day*(60*24) + mod;
+                        config.setpoint_start_mow[k] = day*(60*24) + mod;
                         config.setpoint_temperaturex10[k] = config.setpoint_temperaturex10[i];
 
-                        printf("Copied row. New row %d [dest day = %d source day j = %d source row i = %d]\n", k, day, j, i);
+                        //printf("Copied row. New row %d [dest day = %d source day j = %d source row i = %d]\n", k, day, j, i);
                     }
                 }
              }
@@ -1022,11 +1024,11 @@ bool schedule_row_valid(int row)
     bool valid = true;
 
 
-    if ((row < 0) || (row > 15))
+    if ((row < 0) || (row > NUM_ROWS(config.setpoint_start_mow)))
     {
         valid = false;
     }
-    else if ((config.thermostat_period_start_mow[row] < 0) ||  (config.thermostat_period_start_mow[row] > (60*24*7))) 
+    else if ((config.setpoint_start_mow[row] < 0) ||  (config.setpoint_start_mow[row] > (60*24*7))) 
     {
         valid = false;
     }
@@ -1035,7 +1037,7 @@ bool schedule_row_valid(int row)
         valid = false;
     }    
 
-    printf("ROW %d mow = %d temp = %d %s\n", row, config.thermostat_period_start_mow[row], config.setpoint_temperaturex10[row], valid?"TRUE":"FALSE");
+    //printf("ROW %d mow = %d temp = %d %s\n", row, config.setpoint_start_mow[row], config.setpoint_temperaturex10[row], valid?"TRUE":"FALSE");
 
     return(valid);
 }
@@ -1050,7 +1052,7 @@ int get_free_schedule_row(void)
     int i = 0;
     bool found = false;
 
-    for(i=0; i<16; i++)
+    for(i=0; i<NUM_ROWS(config.setpoint_start_mow); i++)
     {
         if (!schedule_row_valid(i))
         {

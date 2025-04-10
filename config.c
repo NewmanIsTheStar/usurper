@@ -29,6 +29,7 @@ void config_v1_to_v2(void);
 void config_v2_to_v3(void);
 void config_v3_to_v4(void);
 void config_v4_to_v5(void);
+void config_v5_to_v6(void);
 
 
 NON_VOL_VARIABLES_T config;
@@ -39,7 +40,8 @@ static NON_VOL_CONVERSION_T config_info[] =
     {2,      offsetof(NON_VOL_VARIABLES_T_VERSION_2, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_2, crc),   &config_v1_to_v2}, 
     {3,      offsetof(NON_VOL_VARIABLES_T_VERSION_3, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_3, crc),   &config_v2_to_v3}, 
     {4,      offsetof(NON_VOL_VARIABLES_T_VERSION_4, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_4, crc),   &config_v3_to_v4},  
-    {5,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v4_to_v5},        
+    {5,      offsetof(NON_VOL_VARIABLES_T_VERSION_5, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_5, crc),   &config_v4_to_v5}, 
+    {6,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v5_to_v6},             
 };
 
 
@@ -221,6 +223,71 @@ void config_v4_to_v5(void)
     printf("Converting configuration from version 4 to version 5\n"); 
     config.version = 5;     
 
+    // v5 is now defunct -- all new parameters will be initialized on upgrade to v6
+
+
+    // config.thermostat_enable = 0;
+    // config.heating_gpio = -1;
+    // config.cooling_gpio = -1;
+    // config.fan_gpio = -1;
+    // config.heating_to_cooling_lockout_mins = 1;
+    // config.minimum_heating_on_mins = 1;
+    // config.minimum_cooling_on_mins = 1;
+    // config.minimum_heating_off_mins = 1;
+    // config.minimum_cooling_off_mins = 1;
+
+    // for(i=0; i<NUM_ROWS(config.thermostat_period_end_mow); i++)
+    // {
+    //     config.setpoint_start_mow[i] = -1;
+    //     config.thermostat_period_end_mow[i] = 0;
+    //     config.thermostat_period_setpoint_index[i] = 0;
+    //     config.thermostat_period_number = i;
+    // }
+
+    // for(i=0; i<NUM_ROWS(config.setpoint_name); i++)
+    // {
+    //     config.setpoint_name[i][0] = 0;
+    //     config.setpoint_temperaturex10[i] = 21;
+    //     config.setpoint_number = i;
+
+    //     sprintf(config.setpoint_name[i], "Setpoint%d", i);
+    // }
+
+    // config.powerwall_ip[0] = 0;
+    // STRNCPY(config.powerwall_hostname, "powerwall", sizeof(config.powerwall_hostname));
+    // config.powerwall_password[0] = 0;
+
+    // config.grid_down_heating_setpoint_decrease = 10;
+    // config.grid_down_cooling_setpoint_increase = 10;
+    // config.grid_down_heating_disable_battery_level = 40;
+    // config.grid_down_heating_enable_battery_level = 60;
+    // config.grid_down_cooling_disable_battery_level = 70;
+    // config.grid_down_cooling_enable_battery_level = 90;
+
+    // for(i=0; i<NUM_ROWS(config.gpio_default); i++)
+    // {
+    //     config.gpio_default[i] = GP_UNINITIALIZED;
+    // }
+}
+
+/*!
+ * \brief Convert configuration from v4 to v5 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v5_to_v6(void)
+{
+    int i = 0;
+    int j = 0;
+
+    printf("Converting configuration from version 5 to version 6\n"); 
+    config.version = 6;     
+
+    for(i=0; i<NUM_ROWS(config.gpio_default); i++)
+    {
+        config.gpio_default[i] = GP_UNINITIALIZED;
+    }
+
     config.thermostat_enable = 0;
     config.heating_gpio = -1;
     config.cooling_gpio = -1;
@@ -230,22 +297,13 @@ void config_v4_to_v5(void)
     config.minimum_cooling_on_mins = 1;
     config.minimum_heating_off_mins = 1;
     config.minimum_cooling_off_mins = 1;
+    config.thermostat_mode = 0;
+    config.max_cycles_per_hour = 6;
 
-    for(i=0; i<NUM_ROWS(config.thermostat_period_end_mow); i++)
+    for(i=0; i<NUM_ROWS(config.setpoint_temperaturex10); i++)
     {
-        config.thermostat_period_start_mow[i] = -1;
-        config.thermostat_period_end_mow[i] = 0;
-        config.thermostat_period_setpoint_index[i] = 0;
-        config.thermostat_period_number = i;
-    }
-
-    for(i=0; i<NUM_ROWS(config.setpoint_name); i++)
-    {
-        config.setpoint_name[i][0] = 0;
+        config.setpoint_start_mow[i] = -1;
         config.setpoint_temperaturex10[i] = 21;
-        config.setpoint_number = i;
-
-        sprintf(config.setpoint_name[i], "Setpoint%d", i);
     }
 
     config.powerwall_ip[0] = 0;
@@ -259,10 +317,6 @@ void config_v4_to_v5(void)
     config.grid_down_cooling_disable_battery_level = 70;
     config.grid_down_cooling_enable_battery_level = 90;
 
-    for(i=0; i<NUM_ROWS(config.gpio_default); i++)
-    {
-        config.gpio_default[i] = GP_UNINITIALIZED;
-    }
 }
 
 

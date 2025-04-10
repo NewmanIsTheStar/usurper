@@ -159,11 +159,107 @@ body {
         <a href="/tp_edit.cgi?x=15">   <button style="width:13%">Edit</button></a> 
         <a href="/tp_delete.cgi?x=15">   <button style="width:13%">Delete</button></a>           
       </div>
+      <div class="form-group" <!--#ts17vz--> >
+        <label for="events17"><!--#ts17st--> </label>
+        <label for="eventi17">&nbsp;&nbsp;<!--#sp17tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=16">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=16">   <button style="width:13%">Delete</button></a>           
+      </div>  
+      <div class="form-group" <!--#ts18vz--> >
+        <label for="events18"><!--#ts18st--> </label>
+        <label for="eventi18">&nbsp;&nbsp;<!--#sp18tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=17">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=17">   <button style="width:13%">Delete</button></a>           
+      </div>            
+      <div class="form-group" <!--#ts19vz--> >
+        <label for="events19"><!--#ts19st--> </label>
+        <label for="eventi19">&nbsp;&nbsp;<!--#sp19tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=18">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=18">   <button style="width:13%">Delete</button></a>           
+      </div>        
+      <div class="form-group" <!--#ts20vz--> >
+        <label for="events20"><!--#ts20st--> </label>
+        <label for="eventi20">&nbsp;&nbsp;<!--#sp20tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=19">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=19">   <button style="width:13%">Delete</button></a>           
+      </div>   
+      <div class="form-group" <!--#ts21vz--> >
+        <label for="events21"><!--#ts21st--> </label>
+        <label for="eventi21">&nbsp;&nbsp;<!--#sp21tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=20">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=20">   <button style="width:13%">Delete</button></a>           
+      </div> 
+      <div class="form-group" <!--#ts22vz--> >
+        <label for="events22"><!--#ts22st--> </label>
+        <label for="eventi22">&nbsp;&nbsp;<!--#sp22tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=21">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=21">   <button style="width:13%">Delete</button></a>           
+      </div> 
+      <div class="form-group" <!--#ts23vz--> >
+        <label for="events23"><!--#ts23st--> </label>
+        <label for="eventi23">&nbsp;&nbsp;<!--#sp23tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=22">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=22">   <button style="width:13%">Delete</button></a>           
+      </div>   
+      <div class="form-group" <!--#ts24vz--> >
+        <label for="events24"><!--#ts24st--> </label>
+        <label for="eventi24">&nbsp;&nbsp;<!--#sp24tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=23">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=23">   <button style="width:13%">Delete</button></a>           
+      </div> 
+      <div class="form-group" <!--#ts25vz--> >
+        <label for="events25"><!--#ts25st--> </label>
+        <label for="eventi25">&nbsp;&nbsp;<!--#sp25tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=24">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=24">   <button style="width:13%">Delete</button></a>           
+      </div>    
+      <div class="form-group" <!--#ts26vz--> >
+        <label for="events26"><!--#ts26st--> </label>
+        <label for="eventi26">&nbsp;&nbsp;<!--#sp26tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=25">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=25">   <button style="width:13%">Delete</button></a>           
+      </div>  
+      <div class="form-group" <!--#ts27vz--> >
+        <label for="events27"><!--#ts27st--> </label>
+        <label for="eventi27">&nbsp;&nbsp;<!--#sp27tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=26">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=26">   <button style="width:13%">Delete</button></a>           
+      </div>   
+      <div class="form-group" <!--#ts28vz--> >
+        <label for="events28"><!--#ts28st--> </label>
+        <label for="eventi28">&nbsp;&nbsp;<!--#sp28tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=27">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=27">   <button style="width:13%">Delete</button></a>           
+      </div>    
+      <div class="form-group" <!--#ts29vz--> >
+        <label for="events29"><!--#ts29st--> </label>
+        <label for="eventi29">&nbsp;&nbsp;<!--#sp29tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=28">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=28">   <button style="width:13%">Delete</button></a>           
+      </div>  
+      <div class="form-group" <!--#ts30vz--> >
+        <label for="events30"><!--#ts30st--> </label>
+        <label for="eventi30">&nbsp;&nbsp;<!--#sp30tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=29">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=29">   <button style="width:13%">Delete</button></a>           
+      </div>   
+      <div class="form-group" <!--#ts31vz--> >
+        <label for="events31"><!--#ts31st--> </label>
+        <label for="eventi31">&nbsp;&nbsp;<!--#sp31tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=30">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=30">   <button style="width:13%">Delete</button></a>           
+      </div> 
+      <div class="form-group" <!--#ts32vz--> >
+        <label for="events32"><!--#ts32st--> </label>
+        <label for="eventi32">&nbsp;&nbsp;<!--#sp32tmp--> &deg;<!--#tmpu--> </label>
+        <a href="/tp_edit.cgi?x=31">   <button style="width:13%">Edit</button></a> 
+        <a href="/tp_delete.cgi?x=31">   <button style="width:13%">Delete</button></a>           
+      </div>                                                                   
       <div class="form-group" <!--#tsaddvz--> >
         <a href="/tp_add.cgi?x=99">   <button style="width:13%">Add</button></a>       
       </div>      
   </fieldset> 
-  <a href="/t_copy.shtml">   <button style="width:13%">Copy schedule to another day</button></a> 
+  <a href="/t_copy.shtml">   <button style="width:13%">Copy to another day</button></a> 
 </div>
 </body>
 </html> 

@@ -293,6 +293,22 @@ extern NON_VOL_VARIABLES_T config;
     x(sp14tmp)    \
     x(sp15tmp)    \
     x(sp16tmp)    \
+    x(sp17tmp)    \
+    x(sp18tmp)    \
+    x(sp19tmp)    \
+    x(sp20tmp)    \
+    x(sp21tmp)    \
+    x(sp22tmp)    \
+    x(sp23tmp)    \
+    x(sp24tmp)    \
+    x(sp25tmp)    \
+    x(sp26tmp)    \
+    x(sp27tmp)    \
+    x(sp28tmp)    \
+    x(sp29tmp)    \
+    x(sp30tmp)    \
+    x(sp31tmp)    \
+    x(sp32tmp)    \
     x(ts1st)    \
     x(ts2st)    \
     x(ts3st)    \
@@ -309,6 +325,22 @@ extern NON_VOL_VARIABLES_T config;
     x(ts14st)    \
     x(ts15st)    \
     x(ts16st)    \
+    x(ts17st)    \
+    x(ts18st)    \
+    x(ts19st)    \
+    x(ts20st)    \
+    x(ts21st)    \
+    x(ts22st)    \
+    x(ts23st)    \
+    x(ts24st)    \
+    x(ts25st)    \
+    x(ts26st)    \
+    x(ts27st)    \
+    x(ts28st)    \
+    x(ts29st)    \
+    x(ts30st)    \
+    x(ts31st)    \
+    x(ts32st)    \
     x(ts1en)    \
     x(ts2en)    \
     x(ts3en)    \
@@ -341,6 +373,22 @@ extern NON_VOL_VARIABLES_T config;
     x(ts14vz)    \
     x(ts15vz)    \
     x(ts16vz)   \
+    x(ts17vz)   \
+    x(ts18vz)   \
+    x(ts19vz)   \
+    x(ts20vz)   \
+    x(ts21vz)   \
+    x(ts22vz)   \
+    x(ts23vz)   \
+    x(ts24vz)   \
+    x(ts25vz)   \
+    x(ts26vz)   \
+    x(ts27vz)   \
+    x(ts28vz)   \
+    x(ts29vz)   \
+    x(ts30vz)   \
+    x(ts31vz)   \
+    x(ts32vz)   \
     x(ts1in)    \
     x(ts2in)    \
     x(ts3in)    \
@@ -1363,7 +1411,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_sp15nme: //sp15nme
         case SSI_sp16nme: //sp16nme
         {
-            printed = snprintf(pcInsert, iInsertLen, "%s", config.setpoint_name[iIndex-SSI_sp1nme]); 
+            //printed = snprintf(pcInsert, iInsertLen, "%s", config.setpoint_name[iIndex-SSI_sp1nme]); 
+            printf("error - setpoint_name is not longer supported\n");
         }                     
         break; 
         case SSI_sp1tmp: //sp1tmp
@@ -1382,6 +1431,22 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_sp14tmp: //sp14tmp
         case SSI_sp15tmp: //sp15tmp
         case SSI_sp16tmp: //sp16tmp
+        case SSI_sp17tmp:
+        case SSI_sp18tmp:
+        case SSI_sp19tmp:
+        case SSI_sp20tmp:
+        case SSI_sp21tmp:
+        case SSI_sp22tmp:
+        case SSI_sp23tmp:
+        case SSI_sp24tmp:
+        case SSI_sp25tmp:
+        case SSI_sp26tmp:
+        case SSI_sp27tmp:
+        case SSI_sp28tmp:
+        case SSI_sp29tmp:
+        case SSI_sp30tmp:
+        case SSI_sp31tmp:
+        case SSI_sp32tmp:                
         {
             printed = snprintf(pcInsert, iInsertLen, "%d", config.setpoint_temperaturex10[iIndex-SSI_sp1tmp]/10); 
 
@@ -1408,9 +1473,25 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_ts14st:
         case SSI_ts15st:
         case SSI_ts16st:
+        case SSI_ts17st:
+        case SSI_ts18st:
+        case SSI_ts19st:
+        case SSI_ts20st:
+        case SSI_ts21st:
+        case SSI_ts22st:
+        case SSI_ts23st:
+        case SSI_ts24st:
+        case SSI_ts25st:
+        case SSI_ts26st:
+        case SSI_ts27st:
+        case SSI_ts28st:
+        case SSI_ts29st:
+        case SSI_ts30st:
+        case SSI_ts31st:
+        case SSI_ts32st:                        
         {
-            //printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[iIndex-SSI_ts1st]);
-            printed = mow_to_time_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[iIndex-SSI_ts1st]);            
+            //printed = mow_to_string(pcInsert, iInsertLen, config.setpoint_start_mow[iIndex-SSI_ts1st]);
+            printed = mow_to_time_string(pcInsert, iInsertLen, config.setpoint_start_mow[iIndex-SSI_ts1st]);            
         }
         break; 
         case SSI_ts1en:
@@ -1431,7 +1512,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_ts16en:
         {
             //printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_period_end_mow[iIndex-SSI_ts1en]); 
-            printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_end_mow[iIndex-SSI_ts1en]);
+            //printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_end_mow[iIndex-SSI_ts1en]);
+            printf("error - thermostat_period_end_mow is no longer supported\n");
         }
         break;                  
         case SSI_ts1vz:
@@ -1450,11 +1532,27 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_ts14vz:
         case SSI_ts15vz:
         case SSI_ts16vz:
+        case SSI_ts17vz:
+        case SSI_ts18vz:
+        case SSI_ts19vz:
+        case SSI_ts20vz:
+        case SSI_ts21vz:
+        case SSI_ts22vz:
+        case SSI_ts23vz:
+        case SSI_ts24vz:
+        case SSI_ts25vz:
+        case SSI_ts26vz:
+        case SSI_ts27vz:
+        case SSI_ts28vz:
+        case SSI_ts29vz:
+        case SSI_ts30vz:
+        case SSI_ts31vz:
+        case SSI_ts32vz:                        
         {
-            //printf("row = %d web.day= %d mow = %d dfm = %d\n", (iIndex-SSI_ts1vz)%16, web.thermostat_day, config.thermostat_period_start_mow[iIndex-SSI_ts1vz], get_day_from_mow(config.thermostat_period_start_mow[iIndex-SSI_ts1vz]));
+            //printf("row = %d web.day= %d mow = %d dfm = %d\n", (iIndex-SSI_ts1vz)%16, web.thermostat_day, config.setpoint_start_mow[iIndex-SSI_ts1vz], get_day_from_mow(config.setpoint_start_mow[iIndex-SSI_ts1vz]));
             //if ((iIndex-SSI_ts1vz)%16 >= config.thermostat_period_number)
-            if ((get_day_from_mow(config.thermostat_period_start_mow[iIndex-SSI_ts1vz]) != web.thermostat_day) ||
-                (config.thermostat_period_start_mow[iIndex-SSI_ts1vz] <0))
+            if ((get_day_from_mow(config.setpoint_start_mow[iIndex-SSI_ts1vz]) != web.thermostat_day) ||
+                (config.setpoint_start_mow[iIndex-SSI_ts1vz] <0))
             {     
                 printed = snprintf(pcInsert, iInsertLen, "style=\"display:none;\"");
             }
@@ -1482,7 +1580,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_ts16in:
         {
             //TODO RANGE CHECKING!!!
-            printed = snprintf(pcInsert, iInsertLen, "%s", config.setpoint_name[config.thermostat_period_setpoint_index[iIndex-SSI_ts1in]]); 
+            //printed = snprintf(pcInsert, iInsertLen, "%s", config.setpoint_name[config.thermostat_period_setpoint_index[iIndex-SSI_ts1in]]); 
+            printf("error - thermostat_period_setpoint_index is no longer supported\n");
         }
         break;                      
         case SSI_pwip:
@@ -1538,9 +1637,9 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;   
         case SSI_tpst:
         {
-            CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.thermostat_period_start_mow));
-            //printed = mow_to_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[web.thermostat_period_row]);
-            printed = mow_to_time_string(pcInsert, iInsertLen, config.thermostat_period_start_mow[web.thermostat_period_row]);            
+            CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_start_mow));
+            //printed = mow_to_string(pcInsert, iInsertLen, config.setpoint_start_mow[web.thermostat_period_row]);
+            printed = mow_to_time_string(pcInsert, iInsertLen, config.setpoint_start_mow[web.thermostat_period_row]);            
         }
         break; 
         case SSI_tptmp:
@@ -1551,9 +1650,9 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;         
         case SSI_tsaddvz:
         {
-            for(i=0; i < NUM_ROWS(config.thermostat_period_start_mow); i++)
+            for(i=0; i < NUM_ROWS(config.setpoint_start_mow); i++)
             {
-                if (config.thermostat_period_start_mow[i] < 0)
+                if (config.setpoint_start_mow[i] < 0)
                 {
                     new_thermostat_period_found = true;
                     break;
