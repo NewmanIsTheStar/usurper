@@ -194,19 +194,28 @@ void thermostat_task(void *params)
     // initialize data structures for climate metrics
     initialize_climate_metrics();
     
-    //initialize relay gpio
-    gpio_init(config.heating_gpio);
-    gpio_put(config.heating_gpio, 0);
-    gpio_set_dir(config.heating_gpio, true);
+    // check hvac gpios are valid
+    if (gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
+    {    
+        // check hvac gpios are unique
+        if ((config.heating_gpio != config.cooling_gpio) &&
+            (config.heating_gpio != config.fan_gpio) &&
+            (config.cooling_gpio != config.fan_gpio))
+        {
+            //initialize hvac gpios
+            gpio_init(config.heating_gpio);
+            gpio_put(config.heating_gpio, 0);
+            gpio_set_dir(config.heating_gpio, true);
 
-    gpio_init(config.cooling_gpio);
-    gpio_put(config.cooling_gpio, 0);
-    gpio_set_dir(config.cooling_gpio, true);  
-    
-    gpio_init(config.fan_gpio);
-    gpio_put(config.fan_gpio, 0);
-    gpio_set_dir(config.fan_gpio, true);    
-
+            gpio_init(config.cooling_gpio);
+            gpio_put(config.cooling_gpio, 0);
+            gpio_set_dir(config.cooling_gpio, true);  
+            
+            gpio_init(config.fan_gpio);
+            gpio_put(config.fan_gpio, 0);
+            gpio_set_dir(config.fan_gpio, true);
+        }  
+    }
     //TEST TEST TEST
     // gpio_init(21);    
     // gpio_put(21, 0);

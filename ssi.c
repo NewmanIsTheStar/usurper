@@ -483,8 +483,16 @@ extern NON_VOL_VARIABLES_T config;
     x(tg7_6) \
     x(tg7_7) \
     x(tct)   \
-    x(tcs)
-    
+    x(tcs)   \
+    x(thgpio) \
+    x(tcgpio) \
+    x(tfgpio) \
+    x(gpiou) \
+    x(gpioif) \
+    x(gpioih) \
+    x(gpioil) \
+    x(gpiooh) \
+    x(gpiool)
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
@@ -513,6 +521,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
     bool new_thermostat_period_found = false;
     int grid_x = 0;
     int grid_y = 0;
+    bool first_item_printed = false;
+    char gpio_list[192];
 
     switch(iIndex) {
         case SSI_usurped:  // usurped
@@ -1059,7 +1069,16 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                 printed = snprintf(pcInsert, iInsertLen, "/led_controller.shtml");
                 break;
             case HVAC_THERMOSTAT:
-                printed = snprintf(pcInsert, iInsertLen, "/thermostat.shtml");
+                if (config.use_monday_as_week_start)
+                {
+                    //printf("redirecting to landscape_monday.shtml\n");
+                    printed = snprintf(pcInsert, iInsertLen, "/tm_thermostat.shtml");
+                }
+                else
+                {
+                    //printf("redirecting to landscape.shtml\n");
+                    printed = snprintf(pcInsert, iInsertLen, "/ts_thermostat.shtml");
+                }            
                 break;                
             }
         }                                                                                                                                                   
@@ -1779,6 +1798,82 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         }
         break;
 #endif
+        case SSI_thgpio:
+        {
+            if (gpio_valid(config.heating_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.heating_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }
+        }
+        break;
+        case SSI_tcgpio:
+        {
+            if (gpio_valid(config.heating_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.cooling_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }            
+        }
+        break; 
+        case SSI_tfgpio:
+        {
+            if (gpio_valid(config.heating_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.fan_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }            
+        }
+        break;                  
+        case SSI_gpiou:
+        {
+            print_gpio_pins_matching_default(gpio_list, sizeof(gpio_list), GP_UNINITIALIZED);
+            printed = snprintf(pcInsert, iInsertLen, "%s", gpio_list);
+        }
+        break;  
+        case SSI_gpioif:
+        {
+
+            print_gpio_pins_matching_default(gpio_list, sizeof(gpio_list), GP_INPUT_FLOATING);
+            printed = snprintf(pcInsert, iInsertLen, "%s", gpio_list);
+        
+        }
+        break; 
+        case SSI_gpioih:
+        {
+               
+            print_gpio_pins_matching_default(gpio_list, sizeof(gpio_list), GP_INPUT_PULLED_HIGH);
+            printed = snprintf(pcInsert, iInsertLen, "%s", gpio_list);
+
+        }
+        break;   
+        case SSI_gpioil:
+        {            
+            print_gpio_pins_matching_default(gpio_list, sizeof(gpio_list), GP_INPUT_PULLED_LOW);
+            printed = snprintf(pcInsert, iInsertLen, "%s", gpio_list);        
+        }
+        break;          
+        case SSI_gpiooh:
+        {               
+            print_gpio_pins_matching_default(gpio_list, sizeof(gpio_list), GP_OUTPUT_HIGH);
+            printed = snprintf(pcInsert, iInsertLen, "%s", gpio_list);        
+        }
+        break; 
+        case SSI_gpiool:
+        {              
+            print_gpio_pins_matching_default(gpio_list, sizeof(gpio_list), GP_OUTPUT_LOW);
+            printed = snprintf(pcInsert, iInsertLen, "%s", gpio_list);       
+        }
+        break;                              
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    

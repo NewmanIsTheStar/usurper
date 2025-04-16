@@ -29,7 +29,6 @@
 #include "weather.h"
 #include "led_strip.h"
 #include "cgi.h"
-#include "ssi.h"
 #include "flash.h"
 #include "utility.h"
 #include "config.h"
@@ -39,6 +38,8 @@
 #include "calendar.h"
 
 #include "pluto.h"
+
+#include "ssi.h"
 #ifdef USE_GIT_HASH_AS_VERSION
 #include "githash.h"
 #endif
@@ -727,4 +728,80 @@ int set_gpio_defaults(void)
             break;            
         }
     }
+}
+
+
+/*!
+ * \brief print list of gpio pins with specified state
+ *
+ * \param none
+ *
+ * \return 0
+ */
+int print_gpio_pins_matching_default(char *buffer, int len, GPIO_DEFAULT_T gpio_default)
+{
+    int i;
+    bool first_item_printed = false;
+    int printed = 0;
+    int first_in_run = -1;
+    int next_in_run = -1;
+
+    if (len > 8)
+    {
+        buffer[0] = 0;
+        first_item_printed = false;
+        for(i=0; i<NUM_ROWS(config.gpio_default) && printed < (len-8); i++)
+        {
+            if (config.gpio_default[i] == gpio_default)
+            {                
+                if (!first_item_printed)
+                {
+                    printed += snprintf(buffer, len, "%d", i);
+                    first_item_printed = true;
+                    first_in_run = i;
+                    next_in_run = i+1;
+                }
+                else
+                {
+                    if ((first_in_run >= 0) && (i == next_in_run) && (i < (NUM_ROWS(config.gpio_default)-1))) // within in a run
+                    {
+                        next_in_run = i+1;
+                    }
+                    else if ((first_in_run >= 0) && (i != next_in_run) && (first_in_run+1 == next_in_run)) // end of single value run, start of new run
+                    {
+                        printed += snprintf(buffer+printed, len, "&#44; %d", i);
+                        first_in_run = i;
+                        next_in_run = i+1;
+                    } 
+                    else if ((first_in_run >= 0) && (i != next_in_run) && (first_in_run+1 != next_in_run)) // end of run, start of new run
+                    {
+                        printed += snprintf(buffer+printed, len, " - %d&#44; %d", next_in_run-1, i);
+                        first_in_run = i;
+                        next_in_run = i+1;
+                    }
+                    else if ((first_in_run >= 0) && (i == next_in_run) && (i == (NUM_ROWS(config.gpio_default)-1))) // end of list and end of run
+                    {
+                        printed += snprintf(buffer+printed, len, " - %d", i);
+                        first_in_run = -1;
+                        next_in_run = -1;
+                    }                    
+                    else
+                    {
+                        printed += snprintf(buffer+printed, len, "&#44; %d", i);
+                        first_in_run = i;
+                        next_in_run = i+1;
+                    }                        
+                }          
+            }
+        }
+
+        if (printed == 0)
+        {
+            printed += snprintf(buffer, len, "none");
+        }
+    }  
+    
+    //printed += snprintf(buffer, len, "mickey mouse");
+
+    return(printed);
 }

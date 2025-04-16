@@ -54,7 +54,7 @@ body {
   </div>
 
 <div class="main">
-  <h2>Personality Setting</h2>     
+  <h2>Wifi Setting</h2>     
   <form action="/wificountry.cgi">           
       <label for="wific">Select Country</label><br>
       <select name="wific" id="wific" style="font-size: 28px;">                

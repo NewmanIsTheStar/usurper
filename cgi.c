@@ -3,11 +3,17 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include "hardware/watchdog.h"
+
+ #define _GNU_SOURCE
+ 
+#include "pico/cyw43_arch.h"
+#include "pico/types.h"
+#include "pico/stdlib.h"
+#include <string.h>
+
+ #include "hardware/watchdog.h"
 
 #include "lwip/apps/httpd.h"
-#include "pico/cyw43_arch.h"
-
 #include "lwip/sockets.h"
 
 #include "time.h"
@@ -2718,6 +2724,90 @@ const char * cgi_thermostat_copy_handler(int iIndex, int iNumParams, char *pcPar
     return "/t_schedule.shtml";    
 }
 
+
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_thermostat_gpio_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int len = 0;
+    int temp = 0;
+       
+
+    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            printf("Parameter: %s has Value: %s\n", param, value);    
+
+            len = strlen(param);
+
+            if (strcasecmp("thgpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.heating_gpio = temp;
+                    }
+                }                
+            }     
+            
+            if (strcasecmp("tcgpio", param) == 0)
+            { 
+                if (!strcasestr(value, "none"))
+                {                 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.cooling_gpio = temp;
+                    } 
+                }               
+            }    
+            
+            if (strcasecmp("tfgpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.fan_gpio = temp;
+                    }    
+                }            
+            }              
+        }
+        i++;
+    }
+
+    // write config changes to flash
+    config_changed();
+ 
+    // Send the next page back to the user
+    return "/t_gpio.shtml";    
+}
+
+
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
     {"/schedule.cgi",                   cgi_schedule_handler},
@@ -2763,6 +2853,7 @@ static const tCGI cgi_handlers[] = {
     {"/t_schedule.cgi",                 cgi_thermostat_schedule_handler}, 
     {"/powerwall.cgi",                  cgi_powerwall_handler},   
     {"/t_copy.cgi",                     cgi_thermostat_copy_handler},
+    {"/t_gpio.cgi",                     cgi_thermostat_gpio_handler},    
 };
 
 /*!

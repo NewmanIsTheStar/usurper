@@ -162,3 +162,13 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
         DEPENDS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio
         COMMAND Pioasm -o python ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
         VERBATIM)
+
+# TODO -- rebuild modified html without running cmake again
+# pico_set_lwip_httpd_content(pico_httpd_content INTERFACE
+# ${CMAKE_CURRENT_LIST_DIR}/html_files/index.shtml
+# ${CMAKE_CURRENT_LIST_DIR}/html_files/config.shtml
+# ${CMAKE_CURRENT_LIST_DIR}/html_files/page2.shtml
+# ${CMAKE_CURRENT_LIST_DIR}/html_files/ip_config.js
+# ${CMAKE_CURRENT_LIST_DIR}/html_files/sprajax.js
+# ${CMAKE_CURRENT_LIST_DIR}/html_files/favicon.ico
+# )

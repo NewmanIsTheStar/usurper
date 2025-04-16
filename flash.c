@@ -15,6 +15,7 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 
+#include "config.h"
 #include "pluto.h"
 #include "utility.h"
 #include "config.h"

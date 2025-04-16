@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  input[type='password'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>    
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>GPIO Default Setting</h2>     
+  <p>UNINITIALIZED = <!--#gpiou--></p>
+  <p>INPUT_FLOATING = <!--#gpioif--></p>  
+  <p>INPUT_PULLED_HIGH = <!--#gpioih--></p>  
+  <p>INPUT_PULLED_LOW = <!--#gpioil--></p>  
+  <p>OUTPUT_HIGH = <!--#gpiooh--></p>  
+  <p>OUTPUT_LOW = <!--#gpiool--></p>  
+  <br>  
+  <form action="/gpio_default.cgi">           
+      <label for="gpion">Select GPIO to alter</label><br>
+      <select name="gpion" id="gpion" style="font-size: 28px;">                
+        <option value="0">GPIO0</option>
+        <option value="1">GPIO1</option>
+        <option value="2">GPIO2</option>
+        <option value="3">GPIO3</option>
+        <option value="4">GPIO4</option>
+        <option value="5">GPIO5</option>
+        <option value="6">GPIO6</option>
+        <option value="7">GPIO7</option>
+        <option value="8">GPIO8</option>
+        <option value="9">GPIO9</option>
+        <option value="10">GPIO10</option>
+        <option value="11">GPIO11</option>
+        <option value="12">GPIO12</option>
+        <option value="13">GPIO13</option>
+        <option value="14">GPIO14</option>
+        <option value="15">GPIO15</option>
+        <option value="16">GPIO16</option>
+        <option value="17">GPIO17</option>
+        <option value="18">GPIO18</option>
+        <option value="19">GPIO19</option>
+        <option value="20">GPIO20</option>
+        <option value="21">GPIO21</option>
+        <option value="22">GPIO22</option>
+        <option value="23">GPIO23</option>
+        <option value="24">GPIO24</option>
+        <option value="25">GPIO25</option>
+        <option value="26">GPIO26</option>
+        <option value="27">GPIO27</option>
+        <option value="28">GPIO28</option>        
+      </select> 
+      <br>
+      <label for="gpiov">Select new default value</label><br>
+      <select name="gpiov" id="gpiov" style="font-size: 28px;">                      
+        <option value="0">UNINITIALIZED</option>
+        <option value="1">INPUT_FLOATING</option>
+        <option value="2">INPUT_PULLED_HIGH</option>
+        <option value="3">INPUT_PULLED_LOW</option>
+        <option value="4">OUTPUT_HIGH</option>
+        <option value="5">OUTPUT_LOW</option>  
+      </select>                                            
+      <br><br><br>
+      <input type="submit" value="Save" style="font-size: 25px;">
+  </form> 
+  <br>  
+</div>
+   
+</body>
+</html> 
+
+
+ 

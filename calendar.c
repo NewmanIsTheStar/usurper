@@ -29,9 +29,11 @@
 #include "weather.h"
 #include "calendar.h"
 #include "cgi.h"
-#include "ssi.h"
+
 #include "flash.h"
+#include "config.h"
 #include "pluto.h"
+#include "ssi.h"
 #include "time.h"
 #include "utility.h"
 #include "config.h"
@@ -728,7 +730,14 @@ int set_calendar_html_page(void)
          STRNCPY(current_calendar_web_page, "/led_controller.shtml", sizeof(current_calendar_web_page)); 
          break;
    case HVAC_THERMOSTAT:
-         STRNCPY(current_calendar_web_page, "/thermostat.shtml", sizeof(current_calendar_web_page)); 
+         if (config.use_monday_as_week_start)
+         {
+            STRNCPY(current_calendar_web_page, "/tm_thermostat.shtml", sizeof(current_calendar_web_page));           
+         }
+         else
+         {
+            STRNCPY(current_calendar_web_page, "/ts_thermostat.shtml", sizeof(current_calendar_web_page)); 
+         }         
          break;         
    }
 
