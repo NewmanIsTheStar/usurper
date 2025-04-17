@@ -753,7 +753,7 @@ int print_gpio_pins_matching_default(char *buffer, int len, GPIO_DEFAULT_T gpio_
         for(i=0; i<NUM_ROWS(config.gpio_default) && printed < (len-8); i++)
         {
             if (config.gpio_default[i] == gpio_default)
-            {                
+            {               
                 if (!first_item_printed)
                 {
                     printed += snprintf(buffer, len, "%d", i);
@@ -793,6 +793,17 @@ int print_gpio_pins_matching_default(char *buffer, int len, GPIO_DEFAULT_T gpio_
                     }                        
                 }          
             }
+            else if ((first_in_run >= 0) && (first_in_run+1 != next_in_run)) // end of run with more than one value
+            {
+                printed += snprintf(buffer+printed, len, " - %d", next_in_run-1);
+                first_in_run = -1;
+                next_in_run = -1;                
+            }
+            else if ((first_in_run >= 0)) // end of run with a single value
+            {
+                first_in_run = -1;
+                next_in_run = -1;                
+            }            
         }
 
         if (printed == 0)
@@ -800,8 +811,6 @@ int print_gpio_pins_matching_default(char *buffer, int len, GPIO_DEFAULT_T gpio_
             printed += snprintf(buffer, len, "none");
         }
     }  
-    
-    //printed += snprintf(buffer, len, "mickey mouse");
 
     return(printed);
 }

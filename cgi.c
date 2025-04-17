@@ -809,7 +809,7 @@ const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *
 
             if (strcasecmp("liu", param) == 0)
             {
-                sscanf(value, "%d", &config.led_pattern_when_irrigation_usurped);             
+                sscanf(value, "%d", &config.led_pattern_when_irrigation_terminated);             
             }  
 
             if (strcasecmp("lis", param) == 0)
@@ -1870,7 +1870,7 @@ const char * cgi_led_pattern_handler(int iIndex, int iNumParams, char *pcParam[]
             break;
         case 1:
             printf("skipped pattern = %d\n", new_pattern);
-            config.led_pattern_when_irrigation_usurped = new_pattern;
+            config.led_pattern_when_irrigation_terminated = new_pattern;
             pattern_set = true;            
             break;
         case 2:
@@ -2807,6 +2807,78 @@ const char * cgi_thermostat_gpio_handler(int iIndex, int iNumParams, char *pcPar
     return "/t_gpio.shtml";    
 }
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_gpio_default_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int len = 0;
+    int temp = 0;
+    int gpio_number = -1;
+    int gpio_value = -1;
+       
+
+    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            printf("Parameter: %s has Value: %s\n", param, value);    
+
+            len = strlen(param);
+
+            if (strcasecmp("gpion", param) == 0)
+            {
+                sscanf(value, "%d", &gpio_number);
+            }                
+               
+            if (strcasecmp("gpiov", param) == 0)
+            {
+                sscanf(value, "%d", &gpio_value);
+            }                
+        }
+        i++;
+    }
+
+    if (gpio_valid(gpio_number))
+    {
+        switch(gpio_value)
+        {
+            default:
+                break;
+            case GP_UNINITIALIZED:       
+            case GP_INPUT_FLOATING:          
+            case GP_INPUT_PULLED_HIGH:          
+            case GP_INPUT_PULLED_LOW:
+            case GP_OUTPUT_HIGH:
+            case GP_OUTPUT_LOW:
+                config.gpio_default[gpio_number] = gpio_value;
+                break;
+        }
+    }
+
+    // write config changes to flash
+    config_changed();
+ 
+    // Send the next page back to the user
+    return "/gpio_defaults.shtml";    
+}
+
 
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
@@ -2853,7 +2925,9 @@ static const tCGI cgi_handlers[] = {
     {"/t_schedule.cgi",                 cgi_thermostat_schedule_handler}, 
     {"/powerwall.cgi",                  cgi_powerwall_handler},   
     {"/t_copy.cgi",                     cgi_thermostat_copy_handler},
-    {"/t_gpio.cgi",                     cgi_thermostat_gpio_handler},    
+    {"/t_gpio.cgi",                     cgi_thermostat_gpio_handler},   
+    {"/gpio_default.cgi",               cgi_gpio_default_handler},     
+     
 };
 
 /*!

@@ -897,7 +897,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break; 
         case SSI_liu: //liu
         {
-            printed = snprintf(pcInsert, iInsertLen, "%s", get_pattern_name(config.led_pattern_when_irrigation_usurped));            
+            printed = snprintf(pcInsert, iInsertLen, "%s", get_pattern_name(config.led_pattern_when_irrigation_terminated));            
         }
         break; 
         case SSI_lis: //lis

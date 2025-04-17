@@ -95,7 +95,7 @@ typedef struct
     int led_rgbw;
     int use_led_strip_to_indicate_irrigation_status;
     int led_pattern_when_irrigation_active;
-    int led_pattern_when_irrigation_usurped;
+    int led_pattern_when_irrigation_terminated;
     int led_sustain_duration; 
     int led_strip_remote_enable;  
     char led_strip_remote_ip[6][32];  
@@ -190,7 +190,7 @@ typedef struct
     int led_rgbw;
     int use_led_strip_to_indicate_irrigation_status;
     int led_pattern_when_irrigation_active;
-    int led_pattern_when_irrigation_usurped;
+    int led_pattern_when_irrigation_terminated;
     int led_sustain_duration; 
     int led_strip_remote_enable;  
     char led_strip_remote_ip[6][32];  
@@ -249,7 +249,7 @@ typedef struct
     int led_rgbw;
     int use_led_strip_to_indicate_irrigation_status;
     int led_pattern_when_irrigation_active;
-    int led_pattern_when_irrigation_usurped;
+    int led_pattern_when_irrigation_terminated;
     int led_sustain_duration; 
     int led_strip_remote_enable;  
     char led_strip_remote_ip[6][32];  
@@ -309,7 +309,7 @@ typedef struct
     int led_rgbw;
     int use_led_strip_to_indicate_irrigation_status;
     int led_pattern_when_irrigation_active;
-    int led_pattern_when_irrigation_usurped;
+    int led_pattern_when_irrigation_terminated;
     int led_sustain_duration; 
     int led_strip_remote_enable;  
     char led_strip_remote_ip[6][32];  
@@ -374,7 +374,7 @@ typedef struct
     int led_rgbw;
     int use_led_strip_to_indicate_irrigation_status;
     int led_pattern_when_irrigation_active;
-    int led_pattern_when_irrigation_usurped;
+    int led_pattern_when_irrigation_terminated;
     int led_sustain_duration; 
     int led_strip_remote_enable;  
     char led_strip_remote_ip[6][32];  
@@ -439,7 +439,7 @@ typedef struct
     int led_rgbw;
     int use_led_strip_to_indicate_irrigation_status;
     int led_pattern_when_irrigation_active;
-    int led_pattern_when_irrigation_usurped;
+    int led_pattern_when_irrigation_terminated;
     int led_sustain_duration; 
     int led_strip_remote_enable;  
     char led_strip_remote_ip[6][32];  

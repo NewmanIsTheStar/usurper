@@ -111,7 +111,7 @@ void config_blank_to_v1(void)
     config.led_number = 0;
     config.led_pattern = 0;
     config.led_pattern_when_irrigation_active = 0;
-    config.led_pattern_when_irrigation_usurped = 0;    
+    config.led_pattern_when_irrigation_terminated = 0;    
     config.led_speed = 100;
     config.led_rgbw = 0;
     config.led_pin = 7;

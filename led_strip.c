@@ -149,7 +149,7 @@ void led_strip_task(void *params)
             {
                 CLIP(config.led_pattern , 0, count_of(pattern_table));
                 CLIP(config.led_pattern_when_irrigation_active , 0, count_of(pattern_table));
-                CLIP(config.led_pattern_when_irrigation_usurped , 0, count_of(pattern_table));
+                CLIP(config.led_pattern_when_irrigation_terminated , 0, count_of(pattern_table));
                 CLIP(live_pattern, 0, count_of(pattern_table));
 
                 CLIP(config.led_speed, 0, 30000);

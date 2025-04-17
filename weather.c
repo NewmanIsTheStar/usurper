@@ -983,7 +983,7 @@ int control_led_strip(IRRIGATION_STATE_T irrigation_state, bool reset)
             break;
         case LIGHT_TERMINATED:
             //set_led_pattern(config.led_pattern_when_irrigation_usurped);
-            set_led_strips(config.led_pattern_when_irrigation_usurped, config.led_speed);            
+            set_led_strips(config.led_pattern_when_irrigation_terminated, config.led_speed);            
             break;
         case LIGHT_SUSTAIN:
             // check if we are starting a sustain period
