@@ -492,7 +492,13 @@ extern NON_VOL_VARIABLES_T config;
     x(gpioih) \
     x(gpioil) \
     x(gpiooh) \
-    x(gpiool)
+    x(gpiool) \
+    x(tsadr1)    \
+    x(tsadr2)    \
+    x(tsadr3)    \
+    x(tsadr4)    \
+    x(tsadr5)    \
+    x(tsadr6)        
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
@@ -1873,7 +1879,17 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             print_gpio_pins_matching_default(gpio_list, sizeof(gpio_list), GP_OUTPUT_LOW);
             printed = snprintf(pcInsert, iInsertLen, "%s", gpio_list);       
         }
-        break;                              
+        break;
+        case SSI_tsadr1: //tsdar1
+        case SSI_tsadr2: //tsdar2
+        case SSI_tsadr3: //tsdar3
+        case SSI_tsadr4: //tsdar4
+        case SSI_tsadr5: //tsdar5
+        case SSI_tsadr6: //tsdar6               
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.temperature_sensor_remote_ip[iIndex-SSI_tsadr1]); 
+        }                     
+        break;                                       
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    

@@ -147,6 +147,7 @@ typedef struct
     int grid_down_heating_enable_battery_level;
     int grid_down_cooling_disable_battery_level;
     int grid_down_cooling_enable_battery_level;    
+    char temperature_sensor_remote_ip[6][32]; 
     uint16_t crc;
 } NON_VOL_VARIABLES_T;
 

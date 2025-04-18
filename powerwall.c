@@ -241,7 +241,7 @@ void powerwall_poll(void)
 
             if (json_get_value("root.\"token\"", authorization_token, sizeof(authorization_token), false))
             {
-                printf("login failed.");
+                printf("Powerwall login failed.\n");
 
                 // tear down connection
                 tear_down(pcb);
@@ -467,6 +467,8 @@ void powerwall_check(void)
     if ((now - last_poll) > 1000*60*15)
     {
         powerwall_poll();
+
+        last_poll = now;
     }
 }
 

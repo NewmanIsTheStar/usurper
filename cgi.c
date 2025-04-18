@@ -2879,6 +2879,70 @@ const char * cgi_gpio_default_handler(int iIndex, int iNumParams, char *pcParam[
     return "/gpio_defaults.shtml";    
 }
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_temperature_sensors(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+       
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    // set off by default
+    config.led_strip_remote_enable  = 0; 
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            //printf("Parameter: %s has Value: %s\n", param, value);
+
+            if (strcasecmp("tsadr1", param) == 0)
+            {
+                STRNCPY(config.temperature_sensor_remote_ip[0], value, sizeof(config.temperature_sensor_remote_ip[0]));
+            }
+            if (strcasecmp("tsadr2", param) == 0)
+            {
+                STRNCPY(config.temperature_sensor_remote_ip[1], value, sizeof(config.temperature_sensor_remote_ip[1]));
+            }
+            if (strcasecmp("tsadr3", param) == 0)
+            {
+                STRNCPY(config.temperature_sensor_remote_ip[2], value, sizeof(config.temperature_sensor_remote_ip[2]));
+            }
+            if (strcasecmp("tsadr4", param) == 0)
+            {
+                STRNCPY(config.temperature_sensor_remote_ip[3], value, sizeof(config.temperature_sensor_remote_ip[3]));
+            }
+            if (strcasecmp("tsadr5", param) == 0)
+            {
+                STRNCPY(config.temperature_sensor_remote_ip[4], value, sizeof(config.temperature_sensor_remote_ip[4]));
+            }
+            if (strcasecmp("tsadr6", param) == 0)
+            {
+                STRNCPY(config.temperature_sensor_remote_ip[5], value, sizeof(config.temperature_sensor_remote_ip[5]));
+            }
+        }
+
+        i++;
+    }
+
+    // Send the next page back to the user
+    config_changed();
+    return "/t_sensors.shtml";
+}
 
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
@@ -2926,7 +2990,8 @@ static const tCGI cgi_handlers[] = {
     {"/powerwall.cgi",                  cgi_powerwall_handler},   
     {"/t_copy.cgi",                     cgi_thermostat_copy_handler},
     {"/t_gpio.cgi",                     cgi_thermostat_gpio_handler},   
-    {"/gpio_default.cgi",               cgi_gpio_default_handler},     
+    {"/gpio_default.cgi",               cgi_gpio_default_handler},  
+    {"/t_sensors.cgi",                  cgi_temperature_sensors},        
      
 };
 

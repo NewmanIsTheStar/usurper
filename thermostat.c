@@ -167,6 +167,11 @@ void thermostat_task(void *params)
     int oneshot = false;
     int i;
 
+    // TEST TEST TEST
+    for(i=0; i<6; i++)
+    {
+        config.temperature_sensor_remote_ip[i][0]=0;
+    }
 
     //TEST TEST TEST
     // web.thermostat_set_point = 260;
