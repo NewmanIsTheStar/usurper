@@ -12,13 +12,15 @@ typedef enum
     HEATING_IN_PROGRESS = 1,
     COOLING_IN_PROGRESS = 2,
     DUCT_PURGE = 3,
+    THERMOSTAT_LOCKOUT = 4,
+    EXCESSIVE_OVERSHOOT = 5
 } THERMOSTAT_STATE_T;
 
 
 //prototypes
 void thermostat_task(__unused void *params);
 int make_schedule_grid(void);
-int update_current_setpoints(void);
+//int update_current_setpoints(void);
 int copy_schedule(int source_day, int destination_day);
 
 #endif

@@ -12,6 +12,14 @@
 
 typedef enum
 {
+    GRID_DOWN = 0,
+    GRID_UP = 1,
+    GRID_UNKNOWN = 4294967295,   //INT_MAX inadequate 
+} GRID_STATUS_T;
+
+
+typedef enum
+{
     HTTP_GET,
     HTTP_POST
 } HTTP_REQUEST_TYPE_T;

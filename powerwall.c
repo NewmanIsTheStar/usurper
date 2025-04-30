@@ -302,6 +302,11 @@ void powerwall_poll(void)
             if (json_get_value("root.\"grid_status\"", grid_status, sizeof(grid_status), false))
             {
                 printf("FAILED TO GET powerwall GRID STATUS\n");
+                if (web.powerwall_grid_status == GRID_UP)
+                {
+                    // only move to unknown if grid was up, if grid was down continue to assume it is down unitl a response is received
+                    web.powerwall_grid_status = GRID_UNKNOWN;  
+                }
 
                 // tear down connection
                 tear_down(pcb);
@@ -316,11 +321,11 @@ void powerwall_poll(void)
                 
                 if (strcasestr(grid_status, "SystemGridConnected"))
                 {
-                    web.powerwall_grid_up = 1;
+                    web.powerwall_grid_status = GRID_UP;
                 }
                 else
                 {
-                    web.powerwall_grid_up = 0;
+                    web.powerwall_grid_status = GRID_DOWN;
                 }
                 
                 //printf("==> %d\n", web.powerwall_grid_up);
@@ -459,16 +464,18 @@ void powerwall_poll(void)
 
 void powerwall_check(void)
 {
+    static bool first_poll = false;  // TEST TEST TEST TODO set to true!
     static TickType_t last_poll= 0;
     TickType_t now = 0;
 
     now = xTaskGetTickCount();
 
-    if ((now - last_poll) > 1000*60*15)
+    if (((now - last_poll) > 1000*60*15) || first_poll)
     {
         powerwall_poll();
 
         last_poll = now;
+        first_poll = false;
     }
 }
 

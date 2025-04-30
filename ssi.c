@@ -16,6 +16,7 @@
 #include "thermostat.h"
 
 #include "pluto.h"
+#include "powerwall.h"
 #include "led_strip.h"
 
 #ifdef USE_GIT_HASH_AS_VERSION
@@ -498,7 +499,11 @@ extern NON_VOL_VARIABLES_T config;
     x(tsadr3)    \
     x(tsadr4)    \
     x(tsadr5)    \
-    x(tsadr6)        
+    x(tsadr6)    \
+    x(tchs) \
+    x(tccs) \
+    x(grids) \
+    x(batp)
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
@@ -523,6 +528,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
     char timestamp[50];
     uint32_t us_now;
     long temp;
+    long upper;
+    long lower;
     int i;
     bool new_thermostat_period_found = false;
     int grid_x = 0;
@@ -1293,6 +1300,9 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             case SPRINKLER_CONTROLLER:
                 printed = snprintf(pcInsert, iInsertLen, "/z_relay.shtml");
                 break;
+            case HVAC_THERMOSTAT:
+                printed = snprintf(pcInsert, iInsertLen, "/t_gpio.shtml");
+                break;                
             }            
             
         }   
@@ -1784,21 +1794,23 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break; 
         case SSI_tct:  // thermostat current temperature
         {
-            if (!config.use_archaic_units)
-            {
-                printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.thermostat_temperature<0?'-':'\0', abs(web.thermostat_temperature/10), abs(web.thermostat_temperature%10)); 
-            }
-            else
-            {
-                temp = (web.thermostat_temperature*9)/5 + 320;
-                printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
-            }  
+            printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.thermostat_temperature<0?'-':'\0', abs(web.thermostat_temperature/10), abs(web.thermostat_temperature%10)); 
+            // if (!config.use_archaic_units)
+            // {
+            //     printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.thermostat_temperature<0?'-':'\0', abs(web.thermostat_temperature/10), abs(web.thermostat_temperature%10)); 
+            // }
+            // else
+            // {
+            //     temp = (web.thermostat_temperature*9)/5 + 320;
+            //     printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
+            // }  
         }       
         break;  
 #ifdef INCORPORATE_THERMOSTAT              
         case SSI_tcs:  // thermostat current setpoint
         {
-            temp = update_current_setpoints();
+            //temp = update_current_setpoints();
+            temp = web.thermostat_set_point;
 
             printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));                           
         }
@@ -1889,7 +1901,49 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         {
             printed = snprintf(pcInsert, iInsertLen, "%s", config.temperature_sensor_remote_ip[iIndex-SSI_tsadr1]); 
         }                     
-        break;                                       
+        break;       
+        #ifdef INCORPORATE_THERMOSTAT              
+        case SSI_tchs:  // thermostat current heating thresholds
+        {
+            lower = web.thermostat_heating_set_point - web.thermostat_hysteresis;
+            upper = web.thermostat_heating_set_point + web.thermostat_hysteresis;
+
+            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld", lower<0?'-':'\0', abs(lower)/10, abs(lower%10), upper<0?'-':'\0', abs(upper)/10, abs(upper%10));
+        }
+        break;
+        case SSI_tccs:  // thermostat current cooling thresholds
+        {
+            lower = web.thermostat_cooling_set_point - web.thermostat_hysteresis;
+            upper = web.thermostat_cooling_set_point + web.thermostat_hysteresis;
+
+            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld", lower<0?'-':'\0', abs(lower)/10, abs(lower%10), upper<0?'-':'\0', abs(upper)/10, abs(upper%10));
+        }
+        break;   
+        case SSI_grids:  // grid status
+        {
+            switch(web.powerwall_grid_status)
+            {
+                case GRID_DOWN:
+                printed = snprintf(pcInsert, iInsertLen, "DOWN");
+                break;
+
+                case GRID_UP:
+                printed = snprintf(pcInsert, iInsertLen, "UP");
+                break;
+
+                default: 
+                case GRID_UNKNOWN:
+                printed = snprintf(pcInsert, iInsertLen, "UNKNOWN");
+                break;                                 
+            }                                     
+        }
+        break;  
+        case SSI_batp:  // battery percentage
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", web.powerwall_battery_percentage);                           
+        }
+        break;                     
+#endif                                        
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    
@@ -1906,3 +1960,5 @@ void ssi_init(void)
     // configure SSI handler
     http_set_ssi_handler(ssi_handler, ssi_tags, LWIP_ARRAYSIZE(ssi_tags));
 }
+
+

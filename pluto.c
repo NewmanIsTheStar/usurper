@@ -691,8 +691,6 @@ int set_gpio_defaults(void)
 {
     int i;
 
-    printf("SETTING GPIO DEFAULTS\n");
-
     for(i=0; i<NUM_ROWS(config.gpio_default); i++)
     {
         switch(config.gpio_default[i])
@@ -703,28 +701,31 @@ int set_gpio_defaults(void)
         case GP_INPUT_FLOATING:
             gpio_init(i);
             gpio_set_input_enabled(i, true);
+            printf("GPIO %d :: input floating\n", i);            
             break;
         case GP_INPUT_PULLED_HIGH:
             gpio_init(i);
             gpio_set_input_enabled(i, true);
             gpio_set_pulls (i, true, false);
+            printf("GPIO %d :: input internally pulled high\n", i);             
             break;
         case GP_INPUT_PULLED_LOW:
             gpio_init(i);
             gpio_set_input_enabled(i, true);
             gpio_set_pulls (i, false, true);
+            printf("GPIO %d :: input internally pulled low\n", i);             
             break;
         case GP_OUTPUT_HIGH:
             gpio_init(i);
             gpio_set_dir (i, true);
             gpio_put (i, true);
-            printf("Set GPIO %d to high\n", i);
+            printf("GPIO %d :: output high\n", i); 
             break;
         case GP_OUTPUT_LOW:
             gpio_init(i);
             gpio_set_dir (i, true);
             gpio_put (i, false);
-            printf("Set GPIO %d to low\n", i);
+            printf("GPIO %d :: output low\n", i);
             break;            
         }
     }

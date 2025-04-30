@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="10">
 <style>
 body {
   font-family: "Lato", sans-serif;
@@ -57,30 +58,27 @@ body {
     <a href="/syslog.shtml">Syslog</a>    
     <a href="/units.shtml">Foibles</a>                  
     <a href="/t_status.shtml">Status</a>   
-    <p><a href="/index.shtml">&#8629</a></p>      
+    <p><a href="/index.shtml">&#8629</a></p>    
   </div>
 
 <div class="main">
-  <h2>HVAC Relay Settings</h2>      
-  <form action="/t_gpio.cgi">             
-    <label for="wno">Normally Open (NO)</label>
-    <a href="/t_relay_no.shtml" style="text-decoration:none"> <small>   Why?</small></a> <br><br>    
-    <label for="thr">Heating GPIO:</label>
-    <input type="text" id="thgpio" name="thgpio" value="<!--#thgpio-->"><br>
-    <label for="tcr">Cooling GPIO:</label>
-    <input type="text" id="tcgpio" name="tcgpio" value="<!--#tcgpio-->"><br>
-    <label for="tfr">Fan GPIO:</label>
-    <input type="text" id="tfgpio" name="tfgpio" value="<!--#tfgpio-->"><br>
+  <h2>Status</h2>      
+    <p><!--#status--></p> 
     <br>
+    <p>Local Time: <!--#ltme--></p>
     <br>
-    <input type="submit" value="Save" style="font-size: 25px;">
-  </form> 
-  <br>  
-  <form action="/reboot.cgi" method="get">
-    <input type="submit" value="Reboot" name="reboot" id="reboot" style="font-size: 25px;">
-</form>    
-</div>
-   
+    <p>Temperature: <!--#tct--> &deg;<!--#tmpu--></p>
+    <p>Set point: <!--#tcs--> &deg;<!--#tmpu--></p>
+    <p>Heating range: <!--#tchs--> &deg;<!--#tmpu--></p>
+    <p>Cooling range: <!--#tccs--> &deg;<!--#tmpu--></p>
+    <br>
+    <p>Grid Status: <!--#grids--></p>
+    <p>Battery: <!--#batp--> %</p>             
+    <br>   
+    <p>Network Time: <!--#time--></p>
+    <p>Last reboot: <!--#dogtme--></p>
+    <br> 
+    <p>Version: <!--#ghsh--></p> 
+</div>   
 </body>
 </html> 
-  
