@@ -120,7 +120,7 @@ typedef struct
 typedef enum
 {
     HVAC_LOCKOUT_TIMER = 0,
-    HCAV_OVERSHOOT_TIMER = 1,   
+    HVAC_OVERSHOOT_TIMER = 1,   
     NUM_HVAC_TIMERS   = 2
 } CLIMATE_TIMER_INDEX_T;
 
@@ -484,14 +484,14 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             set_hvac_gpio(HEATING_AND_COOLING_OFF);
 
             // check for excessive overshoot that could trigger cooling
-            if (temperaturex10 > (web.thermostat_cooling_set_point + web.thermostat_hysteresis))
+            if (temperaturex10 > (web.thermostat_cooling_set_point - web.thermostat_hysteresis))
             {
                 send_syslog_message("thermostat", "Excessive overshoot. Suspending operation.");            
                 snprintf(web.status_message, sizeof(web.status_message), "Excessive overshoot. Suspending operation."); 
                 
                 // lockout state changes
                 hvac_timer_start(HVAC_LOCKOUT_TIMER, config.minimum_heating_off_mins);             
-                thermostat_state = THERMOSTAT_LOCKOUT;                       
+                thermostat_state = THERMOSTAT_LOCKOUT;                     
                 next_active =  EXCESSIVE_OVERSHOOT;
                 last_active = HEATING_IN_PROGRESS;                
             }
@@ -515,7 +515,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             set_hvac_gpio(HEATING_AND_COOLING_OFF);
 
             // check for excessive overshoot that could trigger heating
-            if (temperaturex10 < (web.thermostat_heating_set_point - web.thermostat_hysteresis))
+            if (temperaturex10 < (web.thermostat_heating_set_point + web.thermostat_hysteresis))
             {
                 send_syslog_message("thermostat", "Excessive overshoot. Suspending operation.");            
                 snprintf(web.status_message, sizeof(web.status_message), "Excessive overshoot. Suspending operation."); 
@@ -553,6 +553,10 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         {
             // change to next active state
             thermostat_state = next_active;
+            if (thermostat_state == EXCESSIVE_OVERSHOOT)
+            {
+                hvac_timer_start(HVAC_OVERSHOOT_TIMER, 2*60*60*1000); 
+            }
         }
         else
         {
@@ -561,22 +565,31 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         break;    
     case EXCESSIVE_OVERSHOOT:    
         if ((last_active == HEATING_IN_PROGRESS) &&
-            (temperaturex10 < (web.thermostat_cooling_set_point + web.thermostat_hysteresis)))
+            (temperaturex10 < (web.thermostat_heating_set_point + web.thermostat_hysteresis)))
         {
-            send_syslog_message("thermostat", "Resuming operation");            
+            send_syslog_message("thermostat", "Temperature has fallen to target range. Resuming operation");            
             snprintf(web.status_message, sizeof(web.status_message), "Resuming operation"); 
 
             thermostat_state = HEATING_AND_COOLING_OFF;
         }
 
         if ((last_active == COOLING_IN_PROGRESS) &&
-            (temperaturex10 < (web.thermostat_heating_set_point - web.thermostat_hysteresis)))
+            (temperaturex10 > (web.thermostat_cooling_set_point - web.thermostat_hysteresis)))
         {
-            send_syslog_message("thermostat", "Resuming operation");            
+            send_syslog_message("thermostat", "Temperature has risen to target range. Resuming operation");            
             snprintf(web.status_message, sizeof(web.status_message), "Resuming operation"); 
 
             thermostat_state = HEATING_AND_COOLING_OFF;
-        }                     
+        }    
+        
+        if (hvac_timer_expired(HVAC_OVERSHOOT_TIMER))
+        {
+            send_syslog_message("thermostat", "Overshoot timeout.  Resuming operation");            
+            snprintf(web.status_message, sizeof(web.status_message), "Resuming operation");  
+            
+            thermostat_state = HEATING_AND_COOLING_OFF;
+        }
+
         break;                        
     }
                                
