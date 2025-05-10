@@ -96,8 +96,10 @@ if(NOT PICO_BOARD STREQUAL "pico_w")
         set(usurper_source_files ${usurper_source_files}        
         thermostat.c
         powerwall.c
-        shelly.c)        
+        shelly.c
+        json_parser.c)        
 endif()  
+
 
 add_executable(${PROJECT_NAME} ${usurper_source_files})      
 

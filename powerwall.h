@@ -10,6 +10,8 @@
 #ifndef PICOHTTPS_H
 #define PICOHTTPS_H
 
+#include "altcp_tls_mbedtls_structs.h"
+
 typedef enum
 {
     GRID_DOWN = 0,

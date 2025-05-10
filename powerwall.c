@@ -47,7 +47,7 @@
 #include <string.h>
 
 // Pico HTTPS request example
-#include "shelly.h"
+#include "json_parser.h"
 #include "powerwall.h"              // Options, macros, forward declarations
 #include "weather.h"
 #include "config.h"
@@ -63,12 +63,13 @@ void powerwall_poll(void);
 // external variables
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
-extern char shelly_value[255][128];
+extern char jsonp_value[255][128];
 extern NON_VOL_VARIABLES_T config;
 
 // global variables
 char copy_buffer[2048];
 int copy_ready = 0;
+JSON_PARSER_CONTEXT_T powerwall_parser_context;
 
 //char request_buffer[512];
 
@@ -234,12 +235,13 @@ void powerwall_poll(void)
             {
                 start_of_json += 2; // point to opening brace
 
-                parse_shelly_json(start_of_json);
+                jsonp_parse_buffer(&powerwall_parser_context, start_of_json, false);
+                //jsonp_parse_buffer(start_of_json);
             }
-            //dump_shelly_cache();
-            //dump_shelly_tokens(); 
+            //jsonp_dump_key_value_pairs();
+            //jsonp+dump_tokens(); 
 
-            if (json_get_value("root.\"token\"", authorization_token, sizeof(authorization_token), false))
+            if (jsonp_get_value("root.\"token\"", authorization_token, sizeof(authorization_token), false))
             {
                 printf("Powerwall login failed.\n");
 
@@ -296,10 +298,11 @@ void powerwall_poll(void)
             {
                 start_of_json += 2; // point to opening brace
 
-                parse_shelly_json(start_of_json);
+                jsonp_parse_buffer(&powerwall_parser_context, start_of_json, false);
+                //jsonp_parse_buffer(start_of_json);
             }
 
-            if (json_get_value("root.\"grid_status\"", grid_status, sizeof(grid_status), false))
+            if (jsonp_get_value("root.\"grid_status\"", grid_status, sizeof(grid_status), false))
             {
                 printf("FAILED TO GET powerwall GRID STATUS\n");
                 if (web.powerwall_grid_status == GRID_UP)
@@ -372,10 +375,11 @@ void powerwall_poll(void)
             {
                 start_of_json += 2; // point to opening brace
 
-                parse_shelly_json(start_of_json);
+                jsonp_parse_buffer(&powerwall_parser_context, start_of_json, false);
+                //jsonp_parse_buffer(start_of_json);
             }
 
-            if (json_get_value("root.\"percentage\"", battery_percentage, sizeof(battery_percentage), false))
+            if (jsonp_get_value("root.\"percentage\"", battery_percentage, sizeof(battery_percentage), false))
             {
                 printf("FAILED TO GET powerwall BATTERY PERCENTAGE\n");
 
@@ -453,7 +457,8 @@ void powerwall_poll(void)
     }
 
     // TEST TEST TEST
-    initialize_shelly_cache();
+    jsonp_initialize_context(&powerwall_parser_context);
+    jsonp_initialize_cache();
     sprintf(grid_status, "UNKNOWN");
     sprintf(battery_percentage, "UNKNOWN");
     sprintf(copy_buffer, "XXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -464,7 +469,7 @@ void powerwall_poll(void)
 
 void powerwall_check(void)
 {
-    static bool first_poll = false;  // TEST TEST TEST TODO set to true!
+    static bool first_poll = true; 
     static TickType_t last_poll= 0;
     TickType_t now = 0;
 
@@ -843,9 +848,10 @@ lwip_err_t callback_altcp_connect(
 
 int powerwall_init(void)
 {
-    initialize_shelly_cache();
+    jsonp_initialize_context(&powerwall_parser_context);
+    jsonp_initialize_cache();
     // test_http(1);
-    // dump_shelly_cache(); 
+    // jsonp_dump_key_value_pairs(); 
 
     return(0); 
 }

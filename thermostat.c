@@ -102,14 +102,10 @@ typedef enum
 
 typedef struct
 {
-    TickType_t hvac_off_tick[NUM_MOMENTUMS];
-    long int hvac_off_temperature[NUM_MOMENTUMS];      
-    bool measurement_in_progress[NUM_MOMENTUMS];
-    TickType_t extrema_delay[NUM_MOMENTUMS]; 
-    long int extrema_temperature[NUM_MOMENTUMS];
-    TickType_t momentum_delay[NUM_MOMENTUMS];    
-    long int  momentum_temperature_delta[NUM_MOMENTUMS];    
-} CLIMATE_MOMENTUM_DATA_T;
+    TickType_t change_tick;
+    THERMOSTAT_STATE_T new_state;      
+    int change_temperature;   
+} HVAC_STATE_CHANGE_LOG_T;
 
 typedef struct
 {
@@ -123,6 +119,17 @@ typedef enum
     HVAC_OVERSHOOT_TIMER = 1,   
     NUM_HVAC_TIMERS   = 2
 } CLIMATE_TIMER_INDEX_T;
+
+typedef struct
+{
+    TickType_t hvac_off_tick[NUM_MOMENTUMS];
+    long int hvac_off_temperature[NUM_MOMENTUMS];      
+    bool measurement_in_progress[NUM_MOMENTUMS];
+    TickType_t extrema_delay[NUM_MOMENTUMS]; 
+    long int extrema_temperature[NUM_MOMENTUMS];
+    TickType_t momentum_delay[NUM_MOMENTUMS];    
+    long int  momentum_temperature_delta[NUM_MOMENTUMS];    
+} CLIMATE_MOMENTUM_DATA_T;
 
 // prototypes
 int initialize_climate_metrics(void);
@@ -140,6 +147,7 @@ int hvac_timer_start(CLIMATE_TIMER_INDEX_T timer_index, int minutes);
 bool hvac_timer_expired(CLIMATE_TIMER_INDEX_T timer_index);
 int update_current_setpoints(THERMOSTAT_STATE_T last_active);
 void vTimerCallback(TimerHandle_t xTimer);
+void hvac_log_state_change(THERMOSTAT_STATE_T new_state);
 
 
 // external variables
@@ -159,7 +167,8 @@ CLIMATE_HISTORY_T climate_history;
 CLIMATE_MOMENTUM_DATA_T climate_momentum;
 CLIMATE_TREND_T climate_trend;
 CLIMATE_TIMERS_T climate_timers[NUM_HVAC_TIMERS];
-
+int hvac_state_change_log_index = 0;
+HVAC_STATE_CHANGE_LOG_T hvac_state_change_log[32];
 
 /*!
  * \brief Monitor weather and control relay based on conditions and schedule
@@ -681,6 +690,8 @@ int set_hvac_gpio(THERMOSTAT_STATE_T thermostat_state)
             err = 1;
             break;         
         }
+
+        hvac_log_state_change(thermostat_state);
     }
     else
     {
@@ -1288,3 +1299,26 @@ void vTimerCallback(TimerHandle_t xTimer)
         }
     }
  }
+
+
+
+ /*!
+ * \brief Timer callback
+ *
+ * \param[in]   timer handle      handle of timer that expired
+ * 
+ * \return nothing
+ */
+void hvac_log_state_change(THERMOSTAT_STATE_T new_state)
+{
+    static THERMOSTAT_STATE_T previous_state = DUCT_PURGE;
+
+    if (new_state != previous_state)
+    {
+        hvac_state_change_log[hvac_state_change_log_index].change_tick = xTaskGetTickCount();
+        hvac_state_change_log[hvac_state_change_log_index].new_state = new_state;
+        hvac_state_change_log[hvac_state_change_log_index].change_temperature = web.thermostat_temperature;
+
+        hvac_state_change_log_index = (hvac_state_change_log_index + 1) % NUM_ROWS(hvac_state_change_log);
+    }
+}
