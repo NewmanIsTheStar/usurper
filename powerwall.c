@@ -241,9 +241,12 @@ void powerwall_poll(void)
             //jsonp_dump_key_value_pairs();
             //jsonp+dump_tokens(); 
 
-            if (jsonp_get_value("root.\"token\"", authorization_token, sizeof(authorization_token), false))
+            if (jsonp_get_value(&powerwall_parser_context, "root.\"token\"", authorization_token, sizeof(authorization_token), false))
             {
                 printf("Powerwall login failed.\n");
+
+                jsonp_dump_key_value_pairs(&powerwall_parser_context);
+                //jsonp_dump_tokens(&powerwall_parser_context);
 
                 // tear down connection
                 tear_down(pcb);
@@ -302,7 +305,7 @@ void powerwall_poll(void)
                 //jsonp_parse_buffer(start_of_json);
             }
 
-            if (jsonp_get_value("root.\"grid_status\"", grid_status, sizeof(grid_status), false))
+            if (jsonp_get_value(&powerwall_parser_context, "root.\"grid_status\"", grid_status, sizeof(grid_status), false))
             {
                 printf("FAILED TO GET powerwall GRID STATUS\n");
                 if (web.powerwall_grid_status == GRID_UP)
@@ -379,7 +382,7 @@ void powerwall_poll(void)
                 //jsonp_parse_buffer(start_of_json);
             }
 
-            if (jsonp_get_value("root.\"percentage\"", battery_percentage, sizeof(battery_percentage), false))
+            if (jsonp_get_value(&powerwall_parser_context, "root.\"percentage\"", battery_percentage, sizeof(battery_percentage), false))
             {
                 printf("FAILED TO GET powerwall BATTERY PERCENTAGE\n");
 
@@ -458,7 +461,7 @@ void powerwall_poll(void)
 
     // TEST TEST TEST
     jsonp_initialize_context(&powerwall_parser_context);
-    jsonp_initialize_cache();
+    jsonp_initialize_cache(&powerwall_parser_context);
     sprintf(grid_status, "UNKNOWN");
     sprintf(battery_percentage, "UNKNOWN");
     sprintf(copy_buffer, "XXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -849,7 +852,7 @@ lwip_err_t callback_altcp_connect(
 int powerwall_init(void)
 {
     jsonp_initialize_context(&powerwall_parser_context);
-    jsonp_initialize_cache();
+    jsonp_initialize_cache(&powerwall_parser_context);
     // test_http(1);
     // jsonp_dump_key_value_pairs(); 
 
