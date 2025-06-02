@@ -27,8 +27,9 @@
 #include <utility.h>
 #include <config.h>
 #include <watchdog.h>
-#include <shelly.h>
 #include <pluto.h>
+#include "powerwall.h"
+#include <shelly.h>
 #include "json_parser.h"
 
 
@@ -139,7 +140,12 @@ int jsonp_parse_buffer(JSON_PARSER_CONTEXT_T *context, char *buffer, bool contin
 
             case '{':
             case '[':        
-                context->depth++;                                 // TODO LIMIT DEPTH to size of array!
+                context->depth++;       
+                if (context->depth >= NUM_ROWS(context->instance))
+                {
+                    printf("Parser ABORT -- maximum nesting depth exceeded\n");
+                    break;
+                }         
                 context->instance[context->depth] = 0;    
                 context->instance_delimiter[context->depth] = buffer[context->i];                          
                 context->processing_value[context->depth] = false;

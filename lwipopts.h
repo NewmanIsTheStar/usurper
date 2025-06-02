@@ -6,6 +6,7 @@
 //pluto specific
 #define NO_SYS                      (0)
 #define LWIP_SOCKET                 (1)
+#define PING_USE_SOCKETS            (1)      // newman added for ping test
 //#define LWIP_PROVIDE_ERRNO          (1)    //was commented out
 #define RECV_BUFSIZE_DEFAULT        (256)
 #define DEFAULT_TCP_RECVMBOX_SIZE   (8)   //original 8 - newman set to 50

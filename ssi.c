@@ -1393,7 +1393,10 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                 break;
             case HVAC_THERMOSTAT:
                 printed = snprintf(pcInsert, iInsertLen, "HVAC Controller");
-                break;                                 
+                break;     
+            case HOME_CONTROLLER:
+                printed = snprintf(pcInsert, iInsertLen, "Home Controller");
+                break;                                             
             default:
             case NO_PERSONALITY:
                 printed = snprintf(pcInsert, iInsertLen, "No personality");

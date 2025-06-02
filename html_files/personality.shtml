@@ -64,7 +64,8 @@ body {
         <option value="0">Sprinkler Usurper</option>
         <option value="1">Sprinkler Controller</option>
         <option value="2">LED Controller</option>
-        <option value="3">HVAC Thermostat</option>        
+        <option value="3">HVAC Thermostat</option>  
+        <option value="4">Home Controller</option>       
         <option value="4294967295">No personality</option>        
       </select>                                       
       <br><br><br>

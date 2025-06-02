@@ -44,6 +44,7 @@ add_compile_definitions(PICO_INCLUDE_RTC_DATETIME)
 add_compile_definitions(FAKE_RTC)
 if(NOT PICO_BOARD STREQUAL "pico_w") 
 add_compile_definitions(INCORPORATE_THERMOSTAT)
+add_compile_definitions(INCORPORATE_HOME_CONTROLLER)
 endif()
 
 # initialize pico-sdk from submodule
@@ -90,14 +91,19 @@ set(usurper_source_files
         worker_tasks.c
         message.c
         udp.c
-        wifi.c)
+        wifi.c
+        usurper_ping.c
+        ping_core.c
+        #${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/ping.c
+        )
 
 if(NOT PICO_BOARD STREQUAL "pico_w")
         set(usurper_source_files ${usurper_source_files}        
         thermostat.c
         powerwall.c
         shelly.c
-        json_parser.c)        
+        json_parser.c
+        hc_task.c)        
 endif()  
 
 
@@ -131,6 +137,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_driver/include/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/src/apps/altcp_tls/
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/mbedtls/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/
         )
 
 set(usurper_link_libraries

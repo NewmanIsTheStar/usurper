@@ -1,3 +1,6 @@
+#define _GNU_SOURCE
+#include <string.h>
+
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
@@ -27,556 +30,44 @@
 #include "utility.h"
 #include "config.h"
 #include "watchdog.h"
+#include "powerwall.h"
 #include "shelly.h"
+#include "json_parser.h"
 #include "pluto.h"
+#include "usurper_ping.h"
 
-//#include "http-client-c.h"
+#define GET_REQUEST "GET / HTTP/1.0\r\n\r\n"
 
+typedef enum
+{
+    SHELLY_TYPE_SHSW_25,
+    SHELLY_TYPE_PLUSWDUS,
+    SHELLY_TYPE_PLUS1,
+    SHELLY_TYPE_PLUS2PM,
+    SHELLY_TYPE_UNKNOWN
+} SHELLY_DEVICE_TYPE_T;
+
+typedef struct
+{
+    u32_t ip;
+    SHELLY_DEVICE_TYPE_T type;
+} DISCOVERED_SHELLY_T;
+
+// external variables
 extern WEB_VARIABLES_T web;
 
-// cache of shelly response data
-u8_t shelly_ip[128][4];
-char shelly_token[128][32];
-u8_t shelly_key[255][8];
-char shelly_value[255][128];
+// global variables
+JSON_PARSER_CONTEXT_T shelly_parser_context;
+unsigned char rx_buffer[2048]; 
+DISCOVERED_SHELLY_T discovered_shelly[32];
+int num_discovered_shelly_devices = 0;
 
 // prototypes
-int initialize_all_keys(u8_t key_value);
-int initialize_all_values(char *value_string);
-int initialize_all_tokens(void);
-int insert_token_string(char *token_string);
-int insert_token_value(int token, char *token_value);
-int get_free_kvp_row(void);
-int append_token_to_key_heirarchy(int kvp_index, u8_t key_token);
-int insert_value(int kvp_index, char *value);
-int initialize_row_key(int key_index, u8_t key_value);
-int append_string_to_key_heirarchy(int kvp_index, char *key_string);
 int query_status(char *ipstring);
-
-
-/*!
- * \brief extract info from shelly json response
- *
- * \param[in]   num_spaces  
- * 
- * \return 0
- */
-int parse_shelly_json(char *shelly_json_string)
-{
-    int depth = 0;
-    int comma_instance = 0;
-    int i = 0;
-    int j = 0;
-    int k = 0;
-    int l = 0;
-    bool consolidate_closing_delimiters = false;
-    char instance_delimiter[16] = {'{','{','{','{','{','{','{','{','{','{','{','{','{','{','{','{'};
-    int instance[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
-    char entity[8][32];  // TEMP TESTING
-    char last_entity[32];
-    bool processing_value[8] = {false, false, false, false, false, false, false, false};
-    bool quotation = false;
-    bool character_processed = false;
-    char key[64];
-    char value[64];
-    char indexstring[16];
-    int kvp_index = 0;
-
-
-    for(i=0;i<8;i++) sprintf(entity[i], "empty%d", i);
-    sprintf(entity[0], "root");
-    sprintf(last_entity, "god");
-    j = strlen(entity[0]);
-
-    kvp_index = get_free_kvp_row();
-
-    i = 0;
-    while (shelly_json_string[i] != 0)
-    {
-        character_processed = false;
-
-        // track quotes
-        if (shelly_json_string[i] == '"')
-        {
-            quotation = !quotation;
-        }
-
-        // process delimiters
-        if (!quotation)
-        {
-            character_processed = true;
-
-            switch (shelly_json_string[i])
-            {
-
-            case '{':
-            case '[': 
-                //entity[depth][j] = 0;        
-                depth++;
-                instance[depth] = 0;    
-                instance_delimiter[depth] = shelly_json_string[i];                          
-                processing_value[depth] = false;
-                if (consolidate_closing_delimiters)
-                {
-                    //printf("\n");
-                    consolidate_closing_delimiters = false;
-                }
-                j = 0;
-                entity[depth][0] = 0;
-                break;
-            case '}':
-            case ']':  
-            case ',':                  
-                //printf("[depth = %d][instance = %d]", depth, instance[depth]);
-                key[0] = 0;
-                initialize_row_key(kvp_index, 255);
-                
-                for (k=0; k<depth; k++)
-                {
-                    if(entity[k][0])
-                    {
-                        //printf("%s", entity[k]);
-                        STRAPPEND(key, entity[k]);
-                        // token = insert_token_string(entity[k]);
-                        // append_token_to_key_heirarchy(kvp_index, token);
-                        append_string_to_key_heirarchy(kvp_index, entity[k]);
-                    }
-                    else
-                    {
-                        for(l=depth-1; l>0; l--)
-                        {
-                            if (instance_delimiter[l] == '[') break;
-                        }
-                        //printf("index%d", instance[l]);
-                        sprintf(indexstring, "index%d", instance[l]);
-                        STRAPPEND(key, indexstring);
-                        // token = insert_token_string(indexstring);
-                        // append_token_to_key_heirarchy(kvp_index, token); 
-                        append_string_to_key_heirarchy(kvp_index, indexstring);                       
-                    }
-                    //printf(".");
-                    STRAPPEND(key, ".");
-                }        
-                if (processing_value[depth])
-                {
-                    //printf("%s (value)", last_entity);
-                    STRAPPEND(key, last_entity);
-                    // token = insert_token_string(last_entity);
-                    // append_token_to_key_heirarchy(kvp_index, token);
-                    append_string_to_key_heirarchy(kvp_index, last_entity);
-
-                    //printf("\nKEY: %s\n", key);
-                    entity[depth][j] = 0;  
-                    //printf("VALUE: %s\n", entity[depth]); 
-                    insert_value(kvp_index, entity[depth]);  
-                    kvp_index = get_free_kvp_row();                                     
-                    processing_value[depth] = false;
-                }
-                else
-                {
-                   //printf("*Single token or no token before ] or } or , -- check if array value*\n");
-                    if ((instance_delimiter[depth] == '[') && (!consolidate_closing_delimiters))
-                    {
-                        //printf("instance delimiter is [ so treat as list of values\n");
-                        //printf("index%d.", instance[depth]);
-                        sprintf(indexstring, "index%d", instance[depth]);
-                        STRAPPEND(key, indexstring);  
-                        // token = insert_token_string(indexstring);
-                        // append_token_to_key_heirarchy(kvp_index, token);
-                        append_string_to_key_heirarchy(kvp_index, indexstring); 
-
-                        STRAPPEND(key, ".");
-
-                        //printf("%s (value)", entity[k]);
-                        //printf("\nKEY: %s\n", key);
-                        entity[depth][j] = 0;  
-                        //printf("VALUE: %s\n", entity[depth]);
-                        insert_value(kvp_index, entity[depth]);  
-                        kvp_index = get_free_kvp_row();                                                 
-                    }                    
-                }
-
-                if ((shelly_json_string[i] == ']') || (shelly_json_string[i] == '}'))
-                {        
-                    depth--;                
-                    consolidate_closing_delimiters = true;
-                    processing_value[depth] = false; 
-                } else if (shelly_json_string[i] == ',')
-                {
-                    //printf("\n");             
-                    entity[depth][j] = 0; 
-                            
-                    instance[depth]++;
-                    entity[depth][0] = 0;
-                    j = 0;                     
-                }
-                break;
-            case ':':
-                //printf("[depth = %d][instance = %d]", depth, instance[depth]);
-                for (k=0; k<depth; k++)
-                {
-                    if(entity[k][0])
-                    {
-                        //printf("%s", entity[k]);
-                    }
-                    else
-                    {
-                        for(l=depth-1; l>0; l--)
-                        {
-                            if (instance_delimiter[l] == '[') break;
-                        }
-                        //printf("index%d", instance[l]);
-                    }
-                    //printf(".");
-                }
-                entity[depth][j] = 0; 
-                strcpy(last_entity, entity[depth]); 
-                j = 0;
-
-                if (processing_value[depth])
-                {
-                    printf("*MISSING VALUE* before :");
-                    processing_value[depth] = false;
-                }
-                else
-                {
-                    //printf("%s (Parameter)", last_entity); 
-                }  
-    
-                processing_value[depth] = true;            
-                
-                //printf("\n");                               
-                break;                        
-            default:
-                character_processed = false;
-                break;                                
-            }
-            
-        }
-
-        // process standard characters
-        if (!character_processed)
-        {
-            if (consolidate_closing_delimiters)
-            {
-                //printf("\n");
-                consolidate_closing_delimiters = false;
-            }   
-            if (isprint(shelly_json_string[i]))
-            {            
-                //printf("%c", shelly_json_string[i]);
-                entity[depth][j++] = shelly_json_string[i];
-            }
-        }
-
-        i++;
-    }
-
-    return(0);
-}
-
-
-
-/*!
- * \brief set all keys 
- *
- * \param[in]   key_value value to assign to each key  
- * 
- * \return 0 on success
- */
-int initialize_all_keys(u8_t key_value)
-{
-    int key_index;
-    int key_heirarchy;
-
-    for(key_index = 0; key_index < NUM_ROWS(shelly_key); key_index++)
-    {
-        for(key_heirarchy = 0; key_heirarchy < NUM_ROWS(shelly_key[0]); key_heirarchy++)
-        {
-            shelly_key[key_index][key_heirarchy] = key_value;
-        }    
-    }
-
-    return(0);
-}
-
-/*!
- * \brief set all keys 
- *
- * \param[in]   key_value value to assign to each key  
- * 
- * \return 0 on success, -1 on error
- */
-int initialize_row_key(int key_index, u8_t key_value)
-{
-    int err = 0;
-    int key_heirarchy;
-
-    if ((key_index >0) && (key_index < NUM_ROWS(shelly_key)))
-    {
-        for(key_heirarchy = 0; key_heirarchy < NUM_ROWS(shelly_key[0]); key_heirarchy++)
-        {
-            shelly_key[key_index][key_heirarchy] = key_value;
-        }    
-    }
-    else
-    {
-        err = -1;
-    }
-
-    return(err);
-}
-
-/*!
- * \brief extract info from shelly json response
- *
- * \param[in]   value_string value to assign to each value   
- * 
- * \return 0 on success
- */
-int initialize_all_values(char *value_string)
-{
-    int value_index;
-
-    for(value_index = 0; value_index < NUM_ROWS(shelly_value); value_index++)
-    {
-        if (value_string && (value_string[0] != 0))
-        {
-            STRNCPY(shelly_value[value_index], value_string, sizeof(shelly_value[0]));
-        }
-        else
-        {
-           shelly_value[value_index][0] = 0; 
-        }
-    }
-
-    return(0);
-}
-
-/*!
- * \brief set all tokens to empty string 
- * 
- * \return 0 on success
- */
-int initialize_all_tokens(void)
-{
-    int token_index;
-
-    for(token_index = 0; token_index < NUM_ROWS(shelly_token); token_index++)
-    {
-        shelly_token[token_index][0] = 0; 
-    }
-
-    return(0);
-}
-
-/*!
- * \brief add string to token cache and return token
- *
- * \param[in]   token_string string to tokenize  
- * 
- * \return token or -1 on error
- */
-int insert_token_string(char *token_string)
-{
-    int token_index;
-
-    for(token_index = 0; token_index < NUM_ROWS(shelly_token); token_index++)
-    {
-        if (strcasecmp(token_string, shelly_token[token_index]) == 0)
-        {
-            // found existing entry
-            break;
-        }
-        else if (shelly_token[token_index][0] == 0)
-        {
-            // found unused token so assign
-            STRNCPY(shelly_token[token_index], token_string, sizeof(shelly_token[0]));
-            break;
-        }
-    }
-
-    if (token_index >= NUM_ROWS(shelly_token))
-    {
-        // out of space in token table
-        token_index = -1;
-        printf("***********************************************OUT OF TOKENS!");
-    }
-
-    return(token_index);
-}
-
-
-/*!
- * \brief get an index to an empty kvp cache row
- * 
- * \return key-value-pair index on success, -1 on error
- */
-int get_free_kvp_row(void)
-{
-    int kvp_index = 0;
-    
-    for(kvp_index = 0; kvp_index < NUM_ROWS(shelly_key); kvp_index++)
-    {
-        if (shelly_key[kvp_index][0] == 255)
-        {
-            // found a free row
-            break;
-        } 
-    }
-
-    if (kvp_index >= NUM_ROWS(shelly_key))
-    {
-        kvp_index = -1;
-    }
-
-    return(kvp_index);
-}
-
-/*!
- * \brief add token to heirarchy for given kvp cache row
- * 
- * \return 0 on success, -1 on error
- */
-int append_token_to_key_heirarchy(int kvp_index, u8_t key_token)
-{
-    int err = -1;
-    int key_heirarchy = 0;
-    
-    if ((kvp_index >=0) && (kvp_index < NUM_ROWS(shelly_key)))
-    {
-
-        for(key_heirarchy = 0; key_heirarchy < NUM_ROWS(shelly_key[0]); key_heirarchy++)
-        {
-            if (shelly_key[kvp_index][key_heirarchy] == 255)
-            {
-                // found space to append to key heirarchy in this row
-                shelly_key[kvp_index][key_heirarchy] = key_token;
-                err = 0;
-                break;
-            }
-        }           
-        
-    }
-
-    return(err);
-}
-
-/*!
- * \brief add token to heirarchy for given kvp cache row
- * 
- * \return 0 on success, -1 on error
- */
-int append_string_to_key_heirarchy(int kvp_index, char *key_string)
-{
-    int err = -1;
-    int key_heirarchy = 0;
-    int token = 0;
-
-   
-    if ((kvp_index >=0) && (kvp_index < NUM_ROWS(shelly_key)))
-    {
-        // tokenize and append
-        token = insert_token_string(key_string);
-        err = append_token_to_key_heirarchy(kvp_index, token);             
-    }
-
-    return(err);
-}
-
-
-
-/*!
- * \brief add value to cache
- *
- * \param[in]   kvp_index key-value-pair index 
- * 
- * \return 0 on success, -1 on error
- */
-int insert_value(int kvp_index, char *value)
-{
-    int err = 0;
-
-    if ((kvp_index >= 0) && (kvp_index < NUM_ROWS(shelly_value)))
-    {
-        STRNCPY(shelly_value[kvp_index], value, sizeof(shelly_value[0]));
-    }
-
-    return(err);
-}
-
-/*!
- * \brief clear cache used to store shelly device responses
- * 
- * \return 0 on success, -1 on error
- */
-int initialize_shelly_cache(void)
-{
-    initialize_all_keys(255);
-    initialize_all_values("");
-    initialize_all_tokens();    
-
-    return(0);
-}
-
-/*!
- * \brief clear cache used to store shelly device responses
- * 
- * \return 0 on success, -1 on error
- */
-int dump_shelly_cache(void)
-{
-    int key_index;
-    int key_heirarchy;
-
-    for(key_index = 0; key_index < NUM_ROWS(shelly_key); key_index++)
-    {
-        if (shelly_key[key_index][0] != 255)
-        {
-            printf("KEY_%03d = ", key_index);
-            for(key_heirarchy = 0; key_heirarchy < NUM_ROWS(shelly_key[0]); key_heirarchy++)
-            {
-                if (shelly_key[key_index][key_heirarchy] != 255)
-                {
-                    if (key_heirarchy > 0)
-                    {
-                        printf(".%s", shelly_token[shelly_key[key_index][key_heirarchy]]);
-                    }
-                    else
-                    {
-                        printf("%s", shelly_token[shelly_key[key_index][key_heirarchy]]);
-                    }
-                }
-            } 
-
-            printf(" VALUE =");
-            printf("%s\n", shelly_value[key_index]);
-        }
-    }
-
-    return(0);
-}
-
-/*!
- * \brief clear cache used to store shelly device responses
- * 
- * \return 0 on success, -1 on error
- */
-int dump_shelly_tokens(void)
-{
-    int token_index;
-
-    for(token_index = 0; token_index < NUM_ROWS(shelly_token); token_index++)
-    {
-        if (shelly_token[token_index][0] != 0)
-        {
-            printf("TOKEN_%03d = %s\n", token_index, shelly_token[token_index]);
-
-        } 
-    }
-
-    return(0);
-}
+int shelly_parse_header(char *buffer);
+char *find_next_space_on_line(char *buffer);
+int shelly_add_discovered_device(u32_t ip, SHELLY_DEVICE_TYPE_T type);
+int shelly_dump_discovered_devices(void);
 
 
 /*!
@@ -595,6 +86,11 @@ int discover_shelly_devices(void)
     u8_t byte = 0;
     int i;
     char ipstring[32];
+    int number_of_shelly_devices = 0;
+    char device_type[32];
+    char device_id[32];
+    ip_addr_t ping_addr;
+    int ping_err = -1;
 
     printf("address = %s\n", web.ip_address_string);  
     printf("netmask = %s\n", web.network_mask_string);
@@ -623,6 +119,10 @@ int discover_shelly_devices(void)
     search_start = ip & mask;
     search_end = search_start | (0xffffffff ^ mask);
 
+
+    //TEST TEST TEST
+    //search_start = 0xc0a821a1;
+
     printf("search range: %08x to %08x\n", search_start, search_end);
 
     for(ip_to_query=search_start+1; ip_to_query<search_end; ip_to_query++)
@@ -632,101 +132,304 @@ int discover_shelly_devices(void)
         sprintf(ipstring, "%d.%d.%d.%d", ((u8_t *)&ip_to_query)[3], ((u8_t *)&ip_to_query)[2], ((u8_t *)&ip_to_query)[1], ((u8_t *)&ip_to_query)[0]);
 
         printf("querying %s\n", ipstring);
-        query_status(ipstring);
 
-        sleep_ms(10000);
+        printf("ping %s\n", ipstring);
+
+        //ipaddr_aton(PING_ADDR, &ping_addr);
+        ping_addr.addr = htonl(ip_to_query);
+
+        ping_err = ping_device(&ping_addr, 3); 
+        printf("ping returned error = %d\n", ping_err);
+
+        if (ping_err == 0)
+        {
+            printf("http request %s\n", ipstring);
+
+            //query_status(ipstring);
+            if (shelly_http_request(HTTP_GET, "/shelly", ipstring, NULL) == 200)
+            {
+                // get device type
+                if (jsonp_get_value(&shelly_parser_context, "root.\"type\"", device_type, sizeof(device_type), false))
+                {
+                    STRNCPY(device_type, "UNKNOWN", sizeof(device_type));
+                }
+
+                // get device id
+                if (jsonp_get_value(&shelly_parser_context, "root.\"id\"", device_id, sizeof(device_id), false))
+                {
+                    STRNCPY(device_id, "UNKNOWN", sizeof(device_id));
+                }
+
+                if (strcasecmp(device_type, "\"SHSW-25\"") == 0)
+                {
+                    shelly_add_discovered_device(ip_to_query, SHELLY_TYPE_SHSW_25);
+                }
+                else if (strncasecmp(device_id, "\"shellypluswdus", 15) == 0)
+                {
+                    shelly_add_discovered_device(ip_to_query, SHELLY_TYPE_PLUSWDUS);
+                }      
+                else if (strncasecmp(device_id, "\"shellyplus1", 12) == 0)
+                {
+                    shelly_add_discovered_device(ip_to_query, SHELLY_TYPE_PLUS1);
+                }  
+                else if (strncasecmp(device_id, "\"shellyplus2pm", 14) == 0)
+                {
+                    shelly_add_discovered_device(ip_to_query, SHELLY_TYPE_PLUS2PM);
+                }                                            
+                else
+                {
+                    shelly_add_discovered_device(ip_to_query, SHELLY_TYPE_UNKNOWN);
+                }
+
+                printf("IP = %s SHELLY_DEVICE_TYPE = %s SHELLY_DEVICE_ID = %s\n", ipstring, device_type, device_id);
+                shelly_dump_discovered_devices();
+                
+                number_of_shelly_devices++;
+                printf("number of shelly devices discovered = %d\n", number_of_shelly_devices);
+            }
+        }
+        sleep_ms(1000);
     }
 
-    return(0);
-}
-
-/*!
- * \brief Testing http-client-c from github TODO: get the memory leak fixes waiting in a merge request
- *
- * \param[in]   on 1=on, 0=off  
- * 
- * \return 0 on success, non-zero on error
- */
-int query_status(char *ipstring)  
-{
-    char url[128];
-    // struct http_response *hresp;
-
-    // sprintf(url, "http://%s/status", ipstring);
-    // printf("url = %s\n", url);
-
-    // hresp = http_get(url, "User-agent:MyUserAgent\r\n");
-    
-
-    // printf("status code string = ");
-    // print_printable_text(hresp->status_code);
-    // printf("status code int = %d\n", hresp->status_code_int);
-    // printf("status text = ");
-    // print_printable_text(hresp->status_text);
-    
-
-    // printf("body = \n");
-    // print_printable_text(hresp->body);
-
-    // parse_shelly_json(hresp->body);
+    printf("number of shelly devices discovered = %d\n", number_of_shelly_devices);
+    shelly_dump_discovered_devices();
 
     return(0);
 }
 
-/*!
- * \brief Retrieve the value matching a given key from the json cache
- * 
- * \param[in]   key             key to find
- * 
- * \param[out]  value           value found
- * 
- * \param[in]   value_length    max length of value
- * 
- * \param[in]   strip_quotes    remove outer quotes from value (if present)
- *     
- * \return 0 on success, -1 on error
- */
-int json_get_value(const char *key, char *value, int value_length, bool strip_quotes)
-{
-    int key_index;
-    int key_heirarchy;
-    char search_key[256];
-    int err = 1;
 
-    for(key_index = 0; key_index < NUM_ROWS(shelly_key); key_index++)
+// Send HTTP request
+int shelly_http_request(HTTP_REQUEST_TYPE_T type, char *url, char *host, char *content)
+{
+    int socket = -1;
+    int err = 0;
+    char request[2048];
+    int length = 0;
+    char length_string[8];
+    lwip_err_t lwip_err = -1;
+    int sent_bytes = 0;
+    int received_bytes = 0;
+    int retry;
+    int ret;
+    fd_set readset;
+    struct timeval tv;  
+    char *start_of_json = NULL;
+    int http_error = 0;
+        
+
+    // type
+    switch(type)
     {
-        if (shelly_key[key_index][0] != 255)
-        {
-            // begin constructing new search key
-            search_key[0] = 0;
+        case HTTP_GET:
+            sprintf(request, "GET ");
+            break;
+        case HTTP_POST:
+            sprintf(request, "POST ");
+            break;
+        default:
+            request[0] = 0;
+            err = true;
+    }
 
-            //printf("KEY_%03d = ", key_index);
-            for(key_heirarchy = 0; key_heirarchy < NUM_ROWS(shelly_key[0]); key_heirarchy++)
+    // url
+    STRAPPEND(request, url);
+    STRAPPEND(request, " HTTP/1.1\r\n");
+
+    // host
+    STRAPPEND(request, "Host: ");
+    STRAPPEND(request, host);
+    STRAPPEND(request, "\r\n");
+
+    // accept
+    STRAPPEND(request, "Accept: */*\r\n");
+
+    // content
+    if (content)
+    {
+        sprintf(length_string, "%d", strlen(content));
+
+        // STRAPPEND(request, "Content-Type: application/json\r\n");
+        // STRAPPEND(request, "Content-Length: ");
+        // STRAPPEND(request, length_string);
+        // STRAPPEND(request, "\r\n\r\n");
+        STRAPPEND(request, content);
+    }
+    STRAPPEND(request, "\r\n");
+
+    // request length 
+    length = strlen(request) + 1; // TODO figure out WTF the original code is doing by transmitting one less
+
+
+    if (socket < 0) socket = establish_socket(host, 80, SOCK_STREAM);
+
+    if(socket>= 0)
+    {
+        printf("SEND [%d bytes]\n%s\n", length, request); 
+        
+        if (socket >= 0)
+        {
+            sent_bytes = send(socket, request, strlen(request), 0);              
+
+            if (sent_bytes)
             {
-                if (shelly_key[key_index][key_heirarchy] != 255)
+                printf("sent_bytes = %d\n", sent_bytes);
+
+                printf("waiting to receive response...\n");                    
+                for (retry=0; retry<5; retry++)
                 {
-                    if (key_heirarchy > 0)
-                    {                        
-                        STRAPPEND(search_key, ".");
-                        //printf(".%s", shelly_token[shelly_key[key_index][key_heirarchy]]);
+                    FD_ZERO(&readset);
+                    FD_SET(socket, &readset);
+                    tv.tv_sec = 2;
+                    tv.tv_usec = 500;
+    
+                    ret = select(socket + 1, &readset, NULL, NULL, &tv);
+    
+                    if ((ret > 0) && FD_ISSET(socket, &readset))
+                    {
+                        received_bytes = recv(socket, rx_buffer, sizeof(rx_buffer), 0);
+
+                        CLIP(received_bytes, 0, sizeof(rx_buffer) - 1);
+
+                        // zero terminate
+                        if (received_bytes < sizeof(rx_buffer)-1)
+                        {
+                            rx_buffer[received_bytes] = 0;
+                        }
+                        else
+                        {
+                            rx_buffer[sizeof(rx_buffer)-1] = 0;
+                        }
+    
+                        if (received_bytes > 0)
+                        {
+                            hex_dump(rx_buffer, received_bytes);
+
+                            print_printable_text(rx_buffer);
+
+                            printf("parse header\n");
+                            http_error = shelly_parse_header(rx_buffer);
+                            printf("http error code = %d\n", http_error);
+
+                            printf("parse json\n");
+                            start_of_json = strcasestr(rx_buffer, "\r\n{");
+                            if (start_of_json)
+                            {
+                                //start_of_json += 2; // point to opening brace
+
+                                jsonp_parse_buffer(&shelly_parser_context, start_of_json, false);
+                                jsonp_dump_key_value_pairs(&shelly_parser_context);
+                            }
+
+                            err = http_error;
+                            break;
+                        }
+                        else
+                        {
+                            err = -2;
+                        }
                     }
                     else
                     {
-                        //printf("%s", shelly_token[shelly_key[key_index][key_heirarchy]]);
-                    }
-                    STRAPPEND(search_key, shelly_token[shelly_key[key_index][key_heirarchy]]);
-                }
-            } 
-
-            //printf(" VALUE =");
-            //printf("%s\n", shelly_value[key_index]);
-
-            if (!strncasecmp(search_key, key, strlen(key)))
-            {
-                //printf("***MATCH****\n");
-                STRNCPY(value, shelly_value[key_index], value_length);  //TODO copy with outer quote removal
-                err = 0;
+                        err = -3;
+                    }         
+                }        
             }
+            else
+            {
+             
+                err = -5;
+                printf("error sending packet\n");
+            }
+        } 
+
+        close(socket);
+        socket = -1;
+    }
+
+    return (err);
+}
+
+// Send HTTP request
+int shelly_parse_header(char *buffer)
+{
+    char *keyword = NULL;
+    int http_error = -1;
+
+    keyword = strcasestr(rx_buffer, "HTTP/");
+
+    if (keyword)
+    {
+        keyword += strlen("HTTP/");
+
+        keyword = find_next_space_on_line(keyword);
+
+        if (keyword)
+        {
+            keyword++;
+
+            sscanf(keyword, "%d", &http_error);            
+        }
+    }
+
+    return(http_error);
+}
+
+// find next space on line
+char *find_next_space_on_line(char *buffer)
+{
+    char *found = NULL;
+
+    if (buffer)
+    {
+        while(*buffer != '\r' && *buffer != '\n' && *buffer != 0)
+        {
+            if (*buffer == ' ')
+            {
+                found = buffer;
+                break;
+            }
+
+            buffer++;
+        }
+    }
+
+    return(buffer);
+}
+
+
+// "type":"SHSW-25"/
+
+// store discovered device
+int shelly_add_discovered_device(u32_t ip, SHELLY_DEVICE_TYPE_T type)
+{
+    int err = 0;
+
+    if (num_discovered_shelly_devices < NUM_ROWS(discovered_shelly))
+    {
+        discovered_shelly[num_discovered_shelly_devices].ip = ip;
+        discovered_shelly[num_discovered_shelly_devices].type = type;
+
+        num_discovered_shelly_devices++;
+    }
+    else
+    {
+        err = 1;
+    }
+
+    return(err);
+}
+
+// store discovered device
+int shelly_dump_discovered_devices(void)
+{
+    int err = 0;
+    int i = 0;
+
+    if (num_discovered_shelly_devices)
+    {
+        for(i=0; i<num_discovered_shelly_devices; i++)
+        {
+            printf("IP = %d.%d.%d.%d Type = %d\n", ((u8_t *)&discovered_shelly[i].ip)[3], ((u8_t *)&discovered_shelly[i].ip)[2], ((u8_t *)&discovered_shelly[i].ip)[1], ((u8_t *)&discovered_shelly[i].ip)[0], discovered_shelly[i].type);
         }
     }
 

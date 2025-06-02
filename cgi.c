@@ -1486,7 +1486,11 @@ const char * cgi_personality_handler(int iIndex, int iNumParams, char *pcParam[]
 
                     case HVAC_THERMOSTAT:
                         config.personality = new_personality;
-                        break;                        
+                        break;    
+
+                    case HOME_CONTROLLER:
+                        config.personality = new_personality;
+                        break;                                              
                     
                     default:
                         printf("Invalid personality\n");

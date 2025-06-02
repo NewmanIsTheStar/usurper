@@ -36,7 +36,9 @@
 #include "worker_tasks.h"
 #include "wifi.h"
 #include "calendar.h"
-
+#include "powerwall.h"
+#include "shelly.h"
+#include  "usurper_ping.h"
 #include "pluto.h"
 
 #include "ssi.h"
@@ -134,9 +136,7 @@ int pluto(void)
 #endif
 
     // initialize boss task
-    xTaskCreate(boss_task, "Boss Task", 1024, NULL, BOSS_TASK_PRIORITY, &task);
-    // xTaskCreate(atomic_write_task, "Atomic Write Task", 1024, NULL, BOSS_TASK_PRIORITY, &task);
-    // xTaskCreate(atomic_read_task, "Atomic Read Task", 1024, NULL, BOSS_TASK_PRIORITY, &task);    
+    xTaskCreate(boss_task, "Boss Task", 1024, NULL, BOSS_TASK_PRIORITY, &task);  
 
     // start boss task
     vTaskStartScheduler();
@@ -161,8 +161,6 @@ int pluto(void)
  */
 void boss_task(__unused void *params) 
 {
-    //datetime_t date;  // TEST TEST TEST
-    //char buffer[256]; // TEST TEST TEST
     bool led_on = false;
     int worker = 0;
     ip_addr_t ip = {0};
@@ -177,28 +175,6 @@ void boss_task(__unused void *params)
     
     // default gpio settings  -- primarily for unused hardware connected to gpios
     set_gpio_defaults();
-
-    // TEST TEST TEST
-    // config.syslog_enable = 0;
-    // config.weather_station_enable = 0;
-    // config.personality = HVAC_THERMOSTAT;
-    // {
-    //     int i,j;
-    //     for(i=0; i<8; i++)
-    //     {
-    //         for(j=0; j<8; j++)
-    //         {
-    //             printf("x(tg%d_%d) \\\n", i, j);
-    //         }
-    //     }
-    //     for(i=0; i<8; i++)
-    //     {
-    //         for(j=0; j<8; j++)
-    //         {
-    //             printf("case SSI_tg%d_%d:\n", i, j);
-    //         }
-    //     }        
-    // }
     
     //initialise wifi
     while (cyw43_arch_init_with_country(get_wifi_country_code(config.wifi_country)))

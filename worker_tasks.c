@@ -19,6 +19,7 @@
 #include "led_strip.h"
 #include "message.h"
 #include "thermostat.h"
+#include "hc_task.h"
 
 // worker tasks to launch and monitor
 WORKER_TASK_T worker_tasks[] =
@@ -30,9 +31,20 @@ WORKER_TASK_T worker_tasks[] =
 #ifdef INCORPORATE_THERMOSTAT    
     {   thermostat_task,"Thermostat Task",      8096,   5},        
 #endif
+#ifdef INCORPORATE_HOME_CONTROLLER    
+    {   hc_task,        "Home Controller Task", 8096,   6},        
+#endif
     // end of table
     {   NULL,           NULL,               0,      0,         }
 };
 
+// TEST TEST TEST -- no worker tasks
+// WORKER_TASK_T worker_tasks[] =
+// {
+//     //  function        name                    stack   priority        
+
+//     // end of table
+//     {   NULL,           NULL,               0,      0,         }
+// };
 
 
