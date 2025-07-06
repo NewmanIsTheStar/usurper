@@ -185,6 +185,7 @@ void thermostat_task(void *params)
     int i2c_bytes_written = 0;
     int i2c_bytes_read = 0;
     bool aht10_initialized = false;
+    bool tm1637_initialized = false;
     uint32_t temperature_native; 
     long int temperaturex10;
     uint32_t humidity_native; 
@@ -276,6 +277,14 @@ void thermostat_task(void *params)
     {        
         if ((config.personality == HVAC_THERMOSTAT))
         {
+            if (!tm1637_initialized)
+            {
+                // TODO make display pins configurable
+                tm1637_init(13, 12);
+                tm1637_display(0, true);
+
+                tm1637_initialized = true;               
+            }
             i2c_error = false;
 
             if (!aht10_initialized)
@@ -369,6 +378,9 @@ void thermostat_task(void *params)
 
                     // update web ui
                     web.thermostat_temperature = temperaturex10;
+                    
+                    // update seven segment display
+                    tm1637_display(temperaturex10, false);
                 }
                 else
                 {
