@@ -2315,6 +2315,7 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
  */
 const char * cgi_thermostat_period_delete_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+#ifdef INCORPORATE_THERMOSTAT
     int i = 0;
     char *param = NULL;
     char *value = NULL;
@@ -2363,7 +2364,7 @@ const char * cgi_thermostat_period_delete_handler(int iIndex, int iNumParams, ch
         }
         i++;
     }
-
+#endif
     // Send the next page back to the user
     return "/t_schedule.shtml";
     
@@ -2670,6 +2671,7 @@ const char * cgi_powerwall_handler(int iIndex, int iNumParams, char *pcParam[], 
  */
 const char * cgi_thermostat_copy_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+#ifdef INCORPORATE_THERMOSTAT
     int i = 0;
     char *param = NULL;
     char *value = NULL;
@@ -2724,6 +2726,7 @@ const char * cgi_thermostat_copy_handler(int iIndex, int iNumParams, char *pcPar
     // write config changes to flash
     config_changed();
  
+#endif
     // Send the next page back to the user
     return "/t_schedule.shtml";    
 }

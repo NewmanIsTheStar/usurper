@@ -42,10 +42,10 @@ add_compile_definitions(PLUTO_VER="${APP_VERSION}")
 add_compile_definitions(PICO_CYW43_ARCH_FREERTOS)
 add_compile_definitions(PICO_INCLUDE_RTC_DATETIME)
 add_compile_definitions(FAKE_RTC)
-if(NOT PICO_BOARD STREQUAL "pico_w") 
-add_compile_definitions(INCORPORATE_THERMOSTAT)
-add_compile_definitions(INCORPORATE_HOME_CONTROLLER)
-endif()
+# if(NOT PICO_BOARD STREQUAL "pico_w") 
+# add_compile_definitions(INCORPORATE_THERMOSTAT)
+# add_compile_definitions(INCORPORATE_HOME_CONTROLLER)
+# endif()
 
 # initialize pico-sdk from submodule
 include(pico-sdk/pico_sdk_init.cmake)
@@ -62,19 +62,53 @@ else()
 include(FreeRTOS_Kernel_import.cmake)
 endif()
 
+# create "generated" directory
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/generated)
+
+# create githash used instead of APP_VERSION for debug builds
 message("Creating githash.h")
 execute_process(COMMAND
         ./create_githash_h
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         )
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")       
+        add_compile_definitions(USE_GIT_HASH_AS_VERSION)
+endif()
 
+# create html binary blob source file
 message("Running makefsdata python script")
 execute_process(COMMAND
         ./makefsdata.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         )
 
-set(usurper_source_files
+#add_executable(pio_ws2812)
+
+# generate the ws2812.pio.h 
+#pico_generate_pio_header(usurper ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
+
+# target_sources(pio_ws2812 PRIVATE ws2812.c)
+
+# target_link_libraries(pio_ws2812 PRIVATE pico_stdlib hardware_pio)
+# pico_add_extra_outputs(pio_ws2812)
+
+
+# create pio header file for controlling addressable led strips 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio
+        COMMAND Pioasm -o python ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
+        VERBATIM)
+
+# generate tm1637.pio.h
+# pico_generate_pio_header(pio_tm1637 ${CMAKE_CURRENT_LIST_DIR}/tm1637.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
+
+# create pio header file for controlling seven segnment display 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/tm1637.py
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/tm1637.pio
+        COMMAND Pioasm -o python ${CMAKE_CURRENT_LIST_DIR}/tm1637.pio ${CMAKE_CURRENT_LIST_DIR}/generated/tm1637.py
+        VERBATIM)        
+
+set(common_source_files
         pluto.c
         weather.c
         flash.c
@@ -88,57 +122,23 @@ set(usurper_source_files
         led_strip.c
         sdk_callback.c
         watchdog.c
-        worker_tasks.c
+        # worker_tasks.c
         message.c
         udp.c
         wifi.c
         usurper_ping.c
         ping_core.c
-        #${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/ping.c
         )
 
-if(NOT PICO_BOARD STREQUAL "pico_w")
-        set(usurper_source_files ${usurper_source_files}        
-        thermostat.c
-        powerwall.c
-        shelly.c
-        json_parser.c
-        hc_task.c)        
-endif()  
-
-
-add_executable(${PROJECT_NAME} ${usurper_source_files})      
-
-# Add executable. Default name is the project name, version 0.1
-pico_set_program_name(${PROJECT_NAME} "usurper")
-pico_set_program_version(${PROJECT_NAME} ${APP_VERSION})
-
-# Enable/disable output over UART/USB
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        pico_enable_stdio_usb(${PROJECT_NAME} 1)
-        pico_enable_stdio_uart(${PROJECT_NAME} 0)
-else() 
-        pico_enable_stdio_usb(${PROJECT_NAME} 0)
-        pico_enable_stdio_uart(${PROJECT_NAME} 1)
-        add_compile_definitions(USE_GIT_HASH_AS_VERSION)
-endif()
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/ 
-        if(PICO_BOARD STREQUAL "pico_w")
-        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
-        else()
-        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/include/
-        endif()        
-        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
-        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_arch/include/
-        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/cyw43-driver/src/
-        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_driver/include/
-        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/src/apps/altcp_tls/
-        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/mbedtls/include/
-        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/
-        )
+# if(NOT PICO_BOARD STREQUAL "pico_w")
+#         set(usurper_source_files ${usurper_source_files}        
+#                 thermostat.c
+#                 powerwall.c
+#                 shelly.c
+#                 json_parser.c
+#                 hc_task.c
+#                 discovery_task.c)        
+# endif()  
 
 set(usurper_link_libraries
         pico_cyw43_arch_lwip_sys_freertos
@@ -160,17 +160,181 @@ if(NOT PICO_BOARD STREQUAL "pico_w")
                 pico_mbedtls)        
 endif()
 
+
+# ====================================================================================
+# Usurper
+if(NOT PICO_BOARD STREQUAL "pico_w")
+        set(usurper_source_files ${common_source_files}   
+                worker_tasks.c     
+                thermostat.c
+                powerwall.c
+                shelly.c
+                json_parser.c
+                hc_task.c
+                discovery_task.c
+                tm1637.c)        
+endif()  
+
+add_executable(${PROJECT_NAME} ${usurper_source_files})      
+target_compile_definitions(${PROJECT_NAME} PRIVATE APP_NAME="Usurper")
+if(NOT PICO_BOARD STREQUAL "pico_w") 
+target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_THERMOSTAT)
+target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_HOME_CONTROLLER)
+endif()
+
+pico_generate_pio_header(usurper ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
+
+# Add executable name and version
+pico_set_program_name(${PROJECT_NAME} "usurper")
+pico_set_program_version(${PROJECT_NAME} ${APP_VERSION})
+
+# Enable/disable output over UART/USB
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        pico_enable_stdio_usb(${PROJECT_NAME} 1)
+        pico_enable_stdio_uart(${PROJECT_NAME} 0)      
+else() 
+        pico_enable_stdio_usb(${PROJECT_NAME} 0)
+        pico_enable_stdio_uart(${PROJECT_NAME} 1)        
+endif()
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/ 
+        if(PICO_BOARD STREQUAL "pico_w")
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
+        else()
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/include/
+        endif()        
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_arch/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/cyw43-driver/src/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_driver/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/src/apps/altcp_tls/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/mbedtls/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/
+        )
+
+
+
+
 target_link_libraries(${PROJECT_NAME} ${usurper_link_libraries})
+
 
 # create uf2 
 pico_add_extra_outputs(${PROJECT_NAME})
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/generated)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
-        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio
-        COMMAND Pioasm -o python ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
-        VERBATIM)
+
+# ====================================================================================
+# Thermostat
+if(NOT PICO_BOARD STREQUAL "pico_w")
+        set(thermostat_source_files ${common_source_files}
+                thermostat/worker_tasks.c        
+                thermostat.c
+                powerwall.c
+                json_parser.c
+                tm1637.c)        
+endif()  
+
+add_executable(thermostat ${thermostat_source_files})  
+target_compile_definitions(thermostat PRIVATE APP_NAME="Thermostat")
+if(NOT PICO_BOARD STREQUAL "pico_w") 
+target_compile_definitions(thermostat PRIVATE INCORPORATE_THERMOSTAT)
+endif()
+
+pico_generate_pio_header(thermostat ${CMAKE_CURRENT_LIST_DIR}/tm1637.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
+
+pico_set_program_name(thermostat "thermostat")
+pico_set_program_version(thermostat ${APP_VERSION})
+
+# Enable/disable output over UART/USB
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        pico_enable_stdio_usb(thermostat 1)
+        pico_enable_stdio_uart(thermostat 0)        
+else() 
+        pico_enable_stdio_usb(thermostat 0)
+        pico_enable_stdio_uart(thermostat 1)        
+endif()
+
+target_include_directories(thermostat PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/ 
+        if(PICO_BOARD STREQUAL "pico_w")
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
+        else()
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/include/
+        endif()        
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_arch/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/cyw43-driver/src/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_driver/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/src/apps/altcp_tls/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/mbedtls/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/
+        )
+
+target_link_libraries(thermostat ${usurper_link_libraries})
+
+# create uf2 
+pico_add_extra_outputs(thermostat)
+
+
+
+# ====================================================================================
+# Home Controller
+if(NOT PICO_BOARD STREQUAL "pico_w")
+        set(home_controller_source_files ${common_source_files}   
+                home_controller/worker_tasks.c   
+                #thermostat.c
+                powerwall.c
+                shelly.c
+                json_parser.c
+                hc_task.c
+                discovery_task.c)        
+endif()  
+
+add_executable(home_controller ${home_controller_source_files})  
+target_compile_definitions(home_controller PRIVATE APP_NAME="Home_Controller")
+if(NOT PICO_BOARD STREQUAL "pico_w") 
+# target_compile_definitions(home_controller PRIVATE INCORPORATE_THERMOSTAT)
+target_compile_definitions(home_controller PRIVATE INCORPORATE_HOME_CONTROLLER)
+endif()
+
+pico_set_program_name(home_controller "home_controller")
+pico_set_program_version(home_controller ${APP_VERSION})
+
+# Enable/disable output over UART/USB
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        pico_enable_stdio_usb(home_controller 1)
+        pico_enable_stdio_uart(home_controller 0)        
+else() 
+        pico_enable_stdio_usb(home_controller 0)
+        pico_enable_stdio_uart(home_controller 1)        
+endif()
+
+target_include_directories(home_controller PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/ports/freertos/include/ 
+        if(PICO_BOARD STREQUAL "pico_w")
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/
+        else()
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/include/
+        endif()        
+        ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_arch/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/cyw43-driver/src/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/src/rp2_common/pico_cyw43_driver/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/src/apps/altcp_tls/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/mbedtls/include/
+        ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/
+        )
+
+target_link_libraries(home_controller ${usurper_link_libraries})
+
+# create uf2 
+pico_add_extra_outputs(home_controller)
+
+# ====================================================================================
 
 # TODO -- rebuild modified html without running cmake again
 # pico_set_lwip_httpd_content(pico_httpd_content INTERFACE

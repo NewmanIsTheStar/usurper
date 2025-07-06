@@ -40,6 +40,7 @@
 #include "altcp_tls_mbedtls_structs.h"
 #include "powerwall.h"
 #include "pluto.h"
+#include "tm1637.h"
 
 typedef enum
 {
@@ -162,6 +163,12 @@ const uint ath10_i2c_timeout_us = 50000;                 // i2c timeout when rea
 const uint8_t aht10_initialize[]  = {0xe1, 0x08, 0x00};  // initialize, use_factory_calibration, nop
 const uint8_t aht10_measurement[] = {0xac, 0x33, 0x00};  // start, measurement, nop
 const uint8_t aht10_soft_reset[]  = {0xba};              // soft_reset
+const uint8_t TM1637_test[]  = {0b01000000, 0b11000000, 0b10001000, 0x00, 0xff, 0x7e, 0x01};  
+const uint8_t TM1637_test_command1[]  = {0x40};  
+const uint8_t TM1637_test_command2[]  = {0xC0}; 
+const uint8_t TM1637_test_command3[]  = {0x80}; 
+const uint8_t TM1637_test_data[]  = {0xC0, 0xff, 0x7e, 0x01};  
+
 
 CLIMATE_HISTORY_T climate_history;
 CLIMATE_MOMENTUM_DATA_T climate_momentum;
@@ -193,28 +200,26 @@ void thermostat_task(void *params)
     int i;
 
     // TEST TEST TEST
-    for(i=0; i<6; i++)
+    // tm1637_init(13, 12);
+    // tm1637_display(69, true);
+
+
+    // for(;;)
+    // {
+    //     SLEEP_MS(10000);
+    //     printf("Thermostat Dispay Test\n");
+    // } 
+
+    if (strcasecmp(APP_NAME, "Thermostat") == 0)
     {
-        config.temperature_sensor_remote_ip[i][0]=0;
+        // force personality to match single purpose application
+        config.personality = HVAC_THERMOSTAT;
     }
 
     config.thermostat_enable = 1;
     web.thermostat_hysteresis = 10; 
 
-    //TEST TEST TEST
-    // web.thermostat_set_point = 260;
-    // web.thermostat_hysteresis = 10; 
-    // config.thermostat_enable = 1;
-    // config.heating_gpio = 18;
-    // config.cooling_gpio = 19;
-    // config.fan_gpio = 20;
-    // for(i=0; i<NUM_ROWS(config.gpio_default); i++)
-    // {
-    //     config.gpio_default[i] = GP_UNINITIALIZED;
-    // }
-    // config.gpio_default[21] = GP_OUTPUT_LOW;
-
-    //TODO Add advanced config web page to control these parameters
+    //TODO Add web page to control these parameters
     config.heating_to_cooling_lockout_mins = 1;
     config.minimum_heating_on_mins = 1;
     config.minimum_cooling_on_mins = 1;
@@ -259,17 +264,29 @@ void thermostat_task(void *params)
             gpio_set_dir(config.fan_gpio, true);
         }  
     }
-    //TEST TEST TEST
-    // gpio_init(21);    
-    // gpio_put(21, 0);
-    // gpio_set_dir(21, true);      
-
-    // initialize i2c
+  
+    // initialize i2c for temperature sensor
     i2c_init(i2c1, 100000);
     gpio_set_function(14, GPIO_FUNC_I2C);
     gpio_set_function(15, GPIO_FUNC_I2C);
     gpio_pull_up(14);
     gpio_pull_up(15);
+
+    // initialize i2c for display
+    i2c_init(i2c0, 100000);
+    gpio_set_function(12, GPIO_FUNC_I2C);
+    gpio_set_function(13, GPIO_FUNC_I2C);
+    gpio_pull_up(12);
+    gpio_pull_up(13);
+
+    // TEST TEST TEST
+    printf("Write to display\n");
+    //i2c_write_timeout_us(i2c0, aht10_addr, TM1637_test, sizeof(TM1637_test), false, ath10_i2c_timeout_us);
+    i2c_write_timeout_us(i2c0, 0x40, TM1637_test_command1, sizeof(TM1637_test_command1), false, ath10_i2c_timeout_us);
+    i2c_write_timeout_us(i2c0, 0xC0, TM1637_test_data, sizeof(TM1637_test_data), false, ath10_i2c_timeout_us);
+    i2c_write_timeout_us(i2c0, 0x80, TM1637_test_command3, sizeof(TM1637_test_command3), false, ath10_i2c_timeout_us);         
+    printf("Finished writing to display\n");
+
 
     powerwall_init();
 

@@ -1,2 +1,14 @@
 #!/bin/bash
-minicom -b 115200 -o -D /dev/ttyACM0
+device_path="/dev/ttyACM0"
+
+while true; do
+  if [ -c "$device_path" ]; then
+    echo "Device found at $device_path"
+    minicom -b 115200 -o -D /dev/ttyACM0
+    break
+  else
+    echo "Device not found at $device_path. Retrying in 5 seconds..."
+    sleep 5 # Wait for 5 seconds before retrying
+  fi
+done
+

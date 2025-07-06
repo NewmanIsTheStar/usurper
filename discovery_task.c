@@ -56,7 +56,7 @@
 #include "message_defs.h"
 #include "powerwall.h"
 #include "shelly.h"
-#include "hc_task.h"
+#include "discovery_task.h"
 
 
 //#define DEBUG_UDP_MESSAGES
@@ -84,28 +84,19 @@ extern WEB_VARIABLES_T web;
  * 
  * \return nothing
  */
-void hc_task(__unused void *params) 
+void discovery_task(__unused void *params) 
 {
     SOCKADDR_IN sClientAddress;  
-    int received_bytes = 0;    
+    int received_bytes = 0;         
     
-    if (strcasecmp(APP_NAME, "Home_Controller") == 0)
-    {
-        // force personality to match single purpose application
-        config.personality = HOME_CONTROLLER;
-    }    
-    
-    printf("home controller task started\n");
+    printf("discovery task started\n");
     while (true)
     {        
         if ((config.personality == HOME_CONTROLLER))
         {
-            //TEST TEST TEST
-            // printf("Begin shelly test\n");
-            // discover_shelly_devices();
-            // printf("End shelly test\n");
-            printf("Home Controller\n");
-            SLEEP_MS(60000);
+            printf("Begin shelly device discovery\n");
+            discover_shelly_devices();
+            printf("End shelly shelly device discovery\n");
         }
         else
         {

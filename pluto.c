@@ -27,7 +27,7 @@
 #include "task.h"
 
 #include "weather.h"
-#include "led_strip.h"
+// #include "led_strip.h"
 #include "cgi.h"
 #include "flash.h"
 #include "utility.h"
@@ -36,9 +36,9 @@
 #include "worker_tasks.h"
 #include "wifi.h"
 #include "calendar.h"
-#include "powerwall.h"
-#include "shelly.h"
-#include  "usurper_ping.h"
+// #include "powerwall.h"
+// #include "shelly.h"
+// #include  "usurper_ping.h"
 #include "pluto.h"
 
 #include "ssi.h"
@@ -46,8 +46,9 @@
 #include "githash.h"
 #endif
 
+#ifndef APP_NAME
 #define APP_NAME "USURPER"
-
+#endif
 
 #ifndef RUN_FREERTOS_ON_CORE
 #define RUN_FREERTOS_ON_CORE 0
@@ -166,6 +167,7 @@ void boss_task(__unused void *params)
     ip_addr_t ip = {0};
     ip_addr_t nm = {0};
     ip_addr_t gw = {0};
+    BaseType_t task_creation_status = 0;
     
     // start watchdog
     xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
@@ -239,7 +241,8 @@ void boss_task(__unused void *params)
     printf("Starting worker tasks\n");       
     for(worker=0; worker_tasks[worker].functionptr != NULL; worker++)
     {
-        xTaskCreate(worker_tasks[worker].functionptr, worker_tasks[worker].name, worker_tasks[worker].stack_size, &(worker_tasks[worker].watchdog_alive_indicator), worker_tasks[worker].priority, &(worker_tasks[worker].task_handle));
+        task_creation_status = xTaskCreate(worker_tasks[worker].functionptr, worker_tasks[worker].name, worker_tasks[worker].stack_size, &(worker_tasks[worker].watchdog_alive_indicator), worker_tasks[worker].priority, &(worker_tasks[worker].task_handle));
+        printf("WORKER TASK %d :: xTaskCreate returned %d\n", worker, task_creation_status);
         SLEEP_MS(1000);
     }    
 

@@ -70,7 +70,8 @@ void setTimeSec(uint32_t sec);
 #define LWIP_DHCP_DOES_ACD_CHECK    0
 #define LWIP_IGMP                   1 // Newman added this row and enabled
 
-#ifdef INCORPORATE_THERMOSTAT
+// TODO Why is this conditional???
+#if defined(INCORPORATE_THERMOSTAT) || defined(INCORPORATE_HOME_CONTROLLER)
 #define LWIP_ALTCP               1  // Newman used for TLS testing
 #define LWIP_ALTCP_TLS           1  // Newman used for TLS testing 
 #define LWIP_ALTCP_TLS_MBEDTLS   1  // Newman used for TLS testing
