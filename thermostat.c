@@ -149,6 +149,7 @@ bool hvac_timer_expired(CLIMATE_TIMER_INDEX_T timer_index);
 int update_current_setpoints(THERMOSTAT_STATE_T last_active);
 void vTimerCallback(TimerHandle_t xTimer);
 void hvac_log_state_change(THERMOSTAT_STATE_T new_state);
+void hvac_update_display(int temperaturex10);
 
 
 // external variables
@@ -380,7 +381,9 @@ void thermostat_task(void *params)
                     web.thermostat_temperature = temperaturex10;
                     
                     // update seven segment display
-                    tm1637_display(temperaturex10, false);
+                    //tm1637_display(temperaturex10, false);
+
+                    hvac_update_display(temperaturex10);
                 }
                 else
                 {
@@ -1330,3 +1333,54 @@ void hvac_log_state_change(THERMOSTAT_STATE_T new_state)
         hvac_state_change_log_index = (hvac_state_change_log_index + 1) % NUM_ROWS(hvac_state_change_log);
     }
 }
+
+
+ /*!
+ * \brief Control Seven Segment Display
+ *
+ * \param[in]   timer handle      handle of timer that expired
+ * 
+ * \return nothing
+ */
+void hvac_update_display(int temperaturex10)
+{
+    static int display_mode = 0;
+    static TickType_t last_mode_change_tick = 0;
+    TickType_t now_tick = 0;
+
+    now_tick = xTaskGetTickCount();
+    if ((now_tick-last_mode_change_tick) > 1000)
+    {
+        display_mode = (display_mode+1)%7;
+        last_mode_change_tick = now_tick;        
+    }
+
+    switch(display_mode)
+    {
+        default:
+        case 0:
+            // update seven segment display
+            tm1637_display(temperaturex10, false);        
+            break;
+        case 1:
+            tm1637_display_word("OFF", false);       
+            break;  
+        case 2:
+            tm1637_display_word("COOL", false);      
+            break;  
+        case 3:
+            tm1637_display_word("HEAT", false);     
+            break;      
+        case 4:
+            tm1637_display_word("AUTO", false);    
+            break;   
+        case 5:
+            tm1637_display_word("FAN", false);    
+            break;                                               
+        case 6:
+            tm1637_display(web.thermostat_set_point, false); 
+            break;
+    }
+}
+
+
