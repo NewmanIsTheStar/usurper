@@ -164,7 +164,7 @@ const uint ath10_i2c_timeout_us = 50000;                 // i2c timeout when rea
 const uint8_t aht10_initialize[]  = {0xe1, 0x08, 0x00};  // initialize, use_factory_calibration, nop
 const uint8_t aht10_measurement[] = {0xac, 0x33, 0x00};  // start, measurement, nop
 const uint8_t aht10_soft_reset[]  = {0xba};              // soft_reset
-
+int temporary_set_point_offsetx10 = 0;
 
 CLIMATE_HISTORY_T climate_history;
 CLIMATE_MOMENTUM_DATA_T climate_momentum;
@@ -223,6 +223,14 @@ void thermostat_task(void *params)
     config.minimum_heating_off_mins = 1;
     config.minimum_cooling_off_mins = 1;
 
+    // TEST TEST TEST
+    gpio_init(16);
+    gpio_set_dir(16, false);    
+    gpio_pull_up(16);
+
+    gpio_init(17);
+    gpio_set_dir(17, false);    
+    gpio_pull_up(17);    
 
     printf("thermostat_task started!\n");
 
@@ -399,6 +407,18 @@ void thermostat_task(void *params)
             }
 
             SLEEP_MS(1000);
+
+            if (gpio_get(16) == false)
+            {                
+                temporary_set_point_offsetx10+=10;
+                printf("Button pressed. Setpoint offset = %d\n", temporary_set_point_offsetx10);                
+            }
+
+            if (gpio_get(17) == false)
+            {                
+                temporary_set_point_offsetx10-=10;
+                printf("Button pressed. Setpoint offset = %d\n", temporary_set_point_offsetx10);                
+            }            
         }  
         else
         {
@@ -901,9 +921,10 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     int i;
     int mow;
     int candidate_start_mow = 0;
-    int setpointtemperaturex10 = 0;
+    static int setpointtemperaturex10 = 0;
     static bool cooling_disabled = false;
     static bool heating_disabled = false;
+    static int current_start_mow = 0;
 
     // get setpoint according to schedule
     if (!get_mow_local_tz(&mow))
@@ -913,11 +934,41 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
             if ((config.setpoint_start_mow[i] < mow) &&
                 (config.setpoint_start_mow[i] > candidate_start_mow))
             {
-                setpointtemperaturex10 = config.setpoint_temperaturex10[i];
+                setpointtemperaturex10 = config.setpoint_temperaturex10[i] + temporary_set_point_offsetx10;
                 candidate_start_mow = config.setpoint_start_mow[i];
             }
         }
     }
+
+    // check if we've entered a new schedule period
+    if (current_start_mow != candidate_start_mow)
+    {
+        current_start_mow = candidate_start_mow;
+
+        // zero out temporary offset
+        temporary_set_point_offsetx10 = 0;
+    }
+    
+    // add temporary offset -- entered by user pressing buttons on front panel
+    setpointtemperaturex10 += temporary_set_point_offsetx10;    
+
+    // sanitize setpoint
+    if (config.use_archaic_units)
+    {
+        // fahrenheit between 60 and 90
+        if ((setpointtemperaturex10 >900) || (setpointtemperaturex10<600))
+        {
+            setpointtemperaturex10 = 700;
+        }
+    }
+    else
+    {
+        // celcius between 21 and 32
+        if ((setpointtemperaturex10 >320) || (setpointtemperaturex10<150))
+        {
+            setpointtemperaturex10 = 210;
+        }
+    }    
 
     // initial set points are identical
     web.thermostat_set_point = setpointtemperaturex10;
