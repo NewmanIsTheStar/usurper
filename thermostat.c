@@ -25,6 +25,7 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 #include "timers.h"
+#include "queue.h"
 
 #include "stdarg.h"
 
@@ -150,6 +151,8 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active);
 void vTimerCallback(TimerHandle_t xTimer);
 void hvac_log_state_change(THERMOSTAT_STATE_T new_state);
 void hvac_update_display(int temperaturex10);
+void enable_irq(bool state);
+void gpio_isr(uint gpio, uint32_t events);
 
 
 // external variables
@@ -173,6 +176,9 @@ CLIMATE_TIMERS_T climate_timers[NUM_HVAC_TIMERS];
 int hvac_state_change_log_index = 0;
 HVAC_STATE_CHANGE_LOG_T hvac_state_change_log[32];
 
+QueueHandle_t irq_queue = NULL;
+uint8_t passed_value;
+
 /*!
  * \brief Monitor weather and control relay based on conditions and schedule
  *
@@ -195,6 +201,10 @@ void thermostat_task(void *params)
     int retry = 0;
     int oneshot = false;
     int i;
+
+    irq_queue = xQueueCreate(1, sizeof(uint8_t));
+
+     enable_irq(true);
 
     // TEST TEST TEST
     // tm1637_init(13, 12);
@@ -407,6 +417,23 @@ void thermostat_task(void *params)
             }
 
             SLEEP_MS(1000);
+
+            // Wait up to 1000ms or until an IRQ is received
+            if (xQueueReceive(irq_queue, &passed_value, 1000) == pdPASS)
+            {
+                switch(passed_value)
+                {
+                    default:
+                        printf("Unexpected IRQ in message: %d\n", passed_value);
+                        printf("WARNING: not reenabling IRQ\n");
+                        break;
+                    case 16:
+                    case 17:
+                        printf("IRQ detected from GPIO%d\n", passed_value);
+                        enable_irq(true);
+                        break;
+                }
+            }
 
             if (gpio_get(16) == false)
             {                
@@ -1434,4 +1461,21 @@ void hvac_update_display(int temperaturex10)
     }
 }
 
+void enable_irq(bool state) {
+    gpio_set_irq_enabled_with_callback(16,
+                                       GPIO_IRQ_EDGE_FALL,
+                                       state,
+                                       &gpio_isr);
+}
 
+void gpio_isr(uint gpio, uint32_t events)
+{
+  // Clear the URQ source
+  enable_irq(false);
+
+  static uint8_t irq_gpio_number = 16;
+
+  // Signal the alert clearance task
+  xQueueSendToBackFromISR(irq_queue, &irq_gpio_number, 0);
+
+}
