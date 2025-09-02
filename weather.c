@@ -637,7 +637,14 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
         snprintf(web.status_message, sizeof(web.status_message), "Next irrigation %s at %02d:%02d", day_name(schedule_start_mow/(24*60)), (schedule_start_mow%(24*60))/60, (schedule_start_mow%(24*60))%60);        
         break;   
     case SCHEDULE_NOW:
-        snprintf(web.status_message, sizeof(web.status_message), "Irrigation in progress (Zone %d)", zone+1); 
+        if (irrigation_state != IRRIGATION_TERMINATED)
+        {
+            snprintf(web.status_message, sizeof(web.status_message), "Irrigation in progress (Zone %d)", zone+1); 
+        }
+        else
+        {
+            snprintf(web.status_message, sizeof(web.status_message), "Irrigation terminated due to weather (Zone %d)", zone+1);    
+        }
         break;
     case SCHEDULE_NEVER: // no irrigation scheduled
         snprintf(web.status_message, sizeof(web.status_message), "No irrigation scheduled"); 

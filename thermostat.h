@@ -8,6 +8,15 @@
 
 typedef enum
 {
+    HVAC_OFF = 0,
+    HVAC_HEATING_ONLY = 1,
+    HVAC_COOLING_ONLY = 2,
+    HVAC_FAN_ONLY = 3,
+    HVAC_AUTO = 4,
+} THERMOSTAT_MODE_T;
+
+typedef enum
+{
     HEATING_AND_COOLING_OFF = 0,
     HEATING_IN_PROGRESS = 1,
     COOLING_IN_PROGRESS = 2,

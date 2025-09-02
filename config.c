@@ -31,6 +31,7 @@ void config_v2_to_v3(void);
 void config_v3_to_v4(void);
 void config_v4_to_v5(void);
 void config_v5_to_v6(void);
+void config_v6_to_v7(void);
 
 
 NON_VOL_VARIABLES_T config;
@@ -42,7 +43,8 @@ static NON_VOL_CONVERSION_T config_info[] =
     {3,      offsetof(NON_VOL_VARIABLES_T_VERSION_3, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_3, crc),   &config_v2_to_v3}, 
     {4,      offsetof(NON_VOL_VARIABLES_T_VERSION_4, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_4, crc),   &config_v3_to_v4},  
     {5,      offsetof(NON_VOL_VARIABLES_T_VERSION_5, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_5, crc),   &config_v4_to_v5}, 
-    {6,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v5_to_v6},             
+    {6,      offsetof(NON_VOL_VARIABLES_T_VERSION_6, version),   offsetof(NON_VOL_VARIABLES_T, crc),             &config_v5_to_v6},   
+    {7,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v6_to_v7},                 
 };
 
 
@@ -272,7 +274,7 @@ void config_v4_to_v5(void)
 }
 
 /*!
- * \brief Convert configuration from v4 to v5 and set default values for new parameters
+ * \brief Convert configuration from v5 to v6 and set default values for new parameters
  * 
  * \return 0 on success, -1 on error
  */
@@ -324,6 +326,39 @@ void config_v5_to_v6(void)
     }     
 
 }
+
+/*!
+ * \brief Convert configuration from v6 to v7 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v6_to_v7(void)
+{
+    int i = 0;
+    int j = 0;
+
+    printf("Converting configuration from version 6 to version 7\n"); 
+    config.version = 7;     
+
+    // config.thermostat_mode_button_gpio = GP_UNINITIALIZED;
+    // config.thermostat_increase_button_gpio = GP_UNINITIALIZED;
+    // config.thermostat_decrease_button_gpio = GP_UNINITIALIZED;
+    // config.thermostat_temperature_sensor_clock_gpio = GP_UNINITIALIZED;
+    // config.thermostat_temperature_sensor_data_gpio = GP_UNINITIALIZED;
+    // config.thermostat_seven_segment_display_clock_gpio = GP_UNINITIALIZED;
+    // config.thermostat_seven_segment_display_data_gpio = GP_UNINITIALIZED;   
+    
+    // TEST TEST TEST
+    config.thermostat_mode_button_gpio = 22;
+    config.thermostat_increase_button_gpio = 16;
+    config.thermostat_decrease_button_gpio = 17;
+    config.thermostat_temperature_sensor_data_gpio = 14;
+    config.thermostat_temperature_sensor_clock_gpio = 15;
+    config.thermostat_seven_segment_display_clock_gpio = 13;
+    config.thermostat_seven_segment_display_data_gpio = 12;      
+
+}
+
 
 
 /*!
