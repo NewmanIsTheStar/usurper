@@ -43,6 +43,25 @@
 #include "pluto.h"
 #include "tm1637.h"
 
+#define SETPOINT_DEFAULT_CELSIUS_X_10 (210)      // 21.0 C
+#define SETPOINT_MAX_CELSIUS_X_10 (320)          // 32.0 C
+#define SETPOINT_MIN_CELSIUS_X_10 (150)          // 15.0 C 
+#define SETPOINT_DEFAULT_FAHRENHEIT_X_10 (700)   // 70.0 F
+#define SETPOINT_MAX_FAHRENHEIT_X_10 (900)       // 90.0 F
+#define SETPOINT_MIN_FAHRENHEIT_X_10 (600)       // 60.0 F
+ 
+
+typedef enum
+{
+    DISPLAY_TEMPERATURE = 0,
+    DISPLAY_HVAC_OFF    = 1,
+    DISPLAY_HVAC_HEAT   = 2,    
+    DISPLAY_HVAC_COOL   = 3,
+    DISPLAY_HVAC_FAN    = 4,
+    DISPLAY_HVAC_AUTO   = 5,
+    DISPLAY_SETPOINT    = 6
+} DISPLAY_STATE_T;
+
 typedef enum
 {
     HEATING_DATASET = 0,
@@ -413,37 +432,8 @@ void thermostat_task(void *params)
 
             //SLEEP_MS(1000);
 
-            // Wait up to 1000ms or until an IRQ is received
-            handle_button_press_with_timeout(irq_queue, 1000);
-
-            // if (xQueueReceive(irq_queue, &passed_value, 1000) == pdPASS)
-            // {
-            //     switch(passed_value)
-            //     {
-            //         default:
-            //             printf("Unexpected IRQ in message: %d\n", passed_value);
-            //             printf("WARNING: not reenabling IRQ\n");
-            //             break;
-            //         case 16:
-            //         case 17:
-            //         case 22:
-            //             printf("IRQ detected from GPIO%d\n", passed_value);
-            //             enable_irq(true);
-            //             break;
-            //     }
-            // }
-
-            // if (gpio_get(config.thermostat_increase_button_gpio) == false)
-            // {                
-            //     temporary_set_point_offsetx10+=10;
-            //     printf("Button pressed. Setpoint offset = %d\n", temporary_set_point_offsetx10);                
-            // }
-
-            // if (gpio_get(config.thermostat_decrease_button_gpio) == false)
-            // {                
-            //     temporary_set_point_offsetx10-=10;
-            //     printf("Button pressed. Setpoint offset = %d\n", temporary_set_point_offsetx10);                
-            // }            
+            // wait up to 1000ms or until an IRQ is received
+            handle_button_press_with_timeout(irq_queue, 1000);         
         }  
         else
         {
@@ -465,7 +455,10 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
     static THERMOSTAT_STATE_T thermostat_state = HEATING_AND_COOLING_OFF;
     static THERMOSTAT_STATE_T last_active = HEATING_AND_COOLING_OFF;
     static THERMOSTAT_STATE_T next_active = HEATING_AND_COOLING_OFF;  
-    TickType_t lockout_remaining_ticks = 0;       
+    TickType_t lockout_remaining_ticks = 0;  
+    bool cooling_allowed = false;
+    bool heating_allowed = false;
+    bool fan_allowed = false;     
 
     // check powerwall status -- TODO move up a level?
     powerwall_check();
@@ -473,12 +466,43 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
     // determine current setpoints based on schedule and powerwall status
     update_current_setpoints(last_active);
 
+    // determine permitted operations
+    switch(mode)
+    {
+        default:
+        case HVAC_OFF:
+            cooling_allowed = false;
+            heating_allowed = false;
+            fan_allowed = false;
+            break;
+        case HVAC_HEATING_ONLY:
+            cooling_allowed = false;
+            heating_allowed = true;
+            fan_allowed = true;
+            break;            
+        case HVAC_COOLING_ONLY:
+            cooling_allowed = true;
+            heating_allowed = false;
+            fan_allowed = true;
+            break;
+        case HVAC_FAN_ONLY:
+            cooling_allowed = false;
+            heating_allowed = false;
+            fan_allowed = true;
+            break;        
+        case HVAC_AUTO:       
+            cooling_allowed = true;
+            heating_allowed = true;
+            fan_allowed = true;
+            break;        
+    }    
+
     // update thermostat state
     switch(thermostat_state)
     {
     default:    
     case HEATING_AND_COOLING_OFF:
-        if (temperaturex10 > (web.thermostat_cooling_set_point + web.thermostat_hysteresis))
+        if (cooling_allowed & (temperaturex10 > (web.thermostat_cooling_set_point + web.thermostat_hysteresis)))
         {
             if (last_active != HEATING_IN_PROGRESS)
             {
@@ -507,7 +531,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                 next_active =  HEATING_AND_COOLING_OFF;
                 last_active =  HEATING_AND_COOLING_OFF;                                   
             }
-        } else if (temperaturex10 < (web.thermostat_heating_set_point - web.thermostat_hysteresis))
+        } else if (heating_allowed && (temperaturex10 < (web.thermostat_heating_set_point - web.thermostat_hysteresis)))
         {
             if (last_active != COOLING_IN_PROGRESS)
             {
@@ -980,17 +1004,19 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     if (config.use_archaic_units)
     {
         // fahrenheit between 60 and 90
-        if ((setpointtemperaturex10 >900) || (setpointtemperaturex10<600))
+     
+
+        if ((setpointtemperaturex10 > SETPOINT_MAX_FAHRENHEIT_X_10) || (setpointtemperaturex10 < SETPOINT_MIN_FAHRENHEIT_X_10))
         {
-            setpointtemperaturex10 = 700;
+            setpointtemperaturex10 = SETPOINT_DEFAULT_FAHRENHEIT_X_10;
         }
     }
     else
     {
-        // celcius between 21 and 32
-        if ((setpointtemperaturex10 >320) || (setpointtemperaturex10<150))
+        // celsius between 15 and 32
+        if ((setpointtemperaturex10 > SETPOINT_MAX_CELSIUS_X_10) || (setpointtemperaturex10 < SETPOINT_MIN_CELSIUS_X_10))
         {
-            setpointtemperaturex10 = 210;
+            setpointtemperaturex10 = SETPOINT_DEFAULT_CELSIUS_X_10;
         }
     }    
 
@@ -1434,19 +1460,19 @@ void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hv
         {
         default:
         case HVAC_OFF:
-            display_state = 1;
+            display_state = DISPLAY_HVAC_OFF;
             break;
         case HVAC_HEATING_ONLY:
-            display_state = 2;
+            display_state = DISPLAY_HVAC_HEAT;
             break;
         case HVAC_COOLING_ONLY:
-            display_state = 3;
+            display_state = DISPLAY_HVAC_COOL;
             break;
         case HVAC_FAN_ONLY:
-            display_state = 4;
+            display_state = DISPLAY_HVAC_FAN;
             break;
         case HVAC_AUTO:
-            display_state = 5;
+            display_state = DISPLAY_HVAC_AUTO;
             break;
         }
 
@@ -1456,7 +1482,7 @@ void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hv
     else if (hvac_setpointx10 != last_hvac_setpoint)
     {
         // process setpoint change
-        display_state = 6;
+        display_state = DISPLAY_SETPOINT;
 
         last_hvac_setpoint = hvac_setpointx10;
         last_display_state_change_tick = now_tick;        
@@ -1464,32 +1490,31 @@ void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hv
     else if ((now_tick-last_display_state_change_tick) > 10000)
     {
         // revert to displaying current temperature
-        display_state = 0;    
+        display_state = DISPLAY_TEMPERATURE;    
     }
 
     switch(display_state)
     {
         default:
-        case 0:
-            // update seven segment display
+        case DISPLAY_TEMPERATURE:
             tm1637_display(temperaturex10/10, false);        
             break;
-        case 1:
+        case DISPLAY_HVAC_OFF:
             tm1637_display_word("OFF", false);       
             break;  
-        case 2:
+        case DISPLAY_HVAC_HEAT:
             tm1637_display_word("HEAT", false);     
             break;             
-        case 3:
+        case DISPLAY_HVAC_COOL:
             tm1637_display_word("COOL", false);      
             break;  
-        case 4:
+        case DISPLAY_HVAC_FAN:
             tm1637_display_word("FAN", false);    
             break;             
-        case 5:
+        case DISPLAY_HVAC_AUTO:
             tm1637_display_word("AUTO", false);    
             break;                                                 
-        case 6:
+        case DISPLAY_SETPOINT:
             tm1637_display(hvac_setpointx10/10, false); 
             break;
     }
