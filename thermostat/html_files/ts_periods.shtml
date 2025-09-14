@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="<!--#rpage-->">Relay</a>
+    <a href="/weather.shtml">Weather</a>
+    <a href="/moodlight.shtml">Moodlight</a>     
+    <a href="/addressable_led.shtml">LED strip</a>
+    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/units.shtml">Foibles</a>     
+    <a href="/status.shtml">Status</a>   
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>Temperature Control Periods</h2>      
+  <form action="/periods.cgi">             
+    <input type="text" id="ts1st" name="ts1st" value="<!--#ts1st-->" <!--#ts1vz--> > 
+    <input type="text" id="ts1en" name="ts1en" value="<!--#ts1en-->" <!--#ts1vz--> >
+    <input type="text" id="ts1in" name="ts1in" value="<!--#ts1in-->" <!--#ts1vz--> > <br>
+    <input type="text" id="ts2st" name="ts2st" value="<!--#ts2st-->" <!--#ts2vz--> >
+    <input type="text" id="ts2en" name="ts2en" value="<!--#ts2en-->" <!--#ts2vz--> >
+    <input type="text" id="ts2in" name="ts2in" value="<!--#ts2in-->" <!--#ts2vz--> > <br>
+    <input type="text" id="ts3st" name="ts3st" value="<!--#ts3st-->" <!--#ts3vz--> >
+    <input type="text" id="ts3en" name="ts3en" value="<!--#ts3en-->" <!--#ts3vz--> >
+    <input type="text" id="ts3in" name="ts3in" value="<!--#ts3in-->" <!--#ts3vz--> > <br>
+    <input type="text" id="ts4st" name="ts4st" value="<!--#ts4st-->" <!--#ts4vz--> >
+    <input type="text" id="ts4en" name="ts4en" value="<!--#ts4en-->" <!--#ts4vz--> >
+    <input type="text" id="ts4in" name="ts4in" value="<!--#ts4in-->" <!--#ts4vz--> > <br>
+    <input type="text" id="ts5st" name="ts5st" value="<!--#ts5st-->" <!--#ts5vz--> >
+    <input type="text" id="ts5en" name="ts5en" value="<!--#ts5en-->" <!--#ts5vz--> >
+    <input type="text" id="ts5in" name="ts5in" value="<!--#ts5in-->" <!--#ts5vz--> > <br>
+    <input type="text" id="ts6st" name="ts6st" value="<!--#ts6st-->" <!--#ts6vz--> >
+    <input type="text" id="ts6en" name="ts6en" value="<!--#ts6en-->" <!--#ts6vz--> >
+    <input type="text" id="ts6in" name="ts6in" value="<!--#ts6in-->" <!--#ts6vz--> > <br>
+    <input type="text" id="ts7st" name="ts7st" value="<!--#ts7st-->" <!--#ts7vz--> >
+    <input type="text" id="ts7en" name="ts7en" value="<!--#ts7en-->" <!--#ts7vz--> >
+    <input type="text" id="ts7in" name="ts7in" value="<!--#ts7in-->" <!--#ts7vz--> > <br>
+    <input type="text" id="ts8st" name="ts8st" value="<!--#ts8st-->" <!--#ts8vz--> >
+    <input type="text" id="ts8en" name="ts8en" value="<!--#ts8en-->" <!--#ts8vz--> >
+    <input type="text" id="ts8in" name="ts8in" value="<!--#ts8in-->" <!--#ts8vz--> > <br>
+    <input type="text" id="ts9st" name="ts9st" value="<!--#ts9st-->" <!--#ts9vz--> >
+    <input type="text" id="ts9en" name="ts9en" value="<!--#ts9en-->" <!--#ts9vz--> >
+    <input type="text" id="ts9in" name="ts9in" value="<!--#ts9in-->" <!--#ts9vz--> > <br>
+    <input type="text" id="ts10st" name="ts10st" value="<!--#ts10st-->" <!--#ts10vz--> >
+    <input type="text" id="ts10en" name="ts10en" value="<!--#ts10en-->" <!--#ts10vz--> >
+    <input type="text" id="ts10in" name="ts10in" value="<!--#ts10in-->" <!--#ts10vz--> > <br>
+    <input type="text" id="ts11st" name="ts11st" value="<!--#ts11st-->" <!--#ts11vz--> >
+    <input type="text" id="ts11en" name="ts11en" value="<!--#ts11en-->" <!--#ts11vz--> >
+    <input type="text" id="ts11in" name="ts11in" value="<!--#ts11in-->" <!--#ts11vz--> > <br>
+    <input type="text" id="ts12st" name="ts12st" value="<!--#ts12st-->" <!--#ts12vz--> >
+    <input type="text" id="ts12en" name="ts12en" value="<!--#ts12en-->" <!--#ts12vz--> >
+    <input type="text" id="ts12in" name="ts12in" value="<!--#ts12in-->" <!--#ts12vz--> > <br>
+    <br>
+    <br>
+    <input type="submit" value="Save" style="font-size: 25px;">
+  </form> 
+  <br>  
+  <form action="/reboot.cgi" method="get">
+    <input type="submit" value="Reboot" name="reboot" id="reboot" style="font-size: 25px;">
+</form>    
+</div>
+   
+</body>
+</html> 
+  

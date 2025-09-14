@@ -314,7 +314,8 @@ void thermostat_task(void *params)
             {
                 // TODO make display pins configurable
                 tm1637_init(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
-                tm1637_display(0, true);
+                //tm1637_display(0, true);
+                tm1637_display_word("BOOT", false);
 
                 tm1637_initialized = true;               
             }
@@ -649,7 +650,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         }
         else
         {
-            printf("HVAC CONTROL DAMPING LOCKOUT -- no control changed permitted at present\n");
+            //printf("HVAC CONTROL DAMPING LOCKOUT -- no control changed permitted at present\n");
         }               
         break;    
     case EXCESSIVE_OVERSHOOT:    
@@ -1576,13 +1577,13 @@ int handle_button_press_with_timeout(QueueHandle_t irq_queue, TickType_t timeout
     if (gpio_get(config.thermostat_increase_button_gpio) == false)
     {                
         temporary_set_point_offsetx10+=10;
-        printf("Button pressed. Setpoint offset = %d\n", temporary_set_point_offsetx10);                
+        printf("INCREASE Button pressed. Setpoint offset = %d\n", temporary_set_point_offsetx10);                
     }
 
     if (gpio_get(config.thermostat_decrease_button_gpio) == false)
     {                
         temporary_set_point_offsetx10-=10;
-        printf("Button pressed. Setpoint offset = %d\n", temporary_set_point_offsetx10);                
+        printf("DECREASE Button pressed. Setpoint offset = %d\n", temporary_set_point_offsetx10);                
     }
 
     if (gpio_get(config.thermostat_mode_button_gpio) == false)
@@ -1590,7 +1591,7 @@ int handle_button_press_with_timeout(QueueHandle_t irq_queue, TickType_t timeout
         mode++;
         if (mode > HVAC_AUTO) mode = HVAC_OFF;
 
-        printf("Button pressed. Mode = %d\n", mode);                
+        printf("MODE Button pressed. Mode = %d\n", mode);                
     }
     
     printf("TEMP = %d SETPOINT = %d MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, mode);

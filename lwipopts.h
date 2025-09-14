@@ -18,7 +18,7 @@ void setTimeSec(uint32_t sec);
 #define SNTP_SET_SYSTEM_TIME(sec)   setTimeSec(sec)
 #define MEMP_NUM_SYS_TIMEOUT        (LWIP_NUM_SYS_TIMEOUT_INTERNAL+1)
 #define LWIP_DHCP_MAX_NTP_SERVERS   (4)
-#define HTTPD_FSDATA_FILE           "htmldata.c"
+//#define HTTPD_FSDATA_FILE           "htmldata.c"
 #define LWIP_HTTPD_SSI_INCLUDE_TAG  (0)
 #define LWIP_HTTPD_SSI              (1)
 #define LWIP_HTTPD_CGI              (1)
@@ -78,6 +78,7 @@ void setTimeSec(uint32_t sec);
 #define ALTCP_MBEDTLS_AUTHMODE      MBEDTLS_SSL_VERIFY_NONE // MBEDTLS_SSL_VERIFY_REQUIRED -- Newman used for TLS testing
 #endif
 
+//#define NDEBUG 1 // Newman added
 #ifndef NDEBUG 
 #define LWIP_DEBUG                  1
 #define LWIP_STATS                  1

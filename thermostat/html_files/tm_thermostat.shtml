@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+    <style>
+        h1 {text-align: left; font-size: 2vw; font-weight: bold;}
+        h2 {text-align: left;}        
+        p {text-align: left;}
+        div {text-align: left;}
+        .btn-group button {
+            background-color: #6baf96; /* Green background */
+            border: 1px solid green; /* Green border */
+            color: white; /* White text */
+            padding: 10px 24px; /* Some padding */
+            cursor: pointer; /* Pointer/hand icon */
+            float: left; /* Float the buttons side by side */
+            font-size: 2vw; 
+            font-family: "Lato", sans-serif;
+        }
+
+        /* Clear floats (clearfix hack) */
+        .btn-group:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .btn-group button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        /* Add a background color on hover */
+        btn-group button:hover {
+            background-color: #b5cf21;
+        }
+
+        .btn-group-title button {
+            background-color: #04AA6D; /* Green background */
+            border: 1px solid green; /* Green border */
+            color: white; /* White text */
+            padding: 10px 24px; /* Some padding */
+            cursor: pointer; /* Pointer/hand icon */
+            float: left; /* Float the buttons side by side */
+            font-weight: bold;
+            font-size: 2vw; 
+            font-family: "Lato", sans-serif; 
+        }
+
+        /* Clear floats (clearfix hack) */
+        .btn-group-title:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .btn-group-title button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        /* Add a background color on hover */
+        btn-group-title button:hover {
+            background-color: #b5cf21;
+        }        
+
+        .btn-group-minor button {
+            background-color: #e2d7d5; /* Green background */
+            border: 1px solid green; /* Green border */
+            color: rgb(0, 0, 0); /* White text */
+            cursor: pointer; /* Pointer/hand icon */
+            float: left; /* Float the buttons side by side */  
+            font-weight: bold;
+            font-size: 2vw;  
+            font-family: "Lato", sans-serif;       
+        }
+
+        /* Clear floats (clearfix hack) */
+        .btn-group-minor:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .btn-group-minor button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        /* Add a background color on hover */
+        btn-group-minor button:hover {
+            background-color: #b5cf21;
+        }        
+        hr.rounded {
+            border-top: 8px solid #bbb;
+            border-radius: 5px;
+        }        
+     </style>
+
+    <head>
+        <title>HVAC Controller</title>
+        <link rel="icon" type="image/x-icon" href="/sprinkler.ico">
+    </head>
+    <body>
+        <h1 style="font-family:Lato,sans-serif; color: #070000;">HVAC &nbsp;&nbsp;&nbsp;<!--#tct--></h1>
+        <br>
+        <div class="btn-group-title" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%">&nbsp;</button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%">Monday</button></a>     
+            <a href="/t_schedule.cgi?day=2">  <button style="width:13%">Tuesday</button></a>     
+            <a href="/t_schedule.cgi?day=3"><button style="width:13%">Wednesday</button></a>     
+            <a href="/t_schedule.cgi?day=4"> <button style="width:13%">Thursday</button></a>     
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%">Friday</button></a>     
+            <a href="/t_schedule.cgi?day=6"> <button style="width:13%">Saturday</button></a>    
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%">Sunday</button></a>               
+          </div>              
+          
+          <div class="btn-group" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%"><!--#tg1_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg1_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg1_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg1_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg1_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg1_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg1_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg1_7--> </button></a> 
+          </div>
+
+          <div class="btn-group" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%"><!--#tg2_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg2_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg2_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg2_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg2_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg2_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg2_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg2_7--> </button></a> 
+          </div>
+
+          <div class="btn-group" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">  <button style="width:9%"><!--#tg3_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg3_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg3_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg3_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg3_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg3_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg3_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg3_7--> </button></a> 
+          </div>
+
+          <div class="btn-group" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">    <button style="width:9%"><!--#tg4_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg4_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg4_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg4_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg4_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg4_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg4_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg4_7--> </button></a> 
+          </div>
+
+          <div class="btn-group" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">  <button style="width:9%"><!--#tg5_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg5_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg5_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg5_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg5_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg5_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg5_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg5_7--> </button></a> 
+          </div>
+
+          <div class="btn-group" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">    <button style="width:9%"><!--#tg6_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg6_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg6_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg6_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg6_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg6_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg6_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg6_7--> </button></a> 
+          </div>
+           
+          <div class="btn-group" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%"><!--#tg7_0--></button></a>              
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg7_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg7_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg7_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg7_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg7_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg7_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg7_7--> </button></a> 
+          </div> 
+
+          <div class="btn-group" style="width:100%">
+            <a href="/t_schedule.cgi?day=0">   <button style="width:9%"><!--#tg0_0--></button></a>             
+            <a href="/t_schedule.cgi?day=0">   <button style="width:13%"><!--#tg0_1--> </button></a> 
+            <a href="/t_schedule.cgi?day=1">   <button style="width:13%"><!--#tg0_2--> </button></a> 
+            <a href="/t_schedule.cgi?day=2">   <button style="width:13%"><!--#tg0_3--> </button></a> 
+            <a href="/t_schedule.cgi?day=3">   <button style="width:13%"><!--#tg0_4--> </button></a> 
+            <a href="/t_schedule.cgi?day=4">   <button style="width:13%"><!--#tg0_5--> </button></a> 
+            <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg0_6--> </button></a> 
+            <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg0_7--> </button></a> 
+          </div>                    
+          <p><a href="/powerwall.shtml" style="text-decoration:none">&#9881 <small>Settings</small></a></p>                           
+    </body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="<!--#rpage-->">Relay</a>
+    <a href="/weather.shtml">Weather</a>
+    <a href="/moodlight.shtml">Moodlight</a>     
+    <a href="/addressable_led.shtml">LED strip</a>
+    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/units.shtml">Foibles</a>     
+    <a href="/status.shtml">Status</a>   
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>LED Strip Control</h2> 
+  <form action="/aled.cgi">
+    <label for="dsenable">Use LED strips to indicate irrigation status</label>
+    <input type="checkbox" id="lie" name="lie" value="on" style="height:20px; width:20px; vertical-align: middle;" onclick="this.form.submit()"<!--#lie--> ><br><br>       
+    <label for="pattern">Default pattern</label>
+    <a href="/led_pattern.cgi?p=2" style="text-decoration:none"><!--#lpat--></a><br><br>   
+    <label for="pata">Pattern when irrigation active</label>
+    <a href="/led_pattern.cgi?p=0" style="text-decoration:none"><!--#lia--></a><br><br> 
+    <label for="lednum">Pattern when irrigation skipped</label>
+    <a href="/led_pattern.cgi?p=1" style="text-decoration:none"><!--#liu--></a><br><br>  
+    <label for="speed">Pattern transitition delay (ms)</label>
+    <input type="text" id="lspd" name="lspd" value="<!--#lspd-->"><br><br>     
+    <label for="lednum">Sustain pattern after irrigation (minutes)</label>
+    <input type="text" id="lis" name="lis" value="<!--#lis-->"><br><br>  
+    <br>
+    <h3>Directly Connected LED Strip</h3> 
+    <label for="ledgpio">GPIO</label>
+    <input type="text" id="lpin" name="lpin" value="<!--#lpin-->"><br><br>  
+    <label for="ledrgbw">RGBW</label>
+    <input type="checkbox" id="lrgbw" name="lrgbw" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#lrgbw-->><br><br>         
+    <label for="lednum">Number of LEDs</label>
+    <input type="text" id="lnum" name="lnum" value="<!--#lnum-->"><br><br>      
+    <br>                       
+    <input type="submit" value="Save" style="font-size: 25px;">
+  </form><br><br>    
+  <a href="/remote_led_strips.shtml" style="text-decoration:none">Remote LED Strip Configuration &#8594</a>    
+</div>   
+</body>
+</html> 
+

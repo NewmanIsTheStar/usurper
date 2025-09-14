@@ -33,6 +33,7 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
+#set(CMAKE_EXECUTE_PROCESS_COMMAND_ECHO STDOUT)
 
 set(PICO_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/pico-sdk)
 set(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel)
@@ -75,12 +76,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_definitions(USE_GIT_HASH_AS_VERSION)
 endif()
 
-# create html binary blob source file
-message("Running makefsdata python script")
-execute_process(COMMAND
-        ./makefsdata.py
-        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-        )
+# # create html binary blob source file
+# message("Running makefsdata python script")
+# execute_process(COMMAND
+#         ./makefsdata.py
+#         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+#         )
 
 #add_executable(pio_ws2812)
 
@@ -140,7 +141,9 @@ set(common_source_files
 #                 discovery_task.c)        
 # endif()  
 
-set(usurper_link_libraries
+# ====================================================================================
+# pluto common libraries
+set(pluto_link_libraries
         pico_cyw43_arch_lwip_sys_freertos
         pico_lwip_freertos
         pico_lwip_api        
@@ -154,8 +157,15 @@ set(usurper_link_libraries
         hardware_pio
         hardware_i2c)
 
+# pico_w has hardware rtc (fake rtc is used for other variants)
+if(PICO_BOARD STREQUAL "pico_w")
+        set(pluto_link_libraries ${pluto_link_libraries}        
+                hardware_rtc)  
+endif()
+
+# pico_w has insiffucient RAM to incorporate HTTPS web client (thus tesla powerwall monitoring is disabled on pico_w)
 if(NOT PICO_BOARD STREQUAL "pico_w")
-        set(usurper_link_libraries ${usurper_link_libraries}        
+        set(pluto_link_libraries ${pluto_link_libraries}        
                 pico_lwip_mbedtls
                 pico_mbedtls)        
 endif()
@@ -163,6 +173,13 @@ endif()
 
 # ====================================================================================
 # Usurper
+
+message("Creating HTML binary blob for USURPER")
+execute_process(COMMAND
+        ../makefsdata.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/usurper/
+        )
+
 if(NOT PICO_BOARD STREQUAL "pico_w")
         set(usurper_source_files ${common_source_files}   
                 worker_tasks.c     
@@ -176,7 +193,7 @@ if(NOT PICO_BOARD STREQUAL "pico_w")
 endif()  
 
 add_executable(${PROJECT_NAME} ${usurper_source_files})      
-target_compile_definitions(${PROJECT_NAME} PRIVATE APP_NAME="Usurper")
+target_compile_definitions(${PROJECT_NAME} PRIVATE APP_NAME="Usurper" HTTPD_FSDATA_FILE="usurper/htmldata.c")
 if(NOT PICO_BOARD STREQUAL "pico_w") 
 target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_THERMOSTAT)
 target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_HOME_CONTROLLER)
@@ -217,7 +234,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 
 
-target_link_libraries(${PROJECT_NAME} ${usurper_link_libraries})
+target_link_libraries(${PROJECT_NAME} ${pluto_link_libraries})
 
 
 # create uf2 
@@ -227,6 +244,13 @@ pico_add_extra_outputs(${PROJECT_NAME})
 
 # ====================================================================================
 # Thermostat
+
+message("Creating HTML binary blob for THERMOSTAT")
+execute_process(COMMAND
+        ../makefsdata.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/thermostat/
+        )
+
 if(NOT PICO_BOARD STREQUAL "pico_w")
         set(thermostat_source_files ${common_source_files}
                 thermostat/worker_tasks.c        
@@ -237,7 +261,7 @@ if(NOT PICO_BOARD STREQUAL "pico_w")
 endif()  
 
 add_executable(thermostat ${thermostat_source_files})  
-target_compile_definitions(thermostat PRIVATE APP_NAME="Thermostat")
+target_compile_definitions(thermostat PRIVATE APP_NAME="Thermostat" HTTPD_FSDATA_FILE="thermostat/htmldata.c")
 if(NOT PICO_BOARD STREQUAL "pico_w") 
 target_compile_definitions(thermostat PRIVATE INCORPORATE_THERMOSTAT)
 endif()
@@ -273,7 +297,7 @@ target_include_directories(thermostat PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/
         )
 
-target_link_libraries(thermostat ${usurper_link_libraries})
+target_link_libraries(thermostat ${pluto_link_libraries})
 
 # create uf2 
 pico_add_extra_outputs(thermostat)
@@ -282,6 +306,13 @@ pico_add_extra_outputs(thermostat)
 
 # ====================================================================================
 # Home Controller
+
+message("Creating HTML binary blob for HOME CONTROLLER")
+execute_process(COMMAND
+        ../makefsdata.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/home_controller/
+        )
+
 if(NOT PICO_BOARD STREQUAL "pico_w")
         set(home_controller_source_files ${common_source_files}   
                 home_controller/worker_tasks.c   
@@ -294,7 +325,7 @@ if(NOT PICO_BOARD STREQUAL "pico_w")
 endif()  
 
 add_executable(home_controller ${home_controller_source_files})  
-target_compile_definitions(home_controller PRIVATE APP_NAME="Home_Controller")
+target_compile_definitions(home_controller PRIVATE APP_NAME="Home_Controller" HTTPD_FSDATA_FILE="home_controller/htmldata.c")
 if(NOT PICO_BOARD STREQUAL "pico_w") 
 # target_compile_definitions(home_controller PRIVATE INCORPORATE_THERMOSTAT)
 target_compile_definitions(home_controller PRIVATE INCORPORATE_HOME_CONTROLLER)
@@ -329,7 +360,7 @@ target_include_directories(home_controller PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/pico-sdk/lib/lwip/contrib/apps/ping/
         )
 
-target_link_libraries(home_controller ${usurper_link_libraries})
+target_link_libraries(home_controller ${pluto_link_libraries})
 
 # create uf2 
 pico_add_extra_outputs(home_controller)

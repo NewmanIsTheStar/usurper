@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" type="image/x-icon" href="/sprinkler.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="10">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="/led_strip.shtml">LED strip</a>
+    <a href="/syslog.shtml">Syslog</a>       
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>LED Controller</h2>      
+    <p>Current LED pattern: <!--#clpat--></p>
+    <p>Current LED transition delay: <!--#cltran--></p>       
+    <br>
+    <br>
+    <p>Local Time: <!--#ltme--></p>
+    <p>Last LED request from: <!--#clreq--></p> 
+    <br>
+    <br>   
+    <p>Network Time: <!--#time--></p>
+    <p>Last reboot: <!--#dogtme--></p>
+    <br> 
+    <p>Version: <!--#ghsh--></p> 
+</div>   
+</body>
+</html> 

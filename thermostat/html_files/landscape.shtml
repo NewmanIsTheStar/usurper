@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+    <style>
+        h1 {text-align: left; font-size: 2vw; font-weight: bold;}
+        h2 {text-align: left;}        
+        p {text-align: left;}
+        div {text-align: left;}
+        .btn-group button {
+            background-color: #6baf96; /* Green background */
+            border: 1px solid green; /* Green border */
+            color: white; /* White text */
+            padding: 10px 24px; /* Some padding */
+            cursor: pointer; /* Pointer/hand icon */
+            float: left; /* Float the buttons side by side */
+            font-size: 2vw; 
+            font-family: "Lato", sans-serif;
+        }
+
+        /* Clear floats (clearfix hack) */
+        .btn-group:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .btn-group button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        /* Add a background color on hover */
+        btn-group button:hover {
+            background-color: #b5cf21;
+        }
+
+        .btn-group-title button {
+            background-color: #04AA6D; /* Green background */
+            border: 1px solid green; /* Green border */
+            color: white; /* White text */
+            padding: 10px 24px; /* Some padding */
+            cursor: pointer; /* Pointer/hand icon */
+            float: left; /* Float the buttons side by side */
+            font-weight: bold;
+            font-size: 2vw; 
+            font-family: "Lato", sans-serif; 
+        }
+
+        /* Clear floats (clearfix hack) */
+        .btn-group-title:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .btn-group-title button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        /* Add a background color on hover */
+        btn-group-title button:hover {
+            background-color: #b5cf21;
+        }        
+
+        .btn-group-minor button {
+            background-color: #e2d7d5; /* Green background */
+            border: 1px solid green; /* Green border */
+            color: rgb(0, 0, 0); /* White text */
+            cursor: pointer; /* Pointer/hand icon */
+            float: left; /* Float the buttons side by side */  
+            font-weight: bold;
+            font-size: 2vw;  
+            font-family: "Lato", sans-serif;       
+        }
+
+        /* Clear floats (clearfix hack) */
+        .btn-group-minor:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .btn-group-minor button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        /* Add a background color on hover */
+        btn-group-minor button:hover {
+            background-color: #b5cf21;
+        }        
+        hr.rounded {
+            border-top: 8px solid #bbb;
+            border-radius: 5px;
+        }        
+     </style>
+
+    <head>
+        <title>Sprinkler Usurper</title>
+        <link rel="icon" type="image/x-icon" href="/sprinkler.ico">
+    </head>
+    <body>
+        <h1 style="font-family:Lato,sans-serif; color: #070000;">Sprinkler Usurper</h1>
+        <br>
+        <div class="btn-group-title" style="width:100%">
+            <a href="/sunday.cgi?day=0">   <button style="width:14.285714286%">Sunday</button></a>        
+            <a href="/monday.cgi?day=1">   <button style="width:14.285714286%">Monday</button></a>     
+            <a href="/tuesday.cgi?day=2">  <button style="width:14.285714286%">Tuesday</button></a>     
+            <a href="/wednesday.cgi?day=3"><button style="width:14.285714286%">Wednesday</button></a>     
+            <a href="/thursday.cgi?day=4"> <button style="width:14.285714286%">Thursday</button></a>     
+            <a href="/friday.cgi?day=5">   <button style="width:14.285714286%">Friday</button></a>     
+            <a href="/saturday.cgi?day=6"> <button style="width:14.285714286%">Saturday</button></a>     
+          </div>
+          <div class="btn-group" style="width:100%">
+            <a href="/sunday.cgi?day=0">   <button style="width:14.285714286%"><!--#sun--></button></a> 
+            <a href="/monday.cgi?day=1">   <button style="width:14.285714286%"><!--#mon--></button></a> 
+            <a href="/tuesday.cgi?day=2">  <button style="width:14.285714286%"><!--#tue--></button></a> 
+            <a href="/wednesday.cgi?day=3"><button style="width:14.285714286%"><!--#wed--></button></a> 
+            <a href="/thursday.cgi?day=4"> <button style="width:14.285714286%"><!--#thu--></button></a> 
+            <a href="/friday.cgi?day=5">   <button style="width:14.285714286%"><!--#fri--></button></a> 
+            <a href="/saturday.cgi?day=6"> <button style="width:14.285714286%"><!--#sat--></button></a> 
+          </div>  
+          <div class="btn-group-minor" style="width:100%">
+            <a href="/hrinc.cgi?x=0">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/mininc.cgi?x=0">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/hrinc.cgi?x=1">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/mininc.cgi?x=1">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/hrinc.cgi?x=2">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/mininc.cgi?x=2">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/hrinc.cgi?x=3">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/mininc.cgi?x=3">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/hrinc.cgi?x=4">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/mininc.cgi?x=4">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/hrinc.cgi?x=5">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/mininc.cgi?x=5">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/hrinc.cgi?x=6">   <button style="width:7.142857143%">+</button></a> 
+            <a href="/mininc.cgi?x=6">   <button style="width:7.142857143%">+</button></a>                        
+          </div>   
+          <div class="btn-group" style="width:100%">
+            <a href="/sunday.shtml?day=0">   <button style="width:14.285714286%"><!--#strt1--></button></a> 
+            <a href="/monday.shtml?day=1">   <button style="width:14.285714286%"><!--#strt2--></button></a> 
+            <a href="/tuesday.shtml?day=2">   <button style="width:14.285714286%"><!--#strt3--></button></a> 
+            <a href="/wednesday.shtml?day=3">   <button style="width:14.285714286%"><!--#strt4--></button></a> 
+            <a href="/thursday.shtml?day=4">   <button style="width:14.285714286%"><!--#strt5--></button></a> 
+            <a href="/friday.shtml?day=5">   <button style="width:14.285714286%"><!--#strt6--></button></a> 
+            <a href="/saturday.shtml?day=6">   <button style="width:14.285714286%"><!--#strt7--></button></a> 
+          </div>            
+          <div class="btn-group-minor" style="width:100%">
+            <a href="/hrdec.cgi?x=0">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/mindec.cgi?x=0">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/hrdec.cgi?x=1">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/mindec.cgi?x=1">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/hrdec.cgi?x=2">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/mindec.cgi?x=2">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/hrdec.cgi?x=3">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/mindec.cgi?x=3">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/hrdec.cgi?x=4">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/mindec.cgi?x=4">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/hrdec.cgi?x=5">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/mindec.cgi?x=5">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/hrdec.cgi?x=6">   <button style="width:7.142857143%">-</button></a> 
+            <a href="/mindec.cgi?x=6">   <button style="width:7.142857143%">-</button></a>  
+          </div>                                   
+          <div class="btn-group-minor" style="width:100%">
+            <a href="/durinc.cgi?x=0">   <button style="width:14.285714286%">+</button></a> 
+            <a href="/durinc.cgi?x=1">   <button style="width:14.285714286%">+</button></a> 
+            <a href="/durinc.cgi?x=2">   <button style="width:14.285714286%">+</button></a> 
+            <a href="/durinc.cgi?x=3">   <button style="width:14.285714286%">+</button></a> 
+            <a href="/durinc.cgi?x=4">   <button style="width:14.285714286%">+</button></a> 
+            <a href="/durinc.cgi?x=5">   <button style="width:14.285714286%">+</button></a> 
+            <a href="/durinc.cgi?x=6">   <button style="width:14.285714286%">+</button></a> 
+          </div>   
+          <div class="btn-group" style="width:100%">
+            <a href="/sunday.shtml?day=0">   <button style="width:14.285714286%"><!--#z1d1d--> min</button></a> 
+            <a href="/monday.shtml?day=1">   <button style="width:14.285714286%"><!--#z1d2d--> min</button></a> 
+            <a href="/tuesday.shtml?day=2">   <button style="width:14.285714286%"><!--#z1d3d--> min</button></a> 
+            <a href="/wednesday.shtml?day=3">   <button style="width:14.285714286%"><!--#z1d4d--> min</button></a> 
+            <a href="/thursday.shtml?day=4">   <button style="width:14.285714286%"><!--#z1d5d--> min</button></a> 
+            <a href="/friday.shtml?day=5">   <button style="width:14.285714286%"><!--#z1d6d--> min</button></a> 
+            <a href="/saturday.shtml?day=6">   <button style="width:14.285714286%"><!--#z1d7d--> min</button></a> 
+          </div>            
+          <div class="btn-group-minor" style="width:100%">
+            <a href="/durdec.cgi?x=0">   <button style="width:14.285714286%">-</button></a> 
+            <a href="/durdec.cgi?x=1">   <button style="width:14.285714286%">-</button></a> 
+            <a href="/durdec.cgi?x=2">   <button style="width:14.285714286%">-</button></a> 
+            <a href="/durdec.cgi?x=3">   <button style="width:14.285714286%">-</button></a> 
+            <a href="/durdec.cgi?x=4">   <button style="width:14.285714286%">-</button></a> 
+            <a href="/durdec.cgi?x=5">   <button style="width:14.285714286%">-</button></a> 
+            <a href="/durdec.cgi?x=6">   <button style="width:14.285714286%">-</button></a> 
+          </div>
+          <p><a href="/network.shtml" style="text-decoration:none">&#9881 <small>Settings</small></a></p>                           
+    </body>
+</html>

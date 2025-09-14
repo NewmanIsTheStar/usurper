@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  input[type='password'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="<!--#rpage-->">Relay</a>
+    <a href="/t_sensors.shtml">Foibles</a>  
+    <a href="/powerwall.shtml">Foibles</a>     
+    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/units.shtml">Foibles</a>                  
+    <a href="/t_status.shtml">Status</a>   
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>Powerwall Settings</h2>     
+  <form action="/powerwall.cgi">    
+      <label for="pwip">Powerwall Address</label>
+      <input type="text" id="pwip" name="pwip" value="<!--#pwip-->"><br><br>
+      <label for="pwhost">Powerwall Hostname (TLS SNI)</label>
+      <input type="text" id="pwhost" name="pwhost" value="<!--#pwhost-->"><br><br>
+      <label for="pwpass">Powerwall Password</label>
+      <input type="text" id="pwpass" name="pwpass" value="<!--#pwpass-->"><br><br>
+      <label for="pwgdhd"><b>Grid Down Temperature</b></label><br>
+      <label for="pwgdhd">Heating Setpoint Decrease</label>
+      <input type="text" id="pwgdhd" name="pwgdhd" value="<!--#pwgdhd-->"><br><br>
+      <label for="pwgdci">Cooling Setpoint Increase</label>
+      <input type="text" id="pwgdci" name="pwgdci" value="<!--#pwgdci-->"><br><br>
+      <label for="pwgdhd"><b>Grid Down Battery Level</b></label><br>
+      <label for="pwblhd">Heating Disable %</label>
+      <input type="text" id="pwblhd" name="pwblhd" value="<!--#pwblhd-->"><br><br>
+      <label for="pwblhe">Heating Enable %</label>
+      <input type="text" id="pwblhe" name="pwblhe" value="<!--#pwblhe-->"><br><br>
+      <label for="pwblcd">Cooling Disable %</label>
+      <input type="text" id="pwblcd" name="pwblcd" value="<!--#pwblcd-->"><br><br>
+      <label for="pwblce">Cooling Enable %</label>
+      <input type="text" id="pwblce" name="pwblce" value="<!--#pwblce-->"><br><br>                                    
+      <br>
+      <input type="submit" value="Save" style="font-size: 25px;">
+  </form> 
+  <br> 
+</div>
+   
+</body>
+</html> 
+
+  

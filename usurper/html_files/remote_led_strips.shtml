@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/addressable_led.shtml">LED strip</a>
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>Remote LED Strip Addresses</h2>       
+  <form action="/remote_led_strips.cgi">
+    <label for="rse">Use remote LED strips to indicate irrigation status</label>
+    <input type="checkbox" id="rse" name="rse" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#rse-->><br><br>    
+    <label for="rs1">Remote LED Strip 1:</label>
+    <input type="text" id="rsadr1" name="rsadr1" value="<!--#rsadr1-->"><br><br>            
+    <label for="rs2">Remote LED Strip 2:</label>
+    <input type="text" id="rsadr2" name="rsadr2" value="<!--#rsadr2-->"><br><br>            
+    <label for="rs3">Remote LED Strip 3:</label>
+    <input type="text" id="rsadr3" name="rsadr3" value="<!--#rsadr3-->"><br><br>            
+    <label for="rs4">Remote LED Strip 4:</label>
+    <input type="text" id="rsadr4" name="rsadr4" value="<!--#rsadr4-->"><br><br>            
+    <label for="rs5">Remote LED Strip 5:</label>
+    <input type="text" id="rsadr5" name="rsadr5" value="<!--#rsadr5-->"><br><br>            
+    <label for="rs6">Remote LED Strip 6:</label>
+    <input type="text" id="rsadr6" name="rsadr6" value="<!--#rsadr6-->"><br><br>            
+    <br>
+    <input type="submit" value="Save" style="font-size: 25px;">
+  </form>  
+</div>
+   
+</body>
+</html> 

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Day</title>
+        <link rel="icon" type="image/x-icon" href="/sprinkler.ico">
+    </head>
+    <body>
+
+        <h1 style="background-color:rgba(206, 143, 243, 0.829);">Sprinkler Usurper</h1>
+        <br>   
+        <div id="form">
+            <form action="/dsched.cgi" method="get" name="daysched">
+                
+                <fieldset>
+                    <div class="form-group">
+                        <label for="enable">Day:</label>
+                        <input type="checkbox" name="currentday" id="currentday" <!--#cday-->/>
+                    </div>                    
+                    <div class="form-group">
+                        <label for="start">Start:</label>
+                        <input name="strt1" id="csta" value="<!--#csta-->"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Duration:</label>
+                        <input name="dur1" id="cdur value="<!--#cdur-->"/>
+                    </div>
+                </fieldset>                                                                                   
+                <fieldset>
+                    <input type="submit" value="Save">
+                </fieldset>                                  
+            </form>
+        </div>      
+        <p><a href="/settings.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none">&#9881 <small>Settings</small></a></p>
+        <button onclick="myFunction()">Try it</button>
+
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('day');
+            myFunction(myParam);
+        </script>
+
+        <script>
+            function myFunction(daynum) {
+              var day; 
+              switch (new Date().getDay()) {
+                case 0:
+                  day = "Sunday";
+                  break;
+                case 1:
+                  day = "Monday";
+                  break;
+                case 2:
+                  day = "Tuesday";
+                  break;
+                case 3:
+                  day = "Wednesday";
+                  break;
+                case 4:
+                  day = "Thursday";
+                  break;
+                case 5:
+                  day = "Friday";
+                  break;
+                case  6:
+                  day = "Saturday";
+                  break;
+                default:
+                  day = "Unknown Day";
+              }
+              document.getElementById("currentday").innerHTML = day;
+            }
+            </script>
+    </body>
+</html>

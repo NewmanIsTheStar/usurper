@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="<!--#rpage-->">Relay</a>
+    <a href="/t_sensors.shtml">Foibles</a>  
+    <a href="/powerwall.shtml">Foibles</a>     
+    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/units.shtml">Foibles</a>                  
+    <a href="/t_status.shtml">Status</a>   
+    <p><a href="/index.shtml">&#8629</a></p>      
+  </div>
+
+<div class="main">
+  <h2>Temperature Sensors</h2>       
+  <form action="/t_sensors.cgi">  
+    <label for="ts1">Remote Temperature Sensor 1:</label>
+    <input type="text" id="tsadr1" name="tsadr1" value="<!--#tsadr1-->"><br><br>            
+    <label for="ts2">Remote Temperature Sensor 2:</label>
+    <input type="text" id="tsadr2" name="tsadr2" value="<!--#tsadr2-->"><br><br>            
+    <label for="ts3">Remote Temperature Sensor 3:</label>
+    <input type="text" id="tsadr3" name="tsadr3" value="<!--#tsadr3-->"><br><br>            
+    <label for="ts4">Remote Temperature Sensor 4:</label>
+    <input type="text" id="tsadr4" name="tsadr4" value="<!--#tsadr4-->"><br><br>            
+    <label for="ts5">Remote Temperature Sensor 5:</label>
+    <input type="text" id="tsadr5" name="tsadr5" value="<!--#tsadr5-->"><br><br>            
+    <label for="ts6">Remote Temperature Sensor 6:</label>
+    <input type="text" id="tsadr6" name="tsadr6" value="<!--#tsadr6-->"><br><br>            
+    <br>
+    <input type="submit" value="Save" style="font-size: 25px;">
+  </form>  
+</div>
+   
+</body>
+</html> 
