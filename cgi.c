@@ -2802,7 +2802,99 @@ const char * cgi_thermostat_gpio_handler(int iIndex, int iNumParams, char *pcPar
                         config.fan_gpio = temp;
                     }    
                 }            
-            }              
+            }  
+
+
+            if (strcasecmp("tacgpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.thermostat_temperature_sensor_clock_gpio = temp;
+                    }    
+                }            
+            } 
+
+            if (strcasecmp("tadgpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.thermostat_temperature_sensor_data_gpio = temp;
+                    }    
+                }            
+            } 
+
+            if (strcasecmp("tlcgpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.thermostat_seven_segment_display_clock_gpio = temp;
+                    }    
+                }            
+            } 
+
+            if (strcasecmp("tldgpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.thermostat_seven_segment_display_data_gpio = temp;
+                    }    
+                }            
+            } 
+
+            if (strcasecmp("tbugpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.thermostat_increase_button_gpio = temp;
+                    }    
+                }            
+            } 
+
+            if (strcasecmp("tbdgpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.thermostat_decrease_button_gpio = temp;
+                    }    
+                }            
+            } 
+
+            if (strcasecmp("tbmgpio", param) == 0)
+            {
+                if (!strcasestr(value, "none"))
+                { 
+                    sscanf(value, "%d", &temp);
+
+                    if (gpio_valid(temp))
+                    {
+                        config.thermostat_mode_button_gpio = temp;
+                    }    
+                }            
+            }                       
         }
         i++;
     }

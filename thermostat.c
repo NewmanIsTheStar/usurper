@@ -215,13 +215,14 @@ void thermostat_task(void *params)
     bool aht10_initialized = false;
     bool tm1637_initialized = false;
     uint32_t temperature_native; 
-    long int temperaturex10;
+    long int temperaturex10 = 0;
     uint32_t humidity_native; 
-    long int humidityx10;
+    long int humidityx10 = 0;
     uint8_t aht10_temp_humidity[7];
     int retry = 0;
     int oneshot = false;
     int i;
+    int button_pressed = 0;
 
     irq_queue = xQueueCreate(1, sizeof(uint8_t));
 
@@ -295,11 +296,15 @@ void thermostat_task(void *params)
     }
   
     // initialize i2c for temperature sensor  TODO: set i2c block based on selected gpio pins
+    config.thermostat_temperature_sensor_data_gpio = 10;
+    config.thermostat_temperature_sensor_clock_gpio = 11;
     i2c_init(i2c1, 100000);
     gpio_set_function(config.thermostat_temperature_sensor_data_gpio, GPIO_FUNC_I2C);
     gpio_set_function(config.thermostat_temperature_sensor_clock_gpio, GPIO_FUNC_I2C);
     gpio_pull_up(config.thermostat_temperature_sensor_data_gpio);
     gpio_pull_up(config.thermostat_temperature_sensor_clock_gpio);
+
+    printf("Temperature Sensor using pins: %d, %d\n", config.thermostat_temperature_sensor_data_gpio, config.thermostat_temperature_sensor_clock_gpio);
 
     powerwall_init();
 
@@ -338,7 +343,8 @@ void thermostat_task(void *params)
                     i2c_bytes_written = i2c_write_timeout_us(i2c1, aht10_addr, aht10_initialize, sizeof(aht10_initialize), false, ath10_i2c_timeout_us);
                     if (i2c_bytes_written < 1) // only the first byte is acknowledged by some aht10 devices
                     {    
-                        i2c_error = true;                        
+                        //TEST TEST TEST
+                        //i2c_error = true;                        
                     }
                 } 
 
@@ -416,7 +422,7 @@ void thermostat_task(void *params)
                     // update seven segment display
                     //tm1637_display(temperaturex10, false);
 
-                    hvac_update_display(temperaturex10, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
+                    //hvac_update_display(temperaturex10, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
                 }
                 else
                 {
@@ -434,7 +440,15 @@ void thermostat_task(void *params)
             //SLEEP_MS(1000);
 
             // wait up to 1000ms or until an IRQ is received
-            handle_button_press_with_timeout(irq_queue, 1000);         
+            button_pressed = handle_button_press_with_timeout(irq_queue, 1000);
+
+            while (button_pressed)  //TODO deal with continual spurious interrupts holding us in this loop forever
+            {
+                hvac_update_display(temperaturex10, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
+                button_pressed = handle_button_press_with_timeout(irq_queue, 1000);
+            }
+
+            hvac_update_display(temperaturex10, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
         }  
         else
         {
@@ -1555,7 +1569,7 @@ void gpio_isr(uint gpio, uint32_t events)
 
 int handle_button_press_with_timeout(QueueHandle_t irq_queue, TickType_t timeout)
 {
-    int err = 0;
+    int button_pressed = 0;
 
     if (xQueueReceive(irq_queue, &passed_value, 1000) == pdPASS)
     {
@@ -1570,6 +1584,7 @@ int handle_button_press_with_timeout(QueueHandle_t irq_queue, TickType_t timeout
             case 22:
                 printf("IRQ detected from GPIO%d\n", passed_value);
                 enable_irq(true);
+                button_pressed = 1;
                 break;
         }
     }
@@ -1596,5 +1611,5 @@ int handle_button_press_with_timeout(QueueHandle_t irq_queue, TickType_t timeout
     
     printf("TEMP = %d SETPOINT = %d MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, mode);
 
-    return(err);
+    return(button_pressed);
 }

@@ -503,7 +503,15 @@ extern NON_VOL_VARIABLES_T config;
     x(tchs) \
     x(tccs) \
     x(grids) \
-    x(batp)
+    x(batp) \
+    x(tacgpio) \
+    x(tadgpio) \
+    x(tlcgpio) \
+    x(tldgpio) \
+    x(tbugpio) \
+    x(tbdgpio) \
+    x(tbmgpio)     
+
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
 enum ssi_index
@@ -1833,7 +1841,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;
         case SSI_tcgpio:
         {
-            if (gpio_valid(config.heating_gpio))
+            if (gpio_valid(config.cooling_gpio))
             {
                 printed = snprintf(pcInsert, iInsertLen, "%d", config.cooling_gpio);
             }
@@ -1845,7 +1853,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break; 
         case SSI_tfgpio:
         {
-            if (gpio_valid(config.heating_gpio))
+            if (gpio_valid(config.fan_gpio))
             {
                 printed = snprintf(pcInsert, iInsertLen, "%d", config.fan_gpio);
             }
@@ -1905,7 +1913,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             printed = snprintf(pcInsert, iInsertLen, "%s", config.temperature_sensor_remote_ip[iIndex-SSI_tsadr1]); 
         }                     
         break;       
-        #ifdef INCORPORATE_THERMOSTAT              
+#ifdef INCORPORATE_THERMOSTAT              
         case SSI_tchs:  // thermostat current heating thresholds
         {
             lower = web.thermostat_heating_set_point - web.thermostat_hysteresis;
@@ -1945,7 +1953,92 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         {
             printed = snprintf(pcInsert, iInsertLen, "%d", web.powerwall_battery_percentage);                           
         }
-        break;                     
+        break;         
+        case SSI_tacgpio:  // temperature sensor clock
+        {
+            if (gpio_valid(config.thermostat_temperature_sensor_clock_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_temperature_sensor_clock_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }
+        }
+        break;  
+        case SSI_tadgpio: // temperature sensor data
+        {
+            if (gpio_valid(config.thermostat_temperature_sensor_data_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_temperature_sensor_data_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }
+        }
+        break; 
+        case SSI_tlcgpio: // display clock
+        {
+            if (gpio_valid(config.thermostat_seven_segment_display_clock_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_seven_segment_display_clock_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }
+        }
+        break; 
+        case SSI_tldgpio: // display data
+        {
+            if (gpio_valid(config.thermostat_seven_segment_display_data_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_seven_segment_display_data_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }
+        }
+        break; 
+        case SSI_tbugpio:  // button up
+        {
+            if (gpio_valid(config.thermostat_increase_button_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_increase_button_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }
+        }
+        break; 
+        case SSI_tbdgpio:   // button down
+        {
+            if (gpio_valid(config.thermostat_decrease_button_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_decrease_button_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }
+        }
+        break; 
+        case SSI_tbmgpio:   // button mode
+        {
+            if (gpio_valid(config.thermostat_mode_button_gpio))
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_mode_button_gpio);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "none");
+            }
+        }
+        break; 
+
 #endif                                        
         default:
         {

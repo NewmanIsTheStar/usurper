@@ -62,7 +62,7 @@ body {
 
 <div class="main">
 
-  <h2>GPIO Settings</h2>      
+  <h2>Advanced Settings</h2>      
   <form action="/t_gpio.cgi">             
     <label for="wno">Normally Open (NO)</label>
     <a href="/t_relay_no.shtml" style="text-decoration:none"> <small>   Why?</small></a> <br><br>    
@@ -81,7 +81,7 @@ body {
     <label for="tfr">LCD data GPIO:</label>      
     <input type="text" id="tldgpio" name="tldgpio" value="<!--#tldgpio-->"><br>    
     <label for="tfr">Up Button GPIO:</label>
-    <input type="text" id="tbugpio" name="tbugpio" value="<!--#tbugpio-->"><br>  
+    <input type="text" id="tbugpio" name="tbmgpio" value="<!--#tbmgpio-->"><br>  
     <label for="tfr">Down Button GPIO:</label>      
     <input type="text" id="tbdgpio" name="tbdgpio" value="<!--#tbdgpio-->"><br>     
     <label for="tfr">Mode Button GPIO:</label>      
