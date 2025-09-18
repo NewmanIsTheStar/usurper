@@ -3043,6 +3043,77 @@ const char * cgi_temperature_sensors(int iIndex, int iNumParams, char *pcParam[]
     return "/t_sensors.shtml";
 }
 
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_advanced_settings(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+    int setting = 0;
+       
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            //printf("Parameter: %s has Value: %s\n", param, value);
+
+            if (strcasecmp("htclm", param) == 0)
+            {
+                sscanf(value, "%d", &setting);
+                CLIP(setting, 1, 60);
+                config.heating_to_cooling_lockout_mins = setting;
+            }
+            if (strcasecmp("mhonm", param) == 0)
+            {
+                sscanf(value, "%d", &setting);
+                CLIP(setting, 1, 60);
+                config.minimum_heating_on_mins = setting;
+            }
+            if (strcasecmp("mconm", param) == 0)
+            {
+                sscanf(value, "%d", &setting);
+                CLIP(setting, 1, 60);
+                config.minimum_cooling_on_mins = setting;
+            }
+            if (strcasecmp("mhoffm", param) == 0)
+            {
+                sscanf(value, "%d", &setting);
+                CLIP(setting, 1, 60);
+                config.minimum_heating_off_mins = setting;
+            }
+            if (strcasecmp("mcoffm", param) == 0)
+            {
+                sscanf(value, "%d", &setting);
+                CLIP(setting, 1, 60);
+                config.minimum_cooling_off_mins = setting;
+            }
+
+        }
+
+        i++;
+    }
+
+    // Send the next page back to the user
+    config_changed();
+    return "/t_advanced.shtml";
+}
+ 
+
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
     {"/schedule.cgi",                   cgi_schedule_handler},
@@ -3090,7 +3161,8 @@ static const tCGI cgi_handlers[] = {
     {"/t_copy.cgi",                     cgi_thermostat_copy_handler},
     {"/t_gpio.cgi",                     cgi_thermostat_gpio_handler},   
     {"/gpio_default.cgi",               cgi_gpio_default_handler},  
-    {"/t_sensors.cgi",                  cgi_temperature_sensors},        
+    {"/t_sensors.cgi",                  cgi_temperature_sensors},
+    {"/t_advanced.cgi",                 cgi_advanced_settings},       
      
 };
 

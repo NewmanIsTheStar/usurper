@@ -63,29 +63,17 @@ body {
 <div class="main">
 
   <h2>Advanced Settings</h2>      
-  <form action="/t_gpio.cgi">             
-    <label for="wno">Normally Open (NO)</label>
-    <a href="/t_relay_no.shtml" style="text-decoration:none"> <small>   Why?</small></a> <br><br>    
-    <label for="thr">Heating GPIO:</label>
-    <input type="text" id="thgpio" name="thgpio" value="<!--#thgpio-->"><br>
-    <label for="tcr">Cooling GPIO:</label>
-    <input type="text" id="tcgpio" name="tcgpio" value="<!--#tcgpio-->"><br>
-    <label for="tfr">Fan GPIO:</label>
-    <input type="text" id="tfgpio" name="tfgpio" value="<!--#tfgpio-->"><br>
-    <label for="tfr">Temperature sensor clock GPIO:</label>
-    <input type="text" id="tacgpio" name="tacgpio" value="<!--#tacgpio-->"><br>
-    <label for="tfr">Temperature sensor data GPIO:</label>
-    <input type="text" id="tadgpio" name="tadgpio" value="<!--#tadgpio-->"><br>        
-    <label for="tfr">LCD clock GPIO:</label>
-    <input type="text" id="tlcgpio" name="tlcgpio" value="<!--#tlcgpio-->"><br>  
-    <label for="tfr">LCD data GPIO:</label>      
-    <input type="text" id="tldgpio" name="tldgpio" value="<!--#tldgpio-->"><br>    
-    <label for="tfr">Up Button GPIO:</label>
-    <input type="text" id="tbugpio" name="tbmgpio" value="<!--#tbmgpio-->"><br>  
-    <label for="tfr">Down Button GPIO:</label>      
-    <input type="text" id="tbdgpio" name="tbdgpio" value="<!--#tbdgpio-->"><br>     
-    <label for="tfr">Mode Button GPIO:</label>      
-    <input type="text" id="tbmgpio" name="tbmgpio" value="<!--#tbmgpio-->"><br>        
+  <form action="/t_advanced.cgi">               
+    <label for="thr">Heating to Cooling transition delay in minutes:</label>
+    <input type="text" id="htclm" name="htclm" value="<!--#htclm-->"><br>
+    <label for="tcr">Heating minimum run time in minutes:</label>
+    <input type="text" id="mhonm" name="mhonm" value="<!--#mhonm-->"><br>
+    <label for="tfr">Cooling minimum run time in minutes:</label>
+    <input type="text" id="mconm" name="mconm" value="<!--#mconm-->"><br>
+    <label for="tfr">Heating minimum off time in minutes:</label>
+    <input type="text" id="mhoffm" name="mhoffm" value="<!--#mhoffm-->"><br>
+    <label for="tfr">Cooling minimum off time in minutes:</label>
+    <input type="text" id="mcoffm" name="mcoffm" value="<!--#mcoffm-->"><br>           
     <br>
     <br>
     <input type="submit" value="Save" style="font-size: 25px;">

@@ -66,16 +66,12 @@ body {
     <p><!--#status--></p> 
     <br>
     <p>Local Time: <!--#ltme--></p>
-    <p>Last Termination: <!--#usurped--></p>
     <br>
-    <p>Temperature: <!--#temp--> &deg;<!--#tmpu--></p>
-    <p>Rain today: <!--#rain--> <!--#dstu--></p>
-    <p>Rain last 7 days: <!--#lstsvn--> <!--#dstu--></p>
-    <p>Soil Moisture: <!--#soilm1--> %</p>       
-    <p>Wind Speed: <!--#wind--> <!--#spdu--></p>      
+    <p>Indoor Temperature: <!--#tint--> &deg;<!--#tmpu--></p>
+    <p>Heating Threshold: <!--#tchs--> &deg;<!--#tmpu--></p>
+    <p>Cooling Threshold: <!--#tccs--> &deg;<!--#tmpu--></p>    
     <br>   
     <p>Network Time: <!--#time--></p>
-    <p>Last Ecowitt response: <!--#lstpck--></p>
     <p>Last reboot: <!--#dogtme--></p>
     <br> 
     <p>Version: <!--#ghsh--></p> 

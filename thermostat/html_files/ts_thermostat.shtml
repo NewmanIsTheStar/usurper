@@ -196,6 +196,6 @@
             <a href="/t_schedule.cgi?day=5">   <button style="width:13%"><!--#tg7_6--> </button></a> 
             <a href="/t_schedule.cgi?day=6">   <button style="width:13%"><!--#tg7_7--> </button></a> 
           </div> 
-          <p><a href="/powerwall.shtml" style="text-decoration:none">&#9881 <small>Settings</small></a></p>                           
+          <p><a href="/network.shtml" style="text-decoration:none">&#9881 <small>Settings</small></a></p>                           
     </body>
 </html>

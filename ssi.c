@@ -510,7 +510,13 @@ extern NON_VOL_VARIABLES_T config;
     x(tldgpio) \
     x(tbugpio) \
     x(tbdgpio) \
-    x(tbmgpio)     
+    x(tbmgpio) \
+    x(htclm) \
+    x(mhonm) \
+    x(mconm) \
+    x(mhoffm) \
+    x(mcoffm) \
+    x(tint)
 
 
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
@@ -1913,7 +1919,15 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             printed = snprintf(pcInsert, iInsertLen, "%s", config.temperature_sensor_remote_ip[iIndex-SSI_tsadr1]); 
         }                     
         break;       
-#ifdef INCORPORATE_THERMOSTAT              
+#ifdef INCORPORATE_THERMOSTAT  
+        case SSI_tint:  // thermostat indoor temperature
+        {
+            lower = web.thermostat_temperature;
+            upper = web.thermostat_heating_set_point + web.thermostat_hysteresis;
+
+            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", lower<0?'-':'\0', abs(lower)/10, abs(lower%10));
+        }
+        break;            
         case SSI_tchs:  // thermostat current heating thresholds
         {
             lower = web.thermostat_heating_set_point - web.thermostat_hysteresis;
@@ -2038,7 +2052,31 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             }
         }
         break; 
-
+        case SSI_htclm:  // heating to cooling lockuout
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.heating_to_cooling_lockout_mins);                           
+        }
+        break;
+        case SSI_mhonm:  // minimum heating on time
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.minimum_heating_on_mins);                           
+        }
+        break;
+        case SSI_mconm:  // minimum cooling on time
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.minimum_cooling_on_mins);                           
+        }
+        break;
+        case SSI_mhoffm:  // minimum heating off time
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.minimum_heating_off_mins);                           
+        }
+        break;
+        case SSI_mcoffm:  // minimum cooling off time
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.minimum_cooling_off_mins);                           
+        }
+        break;      
 #endif                                        
         default:
         {

@@ -237,12 +237,12 @@ void thermostat_task(void *params)
     config.thermostat_enable = 1;
     web.thermostat_hysteresis = 10; 
 
-    //TODO Add web page to control these parameters
-    config.heating_to_cooling_lockout_mins = 1;
-    config.minimum_heating_on_mins = 1;
-    config.minimum_cooling_on_mins = 1;
-    config.minimum_heating_off_mins = 1;
-    config.minimum_cooling_off_mins = 1;
+    // make sure safeguards are valid to prevent short cycling
+    CLIP(config.heating_to_cooling_lockout_mins, 1, 60);
+    CLIP(config.minimum_heating_on_mins, 1, 60);
+    CLIP(config.minimum_cooling_on_mins, 1, 60);
+    CLIP(config.minimum_heating_off_mins, 1, 60);
+    CLIP(config.minimum_cooling_off_mins, 1, 60);
 
     // configure gpio for front panel push buttons
     gpio_init(config.thermostat_mode_button_gpio);
@@ -1073,6 +1073,7 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
             heating_disabled = true;
         }
 
+        //TODO -- add some hysteresis before turning back on
         // enable cooling if battery level satisfactory
         if ((web.powerwall_battery_percentage > config.grid_down_cooling_enable_battery_level))
         {
