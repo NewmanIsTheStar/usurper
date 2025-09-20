@@ -80,7 +80,7 @@ void setTimeSec(uint32_t sec);
 
 //#define NDEBUG 1 // Newman added
 #ifndef NDEBUG 
-#define LWIP_DEBUG                  1
+//#define LWIP_DEBUG                  1
 #define LWIP_STATS                  1
 #define LWIP_STATS_DISPLAY          1
 #endif
