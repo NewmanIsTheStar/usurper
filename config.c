@@ -315,10 +315,10 @@ void config_v5_to_v6(void)
 
     config.grid_down_heating_setpoint_decrease = 10;
     config.grid_down_cooling_setpoint_increase = 10;
-    config.grid_down_heating_disable_battery_level = 40;
-    config.grid_down_heating_enable_battery_level = 60;
-    config.grid_down_cooling_disable_battery_level = 70;
-    config.grid_down_cooling_enable_battery_level = 90;
+    config.grid_down_heating_disable_battery_level = 400;
+    config.grid_down_heating_enable_battery_level = 600;
+    config.grid_down_cooling_disable_battery_level = 700;
+    config.grid_down_cooling_enable_battery_level = 900;
     
     for (i=0; i < 6; i++)
     {

@@ -794,3 +794,48 @@ int print_gpio_pins_matching_default(char *buffer, int len, GPIO_DEFAULT_T gpio_
 
     return(printed);
 }
+
+/*!
+ * \brief convert string to integer times ten plus tenths e.g. "78.32" => 783
+ *
+ * \param[in]  value_string index of cgi handler in cgi_handlers table
+ * 
+ * \return integer = value x 10
+ */
+int get_int_with_tenths_from_string(char *value_string)
+{
+    int whole_part = 0;
+    int tenths_part = 0;
+    int new_value = 0;
+    char first_decimal = '0';
+    char second_decimal = '0';
+
+    sscanf(value_string, ".%c%c", &first_decimal, &second_decimal);
+    sscanf(value_string, "%d.%c%c", &whole_part, &first_decimal, &second_decimal);
+
+    // zero out invalid characters
+    if ((first_decimal < '0') || (first_decimal > '9')) first_decimal = '0';
+    if ((second_decimal < '0') || (second_decimal > '9')) second_decimal = '0';
+    
+    tenths_part = first_decimal - '0';
+
+    // round up from second decimal
+    if ((second_decimal - '0') >= 5)
+    {
+        tenths_part++;
+    }
+
+    // round up fron frist decimal
+    if (tenths_part > 9)
+    {
+        tenths_part -=10;
+        whole_part++;
+    }
+
+    CLIP(tenths_part, 0, 9);
+
+    new_value = whole_part*10 + tenths_part;   
+
+    return(new_value);
+}
+

@@ -71,38 +71,39 @@ void dump_parameters(int iIndex, int iNumParams, char *pcParam[], char *pcValue[
     }
 }
 
+// moved to pluto.c
 
-/*!
- * \brief convert string to integer times ten plus tenths e.g. "78.32" => 783
- *
- * \param[in]  value_string index of cgi handler in cgi_handlers table
- * 
- * \return integer = value x 10
- */
-int get_int_with_tenths_from_string(char *value_string)
-{
-    int whole_part = 0;
-    int tenths_part = 0;
-    int new_value = 0;
+// /*!
+//  * \brief convert string to integer times ten plus tenths e.g. "78.32" => 783
+//  *
+//  * \param[in]  value_string index of cgi handler in cgi_handlers table
+//  * 
+//  * \return integer = value x 10
+//  */
+// int get_int_with_tenths_from_string(char *value_string)
+// {
+//     int whole_part = 0;
+//     int tenths_part = 0;
+//     int new_value = 0;
 
-    whole_part = 0;
-    tenths_part = 0;
+//     whole_part = 0;
+//     tenths_part = 0;
 
-    sscanf(value_string, ".%d", &tenths_part);  
-    sscanf(value_string, "%d.%d", &whole_part, &tenths_part);  
+//     sscanf(value_string, ".%d", &tenths_part);  
+//     sscanf(value_string, "%d.%d", &whole_part, &tenths_part);  
 
-    while (tenths_part > 10)
-    {
-        if ((tenths_part>10) && (tenths_part<100)) tenths_part += 5;  // round up
-        tenths_part /= 10;
-    }
+//     while (tenths_part > 10)
+//     {
+//         if ((tenths_part>10) && (tenths_part<100)) tenths_part += 5;  // round up
+//         tenths_part /= 10;
+//     }
 
-    CLIP(tenths_part, 0, 9);
+//     CLIP(tenths_part, 0, 9);
 
-    new_value = whole_part*10 + tenths_part;   
+//     new_value = whole_part*10 + tenths_part;   
 
-    return(new_value);
-}
+//     return(new_value);
+// }
 
 /*!
  * \brief cgi handler

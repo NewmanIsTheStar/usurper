@@ -397,7 +397,11 @@ void powerwall_poll(void)
             {
                 printf("Powerwall Battery Percentage is = %s\n", battery_percentage);
 
-                sscanf(battery_percentage, "%d.", &(web.powerwall_battery_percentage));
+                // original -- value without tenths
+                //sscanf(battery_percentage, "%d.", &(web.powerwall_battery_percentage));
+
+                // new -- value with tenths as all the thresholds are in this format
+                web.powerwall_battery_percentage = get_int_with_tenths_from_string(battery_percentage); 
 
                 //printf("==> %d\n", web.powerwall_battery_percentage);
 

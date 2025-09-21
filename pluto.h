@@ -22,5 +22,6 @@
 void hex_dump(const uint8_t *bptr, uint32_t len);
 int application_restart(void);
 int print_gpio_pins_matching_default(char *buffer, int len, GPIO_DEFAULT_T gpio_default);
+int get_int_with_tenths_from_string(char *value_string);
 
 #endif 

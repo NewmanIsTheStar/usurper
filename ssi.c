@@ -1965,7 +1965,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;  
         case SSI_batp:  // battery percentage
         {
-            printed = snprintf(pcInsert, iInsertLen, "%d", web.powerwall_battery_percentage);                           
+            printed = snprintf(pcInsert, iInsertLen, "%d.%d", web.powerwall_battery_percentage/10, web.powerwall_battery_percentage%10);                           
         }
         break;         
         case SSI_tacgpio:  // temperature sensor clock

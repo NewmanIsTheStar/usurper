@@ -61,32 +61,69 @@ body {
   </div>
 
 <div class="main">
-  <h2>Powerwall Settings</h2>     
-  <form action="/powerwall.cgi">    
-      <label for="pwip">Powerwall Address</label>
-      <input type="text" id="pwip" name="pwip" value="<!--#pwip-->"><br><br>
-      <label for="pwhost">Powerwall Hostname (TLS SNI)</label>
-      <input type="text" id="pwhost" name="pwhost" value="<!--#pwhost-->"><br><br>
-      <label for="pwpass">Powerwall Password</label>
-      <input type="text" id="pwpass" name="pwpass" value="<!--#pwpass-->"><br><br>
-      <label for="pwgdhd"><b>Grid Down Temperature</b></label><br>
-      <label for="pwgdhd">Heating Setpoint Decrease</label>
-      <input type="text" id="pwgdhd" name="pwgdhd" value="<!--#pwgdhd-->"><br><br>
-      <label for="pwgdci">Cooling Setpoint Increase</label>
-      <input type="text" id="pwgdci" name="pwgdci" value="<!--#pwgdci-->"><br><br>
-      <label for="pwgdhd"><b>Grid Down Battery Level</b></label><br>
-      <label for="pwblhd">Heating Disable %</label>
-      <input type="text" id="pwblhd" name="pwblhd" value="<!--#pwblhd-->"><br><br>
-      <label for="pwblhe">Heating Enable %</label>
-      <input type="text" id="pwblhe" name="pwblhe" value="<!--#pwblhe-->"><br><br>
-      <label for="pwblcd">Cooling Disable %</label>
-      <input type="text" id="pwblcd" name="pwblcd" value="<!--#pwblcd-->"><br><br>
-      <label for="pwblce">Cooling Enable %</label>
-      <input type="text" id="pwblce" name="pwblce" value="<!--#pwblce-->"><br><br>                                    
-      <br>
-      <input type="submit" value="Save" style="font-size: 25px;">
-  </form> 
-  <br> 
+
+  <h2>Powerwall Settings</h2>      
+  <table>
+      <form action="/powerwall.cgi">
+          <tr>            
+              <td style="text-align: left;font-weight: bold;">
+                  <label for="tfrl">Powerwall Access</label>
+              </td>              
+          </tr>
+          <tr>
+              <td><label for="pwip">Powerwall Address: </label></td>
+              <td><input type="text" size="16" id="pwip" name="pwip" value="<!--#pwip-->"></td>
+          </tr>
+          <tr>
+              <td><label for="pwhost">Powerwall Hostname (TLS SNI)</label></td>
+              <td><input type="text" size="16" id="pwhost" name="pwhost" value="<!--#pwhost-->"></td>
+          </tr>          
+          <tr>
+              <td><label for="pwpass">Powerwall Password:</label></td>
+              <td><input type="text" size="16" id="pwpass" name="pwpass" value="<!--#pwpass-->"></td>
+          </tr>
+          <tr>            
+              <td style="text-align: left;font-weight: bold;">
+                  <label for="tfrl">Grid Down Temperature Relaxation</label>
+              </td>
+          </tr>          
+          <tr>
+              <td><label for="pwgdhd">Heating Setpoint Decrease</label></td>
+              <td><input type="text" size="4" id="pwgdhd" name="pwgdhd" value="<!--#pwgdhd-->"></td>
+          </tr>      
+          <tr>
+              <td><label for="pwgdci">Cooling Setpoint Increase</label></td>
+              <td><input type="text" size="4" id="pwgdci" name="pwgdci" value="<!--#pwgdci-->"></td>
+          </tr>               
+          <tr>
+          <tr>            
+              <td style="text-align: left;font-weight: bold;">
+                  <label for="thrl">Grid Down Battery Thesholds</label>
+              </td>
+          </tr>            
+          <tr>
+              <td><label for="pwblhd">Heating Disable %</label></td>
+              <td><input type="text" size="4" id="pwblhd" name="pwblhd" value="<!--#pwblhd-->"></td>
+          </tr>      
+          <tr>
+              <td><label for="pwblhe">Heating Enable %</label></td>
+              <td><input type="text" size="4" id="pwblhe" name="pwblhe" value="<!--#pwblhe-->"></td>
+          </tr>  
+          <tr>
+              <td><label for="pwblcd">Cooling Disable %</label></td>
+              <td><input type="text" size="4" id="pwblcd" name="pwblcd" value="<!--#pwblcd-->"></td>
+          </tr>      
+          <tr>
+              <td><label for="pwblce">Cooling Enable %</label></td>
+              <td><input type="text" size="4" id="pwblce" name="pwblce" value="<!--#pwblce-->"></td>
+          </tr>                                                      
+          <tr>            
+              <td colspan="2" style="text-align: center;">
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+      </form>
+  </table>
 </div>
    
 </body>

@@ -52,12 +52,12 @@ body {
   <div class="sidenav">
     <a href="/network.shtml">Network</a>   
     <a href="/time.shtml">Time</a>
-    <a href="<!--#rpage-->">Relay</a>
-    <a href="/t_sensors.shtml">Foibles</a>  
-    <a href="/powerwall.shtml">Foibles</a>     
+    <a href="/t_gpio.shtml">GPIO</a>
+    <a href="/powerwall.shtml">Powerwall</a>
+    <a href="/t_advanced.shtml">Advanced</a>     
     <a href="/syslog.shtml">Syslog</a>    
-    <a href="/units.shtml">Foibles</a>                  
-    <a href="/t_status.shtml">Status</a>   
+    <a href="/units.shtml">Foibles</a>     
+    <a href="/status.shtml">Status</a>   
     <p><a href="/index.shtml">&#8629</a></p>    
   </div>
 
@@ -67,14 +67,18 @@ body {
     <br>
     <p>Local Time: <!--#ltme--></p>
     <br>
-    <p>Indoor Temperature: <!--#tint--> &deg;<!--#tmpu--></p>
-    <p>Heating Threshold: <!--#tchs--> &deg;<!--#tmpu--></p>
-    <p>Cooling Threshold: <!--#tccs--> &deg;<!--#tmpu--></p>    
+    <p>Temperature: <!--#tct--> &deg;<!--#tmpu--></p>
+    <p>Set point: <!--#tcs--> &deg;<!--#tmpu--></p>
+    <p>Heating range: <!--#tchs--> &deg;<!--#tmpu--></p>
+    <p>Cooling range: <!--#tccs--> &deg;<!--#tmpu--></p>
+    <br>
+    <p>Grid Status: <!--#grids--></p>
+    <p>Battery: <!--#batp--> %</p>             
     <br>   
     <p>Network Time: <!--#time--></p>
     <p>Last reboot: <!--#dogtme--></p>
     <br> 
     <p>Version: <!--#ghsh--></p> 
-</div>   
+</div>    
 </body>
 </html> 

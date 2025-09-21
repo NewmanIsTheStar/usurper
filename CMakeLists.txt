@@ -376,3 +376,9 @@ pico_add_extra_outputs(home_controller)
 # ${CMAKE_CURRENT_LIST_DIR}/html_files/sprajax.js
 # ${CMAKE_CURRENT_LIST_DIR}/html_files/favicon.ico
 # )
+
+# set(WEB_FILES)
+# file(GLOB WEB_FILES "${CMAKE_CURRENT_SOURCE_DIR}/thermostat/html_files/*.shtml")
+# pico_set_lwip_httpd_content(pico_httpd_content INTERFACE ${WEB_FILES})
+
+#pico_set_lwip_httpd_content(pico_httpd_content INTERFACE ${CMAKE_CURRENT_LIST_DIR}/thermostat/html_files/t_gpio.shtml)
