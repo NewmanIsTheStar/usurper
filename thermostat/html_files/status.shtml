@@ -62,23 +62,61 @@ body {
   </div>
 
 <div class="main">
-  <h2>Status</h2>      
-    <p><!--#status--></p> 
-    <br>
-    <p>Local Time: <!--#ltme--></p>
-    <br>
-    <p>Temperature: <!--#tct--> &deg;<!--#tmpu--></p>
-    <p>Set point: <!--#tcs--> &deg;<!--#tmpu--></p>
-    <p>Heating range: <!--#tchs--> &deg;<!--#tmpu--></p>
-    <p>Cooling range: <!--#tccs--> &deg;<!--#tmpu--></p>
-    <br>
-    <p>Grid Status: <!--#grids--></p>
-    <p>Battery: <!--#batp--> %</p>             
-    <br>   
-    <p>Network Time: <!--#time--></p>
-    <p>Last reboot: <!--#dogtme--></p>
-    <br> 
-    <p>Version: <!--#ghsh--></p> 
+  <h2>Status</h2>  
+  <table>
+    <tr>
+      <td colspan="2"><!--#status--></td>
+    </tr>
+    <tr>
+      <td>Local Time</td>
+      <td><!--#ltme--></td>
+    </tr>
+    <tr>
+      <td colspan="2">&nbsp;</td> 
+    </tr>    
+    <tr>
+      <td>Temperature</td>
+      <td><!--#tct--> &deg;<!--#tmpu--></td>      
+    </tr>
+    <tr>
+      <td>Set point</td>
+      <td><!--#tcs--> &deg;<!--#tmpu--></td>
+    </tr>
+    <tr>
+      <td>Heating target</td>
+      <td><!--#tchs--> &deg;<!--#tmpu--></td>
+    </tr>    
+    <tr>
+      <td>Cooling target</td>
+      <td><!--#tccs--> &deg;<!--#tmpu--></td>
+    </tr>  
+    <tr>
+      <td colspan="2">&nbsp;</td> 
+    </tr>     
+    <tr>
+      <td>Grid Status</td>
+      <td><!--#grids--></td>
+    </tr> 
+    <tr>
+      <td>Battery</td>
+      <td><!--#batp--> %</td>
+    </tr> 
+    <tr>
+      <td colspan="2">&nbsp;</td> 
+    </tr>     
+    <tr>
+      <td>Network Time</td>
+      <td><!--#time--></td>
+    </tr> 
+    <tr>
+      <td>Last reboot</td>
+      <td><!--#dogtme--></td>
+    </tr>    
+    <tr>
+      <td>Version</td>
+      <td><!--#ghsh--></td>
+    </tr>                        
+  </table>    
 </div>    
 </body>
 </html> 
