@@ -49,6 +49,7 @@
 #define SETPOINT_DEFAULT_FAHRENHEIT_X_10 (700)   // 70.0 F
 #define SETPOINT_MAX_FAHRENHEIT_X_10 (900)       // 90.0 F
 #define SETPOINT_MIN_FAHRENHEIT_X_10 (600)       // 60.0 F
+
  
 
 typedef enum
@@ -1124,12 +1125,12 @@ int make_schedule_grid(void)
         web.thermostat_grid[0][y]= -1;
     }
 
-    // set all temperatures invalid
+    // set all temperatures undefined
     for(x=1; x<8; x++)
     {
         for (y=0; y<8; y++)
         {
-            web.thermostat_grid[x][y] = -300; 
+            web.thermostat_grid[x][y] = SETPOINT_TEMP_UNDEFINED; 
         }
     }
 
@@ -1242,7 +1243,7 @@ int copy_schedule(int source_day, int destination_day)
         {
             // mark unused    
             config.setpoint_start_mow[i] = -1;
-            config.setpoint_temperaturex10[i] = -2000;
+            config.setpoint_temperaturex10[i] = SETPOINT_TEMP_UNDEFINED;
         }
     }
 
@@ -1268,6 +1269,7 @@ int copy_schedule(int source_day, int destination_day)
                         // copy schedule
                         config.setpoint_start_mow[k] = day*(60*24) + mod;
                         config.setpoint_temperaturex10[k] = config.setpoint_temperaturex10[i];
+                        config.setpoint_mode[k] = config.setpoint_mode[i];
 
                         //printf("Copied row. New row %d [dest day = %d source day j = %d source row i = %d]\n", k, day, j, i);
                     }
@@ -1333,7 +1335,7 @@ bool day_compare(int day1, int day2)
  * 
  * \return true if temperature schedule entry is valid
  */
-bool schedule_row_valid(int row)
+bool schedule_row_valid(int row)  // TODO: handle INVALID temperature constants e.g. copying OFF mode
 {
     bool valid = true;
 

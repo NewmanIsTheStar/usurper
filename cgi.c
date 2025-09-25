@@ -2205,9 +2205,74 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
             if ((len >= 5) && (param[0] == 't') && (param[1] == 'p') && (param[2] == 't') && (param[3] == 'm') && (param[4] == 'p'))
             {
                 CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_start_mow)); 
-                sscanf(value, "%d", &(config.setpoint_temperaturex10[web.thermostat_period_row]));
-                config.setpoint_temperaturex10[web.thermostat_period_row] *= 10; 
-            }             
+
+                if(isdigit(value[0]))
+                {
+                    sscanf(value, "%d", &(config.setpoint_temperaturex10[web.thermostat_period_row]));
+                    config.setpoint_temperaturex10[web.thermostat_period_row] *= 10; 
+                }
+
+                if (config.setpoint_mode[web.thermostat_period_row] == HVAC_OFF)
+                {
+                    config.setpoint_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_INVALID_OFF; 
+                }
+
+                if (config.setpoint_mode[web.thermostat_period_row] == HVAC_FAN_ONLY)
+                {
+                    config.setpoint_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_INVALID_FAN; 
+                }
+
+            }   
+
+            len = strlen(param);
+            if ((len >= 4) && (param[0] == 't') && (param[1] == 'p') && (param[2] == 's') && (param[3] == 'm'))
+            {
+                CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_mode)); 
+                sscanf(value, "%d", &(config.setpoint_mode[web.thermostat_period_row]));
+                CLIP(config.setpoint_mode[web.thermostat_period_row], 0, 4);
+
+                if (config.setpoint_mode[web.thermostat_period_row] == HVAC_OFF)
+                {
+
+                    config.setpoint_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_INVALID_OFF; 
+                }
+                else
+                {
+                    switch(config.setpoint_temperaturex10[web.thermostat_period_row])
+                    {
+                    case SETPOINT_TEMP_INVALID_FAN:
+                    case SETPOINT_TEMP_INVALID_OFF:
+                    case SETPOINT_TEMP_UNDEFINED:
+                        if (config.use_archaic_units)
+                        {
+                            config.setpoint_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_DEFAULT_F;
+                        }
+                        else
+                        {
+                            config.setpoint_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_DEFAULT_C;
+                        }
+                        break;
+                    default:  // reject temps below absolute zero
+                        if (config.use_archaic_units)
+                        {
+                            if (config.setpoint_temperaturex10[web.thermostat_period_row] < 4600)
+                            {
+                                config.setpoint_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_DEFAULT_F;
+                            }
+                        }
+                        else
+                        {
+                            if (config.setpoint_temperaturex10[web.thermostat_period_row] < 2800)
+                            {                            
+                                config.setpoint_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_DEFAULT_C;
+                            }
+                        }                                            
+                        break;
+                    }
+                }
+
+
+            }  
 
             len = strlen(param);
             if ((len >= 3) && (param[0] == 'd') && (param[1] == 'a') && (param[2] == 'y'))
@@ -2409,11 +2474,11 @@ const char * cgi_thermostat_period_add_handler(int iIndex, int iNumParams, char 
             config.setpoint_start_mow[i] = web.thermostat_day*24*60;
             if (config.use_archaic_units)
             {
-                config.setpoint_temperaturex10[i] = 700;
+                config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;
             }
             else
             {
-                config.setpoint_temperaturex10[i] = 210;
+                config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;
             }
             next_page = "/tp_edit.shtml";
             break;

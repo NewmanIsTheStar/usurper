@@ -31,7 +31,11 @@
 			"string": "c",
 			"ip4_addr.h": "c",
 			"utility.h": "c",
-			"rtc.h": "c"
+			"rtc.h": "c",
+			"charconv": "c",
+			"format": "c",
+			"text_encoding": "c",
+			"typeinfo": "c"
 		}
 	}
 }

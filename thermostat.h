@@ -6,14 +6,20 @@
 #ifndef THERMOSTAT_H
 #define THERMOSTAT_H
 
+#define SETPOINT_TEMP_UNDEFINED   (-10001)
+#define SETPOINT_TEMP_INVALID_FAN (-10002)
+#define SETPOINT_TEMP_INVALID_OFF (-10003)
+#define SETPOINT_TEMP_DEFAULT_C   (210)
+#define SETPOINT_TEMP_DEFAULT_F   (700)
+
 typedef enum
 {
-    HVAC_OFF = 0,
-    HVAC_HEATING_ONLY = 1,
-    HVAC_COOLING_ONLY = 2,
-    HVAC_FAN_ONLY = 3,
-    HVAC_AUTO = 4,
-} THERMOSTAT_MODE_T;
+    HVAC_AUTO = 0,
+    HVAC_OFF = 1,
+    HVAC_HEATING_ONLY = 2,
+    HVAC_COOLING_ONLY = 3,
+    HVAC_FAN_ONLY = 4,
+} THERMOSTAT_MODE_T;          // set by user -- do not reorder -- html and ssi.c rely on order
 
 typedef enum
 {
@@ -23,7 +29,7 @@ typedef enum
     DUCT_PURGE = 3,
     THERMOSTAT_LOCKOUT = 4,
     EXCESSIVE_OVERSHOOT = 5
-} THERMOSTAT_STATE_T;
+} THERMOSTAT_STATE_T;         // operational state
 
 
 //prototypes

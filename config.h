@@ -137,8 +137,9 @@ typedef struct
     int setpoint_temperaturex10[32];  // <== increased from 16 to 32
     int thermostat_period_number;   // obsolete
     int setpoint_start_mow[32];  // <== increased from 16 to 32
-    int thermostat_period_end_mow[16]; // obsolete
-    int thermostat_period_setpoint_index[16]; // obsolete
+    //int thermostat_period_end_mow[16]; // obsolete
+    //int thermostat_period_setpoint_index[16]; // obsolete
+    int setpoint_mode[32];  // replaces two 16 int arrays above
     char powerwall_ip[32];
     char powerwall_hostname[32];  // for sni may differ from dns
     char powerwall_password[32];
