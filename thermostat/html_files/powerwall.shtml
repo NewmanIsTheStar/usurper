@@ -71,7 +71,7 @@ body {
               </td>              
           </tr>
           <tr>
-              <td><label for="pwip">Powerwall Address: </label></td>
+              <td><label for="pwip">Powerwall Address</label></td>
               <td><input type="text" size="16" id="pwip" name="pwip" value="<!--#pwip-->"></td>
           </tr>
           <tr>
@@ -79,7 +79,7 @@ body {
               <td><input type="text" size="16" id="pwhost" name="pwhost" value="<!--#pwhost-->"></td>
           </tr>          
           <tr>
-              <td><label for="pwpass">Powerwall Password:</label></td>
+              <td><label for="pwpass">Powerwall Password</label></td>
               <td><input type="text" size="16" id="pwpass" name="pwpass" value="<!--#pwpass-->"></td>
           </tr>
           <tr>            
@@ -88,11 +88,11 @@ body {
               </td>
           </tr>          
           <tr>
-              <td><label for="pwgdhd">Heating Setpoint Decrease</label></td>
+              <td><label for="pwgdhd">Heating Setpoint Decrease &deg;</label></td>
               <td><input type="text" size="4" id="pwgdhd" name="pwgdhd" value="<!--#pwgdhd-->"></td>
           </tr>      
           <tr>
-              <td><label for="pwgdci">Cooling Setpoint Increase</label></td>
+              <td><label for="pwgdci">Cooling Setpoint Increase &deg;</label></td>
               <td><input type="text" size="4" id="pwgdci" name="pwgdci" value="<!--#pwgdci-->"></td>
           </tr>               
           <tr>
@@ -102,19 +102,19 @@ body {
               </td>
           </tr>            
           <tr>
-              <td><label for="pwblhd">Heating Disable %</label></td>
+              <td><label for="pwblhd">Heating Disable charge %</label></td>
               <td><input type="text" size="4" id="pwblhd" name="pwblhd" value="<!--#pwblhd-->"></td>
           </tr>      
           <tr>
-              <td><label for="pwblhe">Heating Enable %</label></td>
+              <td><label for="pwblhe">Heating Enable charge %</label></td>
               <td><input type="text" size="4" id="pwblhe" name="pwblhe" value="<!--#pwblhe-->"></td>
           </tr>  
           <tr>
-              <td><label for="pwblcd">Cooling Disable %</label></td>
+              <td><label for="pwblcd">Cooling Disable charge %</label></td>
               <td><input type="text" size="4" id="pwblcd" name="pwblcd" value="<!--#pwblcd-->"></td>
           </tr>      
           <tr>
-              <td><label for="pwblce">Cooling Enable %</label></td>
+              <td><label for="pwblce">Cooling Enable charge %</label></td>
               <td><input type="text" size="4" id="pwblce" name="pwblce" value="<!--#pwblce-->"></td>
           </tr>                                                      
           <tr>            

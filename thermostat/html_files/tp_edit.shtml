@@ -46,7 +46,30 @@ body {
 }
 </style>
 </head>
-<body>
+
+
+
+<body onload="toggleColumn(3)">
+<script>
+  function toggleColumn(columnIndex) {
+    const table = document.getElementById('climate_edit');
+    if (!table) return;
+    const rows = table.rows;
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].cells;
+        if (cells.length > columnIndex) {
+            const cell = cells[columnIndex];
+            const mode_selected = document.getElementById('tpsm');
+            const selectedValue = mode_selected.value;
+            if (selectedValue === '1') {
+               cell.style.display = 'none';  
+            } else {
+               cell.style.display = '';
+            }
+        }
+    }
+}
+</script>
 
 <div class="sidenav">
   <a href="/t_schedule.cgi?day=0">Sunday</a>     
@@ -61,28 +84,45 @@ body {
 </div>
 
 <div class="main">
-  <h2>Edit Climate Period</h2> 
-
-  <form action="/ts_change.cgi" method="get" name="events">                
-    <fieldset>                   
-        <div class="form-group">          
-          <label for="tpedit"> <!--#tday--> </label>
-          <input name="tpst" id="tspst" <!--#tpst--> value="<!--#tpst-->"/>           
-          <select id="tpsm" name="tpsm">
+  <h2>Edit Climate Period</h2>    
+  <table id="climate_edit">
+    <form action="/ts_change.cgi" method="get" name="events">
+      <tr>
+        <td><b>Day</b></td>
+        <td><b>Time</b></td>
+        <td><b>Mode</b></td>
+        <td><b>Temperature</b></td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr> 
+        <td>
+          <!--#tday-->
+        </td>
+        <td>
+          <input name="tpst" id="tspst" <!--#tpst--> value="<!--#tpst-->"/>  
+        </td>  
+        <td>
+          <select id="tpsm" name="tpsm" onchange="toggleColumn(3);" onfocus="this.selectedIndex = -1;">
             <option value="0" <!--#tpsm1-->>Auto</option>
             <option value="1" <!--#tpsm2-->>Off</option>            
             <option value="2" <!--#tpsm3-->>Heat Only</option>
             <option value="3" <!--#tpsm4-->>Cool Only</option>
             <option value="4" <!--#tpsm5-->>Fan Only</option>            
-          </select>     
-          <input name="tptmp" id="tptmp" <!--#tptmp--> value="<!--#tptmp-->"/>      
-          <a href="/t_schedule.shtml">   <button type=button style="width:13%">Cancel</button></a>                   
-        </div>                    
-    </fieldset>                                                                                   
-    <fieldset>
+        </select>
+        </td>   
+        <td>
+          <input name="tptmp" id="tptmp" <!--#tptmp--> value="<!--#tptmp-->"/> 
+        </td>
+        <td>
+          <a href="/t_schedule.shtml">   <button type=button>Cancel</button></a> 
+        </td>  
+      <tr>
+        <td>
         <input type="submit" style="font-size: 28px;" value="Save">
-    </fieldset>                                  
-</form>
+        </td>
+      </tr>
+    </form>
+  </table>        
 </div>
   
 </body>
