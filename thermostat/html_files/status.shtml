@@ -39,6 +39,12 @@ body {
   font-size: 28px; /* Increased text to enable scrolling */
   input[type='text'] { font-size: 28px; }
   padding: 0px 10px;
+  th, td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 2px;
+    padding-right: 50px;
+  }
 }
 
 @media screen and (max-height: 450px) {

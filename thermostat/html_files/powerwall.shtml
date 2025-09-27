@@ -118,7 +118,7 @@ body {
               <td><input type="text" size="4" id="pwblce" name="pwblce" value="<!--#pwblce-->"> <label>%</label></td>
           </tr>                                                      
           <tr>            
-              <td colspan="2" style="text-align: center;">
+              <td>
                   <button type="submit" style="font-size: 25px;">Save</button>
               </td>
           </tr>
