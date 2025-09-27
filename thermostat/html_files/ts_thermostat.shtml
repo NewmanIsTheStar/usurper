@@ -97,7 +97,7 @@
         <link rel="icon" type="image/x-icon" href="/sprinkler.ico">
     </head>
     <body>
-        <h1 style="font-family:Lato,sans-serif; color: #070000;">Thermostat &nbsp;&nbsp;&nbsp;<!--#tct--> &deg;<!--#tmpu--></h1>
+        <h1 style="font-family:Lato,sans-serif; color: #070000;">Temperature <!--#tct--> &deg;<!--#tmpu--></h1>
         <br>
         <div class="btn-group-title" style="width:100%">
             <a href="/t_schedule.cgi?day=0">   <button style="width:9%">&nbsp;</button></a> 

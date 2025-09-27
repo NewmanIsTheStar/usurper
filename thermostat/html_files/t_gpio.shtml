@@ -71,15 +71,15 @@ body {
               </td>              
           </tr>
           <tr>
-              <td><label for="thr">Heating GPIO:</label></td>
+              <td><label for="thr">Heating GPIO</label></td>
               <td><input type="text" size="4" id="thgpio" name="thgpio" value="<!--#thgpio-->"></td>
           </tr>
           <tr>
-              <td><label for="tcr">Cooling GPIO:</label></td>
+              <td><label for="tcr">Cooling GPIO</label></td>
               <td><input type="text" size="4" id="tcgpio" name="tcgpio" value="<!--#tcgpio-->"></td>
           </tr>
           <tr>
-              <td><label for="tfr">Fan GPIO:</label></td>
+              <td><label for="tfr">Fan GPIO</label></td>
               <td><input type="text" size="4" id="tfgpio" name="tfgpio" value="<!--#tfgpio-->"></td>
           </tr>
           <tr>            
@@ -88,11 +88,11 @@ body {
               </td>
           </tr>          
           <tr>
-              <td><label for="tfr">Temperature clock GPIO:</label></td>
+              <td><label for="tfr">Temperature clock GPIO</label></td>
               <td><input type="text" size="4" id="tacgpio" name="tacgpio" value="<!--#tacgpio-->"></td>
           </tr>      
           <tr>
-              <td><label for="tfr">Temperature data GPIO:</label></td>
+              <td><label for="tfr">Temperature data GPIO</label></td>
               <td><input type="text" size="4" id="tadgpio" name="tadgpio" value="<!--#tadgpio-->"></td>
           </tr>               
           <tr>
@@ -102,11 +102,11 @@ body {
               </td>
           </tr>            
           <tr>
-              <td><label for="tfr">Display clock GPIO:</label></td>
+              <td><label for="tfr">Display clock GPIO</label></td>
               <td><input type="text" size="4" id="tlcgpio" name="tlcgpio" value="<!--#tlcgpio-->"></td>
           </tr>      
           <tr>
-              <td><label for="tfr">Display data GPIO:</label></td>
+              <td><label for="tfr">Display data GPIO</label></td>
               <td><input type="text" size="4" id="tldgpio" name="tldgpio" value="<!--#tldgpio-->"></td>
           </tr>  
           <tr>            
@@ -115,15 +115,15 @@ body {
               </td>
           </tr>          
           <tr>
-              <td><label for="tfr">Up Button GPIO:</label></td>
+              <td><label for="tfr">Up Button GPIO</label></td>
               <td><input type="text" size="4" id="tbugpio" name="tbugpio" value="<!--#tbugpio-->"></td>
           </tr> 
           <tr>
-              <td><label for="tfr">Down Button GPIO:</label></td>
+              <td><label for="tfr">Down Button GPIO</label></td>
               <td><input type="text" size="4" id="tbdgpio" name="tbdgpio" value="<!--#tbdgpio-->"></td>
           </tr> 
           <tr>
-              <td><label for="tfr">Mode Button GPIO:</label></td>
+              <td><label for="tfr">Mode Button GPIO</label></td>
               <td><input type="text" size="4" id="tbmgpio" name="tbmgpio" value="<!--#tbmgpio-->"></td>
           </tr>                                            
           <tr>            

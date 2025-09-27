@@ -88,12 +88,12 @@ body {
               </td>
           </tr>          
           <tr>
-              <td><label for="pwgdhd">Heating Setpoint Decrease &deg;</label></td>
-              <td><input type="text" size="4" id="pwgdhd" name="pwgdhd" value="<!--#pwgdhd-->"></td>
+              <td><label for="pwgdhd">Heating Setpoint Decrease</label></td>
+              <td><input type="text" size="4" id="pwgdhd" name="pwgdhd" value="<!--#pwgdhd-->"> <label for="spdu">&deg;<!--#tmpu--></label></td>
           </tr>      
           <tr>
-              <td><label for="pwgdci">Cooling Setpoint Increase &deg;</label></td>
-              <td><input type="text" size="4" id="pwgdci" name="pwgdci" value="<!--#pwgdci-->"></td>
+              <td><label for="pwgdci">Cooling Setpoint Increase</label></td>
+              <td><input type="text" size="4" id="pwgdci" name="pwgdci" value="<!--#pwgdci-->"> <label for="spiu">&deg;<!--#tmpu--></label></td>
           </tr>               
           <tr>
           <tr>            
@@ -102,20 +102,20 @@ body {
               </td>
           </tr>            
           <tr>
-              <td><label for="pwblhd">Heating Disable charge %</label></td>
-              <td><input type="text" size="4" id="pwblhd" name="pwblhd" value="<!--#pwblhd-->"></td>
+              <td><label for="pwblhd">Heating Disable</label></td>
+              <td><input type="text" size="4" id="pwblhd" name="pwblhd" value="<!--#pwblhd-->"> <label>%</label></td>
           </tr>      
           <tr>
-              <td><label for="pwblhe">Heating Enable charge %</label></td>
-              <td><input type="text" size="4" id="pwblhe" name="pwblhe" value="<!--#pwblhe-->"></td>
+              <td><label for="pwblhe">Heating Enable</label></td>
+              <td><input type="text" size="4" id="pwblhe" name="pwblhe" value="<!--#pwblhe-->"> <label>%</label></td>
           </tr>  
           <tr>
-              <td><label for="pwblcd">Cooling Disable charge %</label></td>
-              <td><input type="text" size="4" id="pwblcd" name="pwblcd" value="<!--#pwblcd-->"></td>
+              <td><label for="pwblcd">Cooling Disable</label></td>
+              <td><input type="text" size="4" id="pwblcd" name="pwblcd" value="<!--#pwblcd-->"> <label>%</label></td>
           </tr>      
           <tr>
-              <td><label for="pwblce">Cooling Enable charge %</label></td>
-              <td><input type="text" size="4" id="pwblce" name="pwblce" value="<!--#pwblce-->"></td>
+              <td><label for="pwblce">Cooling Enable</label></td>
+              <td><input type="text" size="4" id="pwblce" name="pwblce" value="<!--#pwblce-->"> <label>%</label></td>
           </tr>                                                      
           <tr>            
               <td colspan="2" style="text-align: center;">
