@@ -1020,8 +1020,6 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     if (config.use_archaic_units)
     {
         // fahrenheit between 60 and 90
-     
-
         if ((setpointtemperaturex10 > SETPOINT_MAX_FAHRENHEIT_X_10) || (setpointtemperaturex10 < SETPOINT_MIN_FAHRENHEIT_X_10))
         {
             setpointtemperaturex10 = SETPOINT_DEFAULT_FAHRENHEIT_X_10;
@@ -1615,4 +1613,39 @@ int handle_button_press_with_timeout(QueueHandle_t irq_queue, TickType_t timeout
     printf("TEMP = %d SETPOINT = %d MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, mode);
 
     return(button_pressed);
+}
+
+
+/*!
+ * \brief ensure scheduled temperatures are consistent with units
+ * 
+ * \return nothing
+ */
+void sanatize_schedule_temperatures(void)
+{
+    int i;
+
+    for(i=0; i<NUM_ROWS(config.setpoint_start_mow); i++)
+    {
+        if ((config.setpoint_start_mow[i] >= 0) && (config.setpoint_start_mow[i] < 60*24*7))
+        {
+            if (config.use_archaic_units)
+            {
+                // convert suspected celsius to fahrenheit 
+                if ((config.setpoint_temperaturex10[i] < 500) && (config.setpoint_temperaturex10[i] > -5000))
+                {
+                    config.setpoint_temperaturex10[i] = (config.setpoint_temperaturex10[i]*9)/5 + 320;
+                }
+            }
+            else
+            {
+                // convert suspected fahrenheit to celsius
+                if (config.setpoint_temperaturex10[i] >= 50)
+                {
+                    config.setpoint_temperaturex10[i] = ((config.setpoint_temperaturex10[i] - 320)*5)/9;
+                }
+            }
+
+        }
+    }
 }

@@ -195,7 +195,7 @@ endif()
 add_executable(${PROJECT_NAME} ${usurper_source_files})      
 target_compile_definitions(${PROJECT_NAME} PRIVATE APP_NAME="Usurper" HTTPD_FSDATA_FILE="usurper/htmldata.c")
 if(NOT PICO_BOARD STREQUAL "pico_w") 
-target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_THERMOSTAT)
+#target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_THERMOSTAT)
 target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_HOME_CONTROLLER)
 endif()
 

@@ -1942,7 +1942,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             default:
                 if (web.thermostat_grid[grid_x][grid_y] > SETPOINT_TEMP_UNDEFINED)
                 {
-                    printed = snprintf(pcInsert, iInsertLen, "%d&deg;", web.thermostat_grid[grid_x][grid_y]/10); 
+                    printed = snprintf(pcInsert, iInsertLen, "%d&deg;", (web.thermostat_grid[grid_x][grid_y]+5)/10); 
                 }
                 else if (web.thermostat_grid[grid_x][grid_y] == SETPOINT_TEMP_INVALID_OFF)
                 {

@@ -1264,19 +1264,19 @@ const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char
     // set the default week long calendar page
     set_calendar_html_page();  
 
-    //check for change in units
+    // check for change in units
     if (new_use_archaic_units != config.use_archaic_units)
     {
         config.use_archaic_units = new_use_archaic_units;
 
         switch (new_use_archaic_units)
         {
-            case false:  //convert from archaic units to SI
+            case false:  // convert from archaic units to SI
                 config.wind_threshold = (1000*config.wind_threshold + 1641)/3281;
                 config.rain_week_threshold = (254*config.rain_week_threshold + 5)/10;
                 config.rain_day_threshold = (254*config.rain_day_threshold + 5)/10;                            
             break;
-            case true:   //convert from SI to archaic units
+            case true:   // convert from SI to archaic units
                 config.wind_threshold = (config.wind_threshold*3281 + 500)/1000;
                 config.rain_week_threshold = (10*config.rain_week_threshold + 127)/254;
                 config.rain_day_threshold = (10*config.rain_day_threshold + 127)/254;                    
@@ -1284,6 +1284,11 @@ const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char
             default:
             break;
         }
+#ifdef INCORPORATE_THERMOSTAT
+        // convert thermostat scheduled temperatures
+        sanatize_schedule_temperatures();
+        make_schedule_grid();
+#endif
     }     
 
 

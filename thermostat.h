@@ -37,5 +37,6 @@ void thermostat_task(__unused void *params);
 int make_schedule_grid(void);
 //int update_current_setpoints(void);
 int copy_schedule(int source_day, int destination_day);
+void sanatize_schedule_temperatures(void);
 
 #endif
