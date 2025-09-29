@@ -51,37 +51,58 @@ body {
   <div class="sidenav">
     <a href="/network.shtml">Network</a>   
     <a href="/time.shtml">Time</a>
-    <a href="<!--#rpage-->">Relay</a>
-    <a href="/weather.shtml">Weather</a>
-    <a href="/moodlight.shtml">Moodlight</a>     
-    <a href="/addressable_led.shtml">LED strip</a>
+    <a href="/t_gpio.shtml">GPIO</a>
+    <a href="/powerwall.shtml">Powerwall</a>
+    <a href="/t_advanced.shtml">Advanced</a>     
     <a href="/syslog.shtml">Syslog</a>    
     <a href="/units.shtml">Foibles</a>     
     <a href="/status.shtml">Status</a>   
     <p><a href="/index.shtml">&#8629</a></p>    
   </div>
 
+
+
 <div class="main">
-  <h2>Network Settings</h2>     
-  <form action="/network.cgi">    
-      <label for="dsstart">WiFi Country is <!--#wific--></label><br>
-      <a href="/wifi_country.shtml" style="text-decoration:none"><small>Change WiFi Country &#8594</small></a><br><br>             
-      <label for="ssid">WiFi SSID</label>
-      <input type="text" id="ssid" name="ssid" value="<!--#ssid-->"><br><br>
-      <label for="dsstart">WiFi Password</label>
-      <input type="password" onfocus=this.value='' id="wpass" name="wpass" value="<!--#wpass-->"><br><br>            
-      <label for="dsenable">Use DHCP</label>
-      <input type="checkbox" id="dhcp" name="dhcp" value="on" style="height:20px; width:20px; vertical-align: middle;" onclick="this.form.submit()" <!--#dhcp-->><br><br>
-      <label for="dsend">IP Address</label>
-      <input type="text" id="ipad" name="ipad" value="<!--#ipad-->"><br><br>
-      <label for="netmask">Network Mask</label>
-      <input type="text" id="nmsk" name="nmsk" value="<!--#nmsk-->"><br><br>       
-      <label for="gatewy">Gateway</label>
-      <input type="text" id="gatewy" name="gatewy" value="<!--#gatewy-->"><br><br>                                       
-      <br>
-      <input type="submit" value="Save" style="font-size: 25px;">
-  </form> 
+
+  <h2>Network Settings</h2>  
+  <label for="dsstart">WiFi Country is <!--#wific--></label><br>
+  <a href="/wifi_country.shtml" style="text-decoration:none"><small>Change WiFi Country &#8594</small></a><br><br>
+  <table>
+      <form action="/network.cgi">
+          <tr>
+              <td><label for="ssid">WiFi SSID</label></td>
+              <td><input type="text" id="ssid" name="ssid" value="<!--#ssid-->"></td>
+          </tr>
+          <tr>
+              <td><label for="dsstart">WiFi Password</label></td>
+              <td><input type="password" onfocus=this.value='' id="wpass" name="wpass" value="<!--#wpass-->"></td>
+          </tr>         
+          <tr>
+              <td><label for="dsenable">Use DHCP</label></td>
+              <td><input type="checkbox" id="dhcp" name="dhcp" value="on" style="height:20px; width:20px; vertical-align: middle;" onclick="this.form.submit()" <!--#dhcp-->></td>
+          </tr>      
+          <tr>
+              <td><label for="dsend">IP Address</label></td>
+              <td><input type="text" id="ipad" name="ipad" value="<!--#ipad-->"></td>
+          </tr>               
+          <tr>           
+          <tr>
+              <td><label for="netmask">Network Mask</label></td>
+              <td><input type="text" id="nmsk" name="nmsk" value="<!--#nmsk-->"></td>
+          </tr>      
+          <tr>
+              <td><label for="gatewy">Gateway</label></td>
+              <td><input type="text" id="gatewy" name="gatewy" value="<!--#gatewy-->"></td>
+          </tr>                                           
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+      </form>
+  </table>
   <br>
+  <label>WiFi changes will be applied after reboot</label>
   <form action="/reboot.cgi" method="get">
       <input type="submit" value="Reboot" name="reboot" id="reboot" style="font-size: 25px;">
   </form>   

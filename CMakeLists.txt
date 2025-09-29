@@ -255,6 +255,8 @@ if(NOT PICO_BOARD STREQUAL "pico_w")
         set(thermostat_source_files ${common_source_files}
                 thermostat/worker_tasks.c        
                 thermostat.c
+                thermostat_aht10.c
+                thermostat_metrics.c
                 powerwall.c
                 json_parser.c
                 tm1637.c)        

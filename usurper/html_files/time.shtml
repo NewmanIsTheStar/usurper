@@ -50,10 +50,9 @@ body {
   <div class="sidenav">
     <a href="/network.shtml">Network</a>   
     <a href="/time.shtml">Time</a>
-    <a href="<!--#rpage-->">Relay</a>
-    <a href="/weather.shtml">Weather</a>
-    <a href="/moodlight.shtml">Moodlight</a>     
-    <a href="/addressable_led.shtml">LED strip</a>
+    <a href="/t_gpio.shtml">GPIO</a>
+    <a href="/powerwall.shtml">Powerwall</a>
+    <a href="/t_advanced.shtml">Advanced</a>     
     <a href="/syslog.shtml">Syslog</a>    
     <a href="/units.shtml">Foibles</a>     
     <a href="/status.shtml">Status</a>   
@@ -61,28 +60,67 @@ body {
   </div>
 
 <div class="main">
-  <h2>Time Settings</h2>       
-  <form action="/time.cgi">
-    <label for="timezone">Timezone offset from UTC</label>
-    <input type="text" id="tz" name="tz" value="<!--#tz-->"><br><br>
-    <label for="dsenable">Automatically Adjust for Daylight Saving</label>
-    <input type="checkbox" id="dsenable" name="dsenable" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#dlse-->><br><br>
-    <label for="dsstart">Daylight Saving start:</label>
-    <input type="text" id="dsstart" name="dsstart" value="<!--#dss-->"><br><br>
-    <label for="dsend">Daylight Saving end:</label>
-    <input type="text" id="dsend" name="dsend" value="<!--#dse-->"><br><br>
-    <label for="ts1">Time Server 1:</label>
-    <input type="text" id="ts1" name="ts1" value="<!--#ts1-->"><br><br>            
-    <label for="ts2">Time Server 2:</label>
-    <input type="text" id="ts2" name="ts2" value="<!--#ts2-->"><br><br>
-    <label for="ts3">Time Server 3:</label>
-    <input type="text" id="ts3" name="ts3" value="<!--#ts3-->"><br><br>
-    <label for="ts4">Time Server 4:</label>
-    <input type="text" id="ts4" name="ts4" value="<!--#ts4-->"><br><br>   
-    <br>
-    <input type="submit" value="Save" style="font-size: 25px;">
-  </form>  
+
+  <h2>Time Settings</h2>      
+  <table>
+      <form action="/time.cgi">
+          <tr>            
+            <td style="text-align: left;font-weight: bold;">
+              <label>Timezone</label>
+            </td>
+          </tr> 
+          <tr>
+            <td><label for="timezone">Timezone offset from UTC</label></td>
+            <td><input type="text" id="tz" name="tz" value="<!--#tz-->"></td>
+          </tr>
+          <tr>            
+            <td style="text-align: left;font-weight: bold;">
+              <label>Daylight Saving</label>
+            </td>
+          </tr> 
+          <tr>
+            <td><label for="dsenable">Automatically Adjust for Daylight Saving</label></td>
+            <td><input type="checkbox" id="dsenable" name="dsenable" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#dlse-->></td>
+          </tr>  
+          <tr>
+            <td><label for="dsstart">Daylight Saving start:</label></td>
+            <td><input type="text" id="dsstart" name="dsstart" value="<!--#dss-->"></td>
+          </tr> 
+          <tr>
+            <td><label for="dsend">Daylight Saving end:</label></td>
+            <td><input type="text" id="dsend" name="dsend" value="<!--#dse-->"></td>
+          </tr>
+          <tr>            
+            <td style="text-align: left;font-weight: bold;">
+              <label>Time Servers</label>
+            </td>
+          </tr>          
+          <tr>
+            <td><labelTime>Server 1</label></td>
+            <td><input type="text" id="ts1" name="ts1" value="<!--#ts1-->"></td>
+          </tr>
+          <tr>
+            <td><labelTime>Server 2</label></td>
+            <td><input type="text" id="ts2" name="ts2" value="<!--#ts2-->"></td>
+          </tr>
+          <tr>
+            <td><labelTime>Server 3</label></td>
+            <td><input type="text" id="ts3" name="ts3" value="<!--#ts3-->"></td>
+          </tr>
+          <tr>
+            <td><labelTime>Server 4</label></td>
+            <td><input type="text" id="ts4" name="ts4" value="<!--#ts4-->"></td>
+          </tr>                                        
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+
+
+      </form>
+  </table>
 </div>
-   
+
 </body>
 </html> 
