@@ -183,7 +183,7 @@ execute_process(COMMAND
 if(NOT PICO_BOARD STREQUAL "pico_w")
         set(usurper_source_files ${common_source_files}   
                 worker_tasks.c     
-                thermostat.c
+                #thermostat.c
                 powerwall.c
                 shelly.c
                 json_parser.c
@@ -257,6 +257,9 @@ if(NOT PICO_BOARD STREQUAL "pico_w")
                 thermostat.c
                 thermostat_aht10.c
                 thermostat_metrics.c
+                thermostat_physical_ui.c
+                thermostat_web_ui.c
+                thermostat_hvac.c
                 powerwall.c
                 json_parser.c
                 tm1637.c)        

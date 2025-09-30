@@ -8,6 +8,12 @@
 
 #include "lwip/sockets.h"
 
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "task.h"
+#include "timers.h"
+#include "queue.h"
+
 #include "flash.h"
 #include "weather.h"
 #include "calendar.h"

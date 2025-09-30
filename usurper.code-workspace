@@ -35,7 +35,12 @@
 			"charconv": "c",
 			"format": "c",
 			"text_encoding": "c",
-			"typeinfo": "c"
+			"typeinfo": "c",
+			"vector": "c",
+			"exception": "c",
+			"fstream": "c",
+			"limits": "c",
+			"sstream": "c"
 		}
 	}
 }

@@ -6,6 +6,12 @@
 #ifndef THERMOSTAT_H
 #define THERMOSTAT_H
 
+#define SETPOINT_DEFAULT_CELSIUS_X_10 (210)      // 21.0 C
+#define SETPOINT_MAX_CELSIUS_X_10 (320)          // 32.0 C
+#define SETPOINT_MIN_CELSIUS_X_10 (150)          // 15.0 C 
+#define SETPOINT_DEFAULT_FAHRENHEIT_X_10 (700)   // 70.0 F
+#define SETPOINT_MAX_FAHRENHEIT_X_10 (900)       // 90.0 F
+#define SETPOINT_MIN_FAHRENHEIT_X_10 (600)       // 60.0 F
 #define SETPOINT_TEMP_UNDEFINED   (-10001)
 #define SETPOINT_TEMP_INVALID_FAN (-10002)
 #define SETPOINT_TEMP_INVALID_OFF (-10003)
@@ -38,6 +44,13 @@ typedef enum
     NUM_MOMENTUMS   = 2
 } CLIMATE_MOMENTUM_T;
 
+typedef struct
+{
+    TickType_t change_tick;
+    THERMOSTAT_STATE_T new_state;      
+    int change_temperature;   
+} HVAC_STATE_CHANGE_LOG_T;
+
 
 //prototypes
 void thermostat_task(__unused void *params);
@@ -58,5 +71,21 @@ void log_climate_change(int temperaturex10, int humidityx10);
 int aht10_initialize(int clock_gpio, int data_gpio);
 int aht10_measurement(long int *temperaturex10, long int *humidityx10);
 
+// thermostat_physcial_ui.c
+int handle_button_press_with_timeout(TickType_t timeout);
+void enable_irq(bool state);
+void gpio_isr(uint gpio, uint32_t events);
+void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hvac_setpoint);
+int initialize_physical_buttons(int mode_button_gpio, int increase_button_gpio, int decrease_button_gpio);
+
+// thermostat_web_ui.c
+int get_free_schedule_row(void);
+bool schedule_row_valid(int row);
+bool day_compare(int day1, int day2);
+void hvac_log_state_change(THERMOSTAT_STATE_T new_state);
+
+// thermostat_hvac.c
+int initialize_hvac_control(void);
+THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10);
 
 #endif
