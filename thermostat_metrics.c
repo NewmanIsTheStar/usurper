@@ -96,8 +96,6 @@ typedef struct
     int trend_down_min;
 } CLIMATE_TREND_T;
 
-
-
 typedef struct
 {
     TickType_t hvac_off_tick[NUM_MOMENTUMS];
@@ -110,6 +108,7 @@ typedef struct
 } CLIMATE_MOMENTUM_DATA_T;
 
 
+// gobal variables
 CLIMATE_HISTORY_T climate_history;
 CLIMATE_MOMENTUM_DATA_T climate_momentum;
 CLIMATE_TREND_T climate_trend;
@@ -118,7 +117,7 @@ CLIMATE_TREND_T climate_trend;
 /*!
  * \brief Initialize Temperature Metrics
  * 
- * \return 0 irrigation off, 1 irrigation on, 1 irrigation usurped
+ * \return 0 
  */
 int initialize_climate_metrics(void)
 {
@@ -134,7 +133,7 @@ int initialize_climate_metrics(void)
 /*!
  * \brief Accumulate Temperature Metrics
  * 
- * \return 0 irrigation off, 1 irrigation on, 1 irrigation usurped
+ * \return moving_average temperature
  */
 int accumlate_temperature_metrics(long int temperaturex10)
 {

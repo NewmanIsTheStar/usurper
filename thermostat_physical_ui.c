@@ -122,6 +122,7 @@ int handle_button_press_with_timeout(TickType_t timeout)
 
         // update display
         hvac_update_display(temperaturex10, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
+        printf("TEMP = %d SETPOINT = %d (%d + %d) MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, setpointtemperaturex10, temporary_set_point_offsetx10,mode);
 
     } while (button_pressed);  //TODO deal with continual spurious interrupts holding us in this loop forever
 

@@ -44,36 +44,12 @@
 #include "tm1637.h"
 
 
-
-
-
-
-
-// prototypes
-
-
-
-
-
-
-
-
-
-
-
 // external variables
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
 
 // global variables
-THERMOSTAT_MODE_T mode = HVAC_OFF;                       // operation mode
-int setpointtemperaturex10 = 0;                          // scheduled setpoint
-int temporary_set_point_offsetx10 = 0;                   // temporary offset set using physical buttons
 long int temperaturex10 = 0;                             // current temperature
-
-
-
-
 
 
 
@@ -128,40 +104,15 @@ void thermostat_task(void *params)
  
     printf("thermostat_task started!\n");
 
-    initialize_hvac_control();
-
-
-
-    
     // initialize data structures for climate metrics
     initialize_climate_metrics();
   
-    // check hvac gpios are valid
-    if (gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
-    {    
-        // check hvac gpios are unique
-        if ((config.heating_gpio != config.cooling_gpio) &&
-            (config.heating_gpio != config.fan_gpio) &&
-            (config.cooling_gpio != config.fan_gpio))
-        {
-            //initialize hvac gpios
-            gpio_init(config.heating_gpio);
-            gpio_put(config.heating_gpio, 0);
-            gpio_set_dir(config.heating_gpio, true);
-
-            gpio_init(config.cooling_gpio);
-            gpio_put(config.cooling_gpio, 0);
-            gpio_set_dir(config.cooling_gpio, true);  
-            
-            gpio_init(config.fan_gpio);
-            gpio_put(config.fan_gpio, 0);
-            gpio_set_dir(config.fan_gpio, true);
-        }  
-    }
+    // initialize hvac gpio and timers
+    initialize_hvac_control();
   
     // TEST TEST TEST -- force configuration of aht10 pins  
-    config.thermostat_temperature_sensor_data_gpio = 10;
-    config.thermostat_temperature_sensor_clock_gpio = 11;
+    // config.thermostat_temperature_sensor_data_gpio = 10;
+    // config.thermostat_temperature_sensor_clock_gpio = 11;
   
     // initialize i2c for temperature sensor  
     aht10_initialize(config.thermostat_temperature_sensor_clock_gpio, config.thermostat_temperature_sensor_data_gpio);
@@ -219,7 +170,6 @@ void thermostat_task(void *params)
                 track_hvac_extrema(COOLING_MOMENTUM, temperaturex10);
                 track_hvac_extrema(HEATING_MOMENTUM, temperaturex10); 
                 
-
                 accumlate_temperature_metrics(temperaturex10);
 
                 // update web ui
@@ -234,8 +184,6 @@ void thermostat_task(void *params)
 
             // process button presses until 1 second of inactivity occurs
             button_pressed = handle_button_press_with_timeout(1000);
-
-            printf("TEMP = %d SETPOINT = %d MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, mode);
         }  
         else
         {

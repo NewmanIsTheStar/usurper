@@ -47,6 +47,7 @@
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
 
+// global variables
 const uint8_t aht10_addr = 0x38;                                // i2c address of aht10 chip
 const uint8_t aht10_busy_mask = 0x80;                           // aht10 busy bit in first rx byte
 const uint8_t aht10_calibrated_mask = 0x08;                     // aht10 calibrated bit in first rx byte

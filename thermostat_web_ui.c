@@ -390,3 +390,34 @@ void sanatize_schedule_temperatures(void)
     }
 }
 
+/*!
+ * \brief check if schedule setpoint is valid
+ * 
+ * \return nothing
+ */
+bool schedule_setpoint_valid(int temperaturex10, int mow)
+{
+    bool valid = false;
+
+
+    if ((mow >= 0) && (mow < 60*24*7))
+    {
+        if (config.use_archaic_units)
+        {
+            if ((temperaturex10 > SETPOINT_MIN_FAHRENHEIT_X_10) && (temperaturex10 < SETPOINT_MAX_FAHRENHEIT_X_10))
+            {
+                valid = true;
+            }
+        }
+        else
+        {
+            if ((temperaturex10 > SETPOINT_MIN_CELSIUS_X_10) && (temperaturex10 < SETPOINT_MAX_CELSIUS_X_10))
+            {
+                valid = true;
+            }
+        }
+
+    }
+
+    return(valid);
+}

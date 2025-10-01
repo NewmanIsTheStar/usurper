@@ -83,6 +83,7 @@ int get_free_schedule_row(void);
 bool schedule_row_valid(int row);
 bool day_compare(int day1, int day2);
 void hvac_log_state_change(THERMOSTAT_STATE_T new_state);
+bool schedule_setpoint_valid(int temperaturex10, int mow);
 
 // thermostat_hvac.c
 int initialize_hvac_control(void);

@@ -3173,7 +3173,13 @@ const char * cgi_advanced_settings(int iIndex, int iNumParams, char *pcParam[], 
                 CLIP(setting, 1, 60);
                 config.minimum_cooling_off_mins = setting;
             }
-
+            if (strcasecmp("hvachys", param) == 0)
+            {
+                setting = get_int_with_tenths_from_string(value); 
+                CLIP(setting, 10, 100);
+                //config.thermostat_hysteresis = setting;  //TODO add to config
+                web.thermostat_hysteresis = setting;
+            }
         }
 
         i++;

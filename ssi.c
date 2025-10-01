@@ -559,7 +559,8 @@ extern NON_VOL_VARIABLES_T config;
     x(sp29mde) \
     x(sp30mde) \
     x(sp31mde) \
-    x(sp32mde)                
+    x(sp32mde) \
+    x(hvachys)               
 
   
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
@@ -2233,7 +2234,14 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         {
             printed = snprintf(pcInsert, iInsertLen, "%d", config.minimum_cooling_off_mins);                           
         }
-        break;      
+        break;              
+        case SSI_hvachys:  // hysteresis
+        {
+            //printed = snprintf(pcInsert, iInsertLen, "%d.%d", config.thermostat_hysteresis/10, config.thermostat_hysteresis%10);  // TODO add to config!
+            printed = snprintf(pcInsert, iInsertLen, "%d.%d", web.thermostat_hysteresis/10, web.thermostat_hysteresis%10);
+            printed = snprintf(pcInsert, iInsertLen, "%d", web.thermostat_hysteresis);                        
+        }
+        break;   
 #endif                                        
         default:
         {

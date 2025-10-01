@@ -100,7 +100,11 @@ body {
           <tr>
               <td><label for="tfr">Heating &hArr; Cooling delay in minutes</label></td>
               <td><input type="text" size="4" id="htclm" name="htclm" value="<!--#htclm-->"></td>
-          </tr>                                                 
+          </tr>  
+          <tr>
+              <td><label for="tfr">Setpoint hysteresis in degrees</label></td>
+              <td><input type="text" size="4" id="hvachys" name="hvachys" value="<!--#hvachys-->"></td>
+          </tr>                                                          
           <tr>            
               <td>
                   <button type="submit" style="font-size: 25px;">Save</button>

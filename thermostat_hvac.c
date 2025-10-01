@@ -66,13 +66,13 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active);
 // external variables
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
-extern THERMOSTAT_MODE_T mode;
-extern int setpointtemperaturex10;
-extern int temporary_set_point_offsetx10;
 extern long int temperaturex10;
 
 // gloabl variables
-CLIMATE_TIMERS_T climate_timers[NUM_HVAC_TIMERS];
+THERMOSTAT_MODE_T mode = HVAC_OFF;                       // operation mode
+int setpointtemperaturex10 = 0;                          // scheduled setpoint
+int temporary_set_point_offsetx10 = 0;                   // temporary offset set using physical buttons
+CLIMATE_TIMERS_T climate_timers[NUM_HVAC_TIMERS];        // set of timers used to control state
 
 /*!
  * \brief Open or close relay based on schedule and climate conditions
@@ -441,6 +441,29 @@ void vTimerCallback(TimerHandle_t xTimer)
         printf("Created timer with handle = %p\n", climate_timers[i].timer_handle);
     }
 
+    // check hvac gpios are valid
+    if (gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
+    {    
+        // check hvac gpios are unique
+        if ((config.heating_gpio != config.cooling_gpio) &&
+            (config.heating_gpio != config.fan_gpio) &&
+            (config.cooling_gpio != config.fan_gpio))
+        {
+            //initialize hvac gpios
+            gpio_init(config.heating_gpio);
+            gpio_put(config.heating_gpio, 0);
+            gpio_set_dir(config.heating_gpio, true);
+
+            gpio_init(config.cooling_gpio);
+            gpio_put(config.cooling_gpio, 0);
+            gpio_set_dir(config.cooling_gpio, true);  
+            
+            gpio_init(config.fan_gpio);
+            gpio_put(config.fan_gpio, 0);
+            gpio_set_dir(config.fan_gpio, true);
+        }  
+    }
+
     return(0);
 }
 
@@ -454,25 +477,32 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     int i;
     int mow;
     int candidate_start_mow = 0;
+    int candidate_temperature = 0;
     static bool cooling_disabled = false;
     static bool heating_disabled = false;
     static int current_start_mow = 0;
+    int wtf = 0;
+
+    wtf = setpointtemperaturex10;
 
     // get setpoint according to schedule
     if (!get_mow_local_tz(&mow))
     {
         for(i=0; i < NUM_ROWS(config.setpoint_temperaturex10); i++)
         {
-            if ((config.setpoint_start_mow[i] < mow) &&
-                (config.setpoint_start_mow[i] > candidate_start_mow))
+            
+            if (schedule_setpoint_valid(config.setpoint_temperaturex10[i], config.setpoint_start_mow[i]))
             {
-                setpointtemperaturex10 = config.setpoint_temperaturex10[i] + temporary_set_point_offsetx10;
+                candidate_temperature = config.setpoint_temperaturex10[i];
                 candidate_start_mow = config.setpoint_start_mow[i];
             }
         }
+
+        setpointtemperaturex10 = candidate_temperature;
     }
 
-    //TODO -- decide if shceudled mode should override what use set on front panel **************************!!!!!!!!!!!
+    //TODO -- decide if shceudled mode should override what user set on front panel **************************!!!!!!!!!!!
+    //OFF should stay off, what about other modes?
 
     // check if we've entered a new schedule period
     if (current_start_mow != candidate_start_mow)
@@ -481,10 +511,7 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
 
         // zero out temporary offset
         temporary_set_point_offsetx10 = 0;
-    }
-    
-    // // add temporary offset -- entered by user pressing buttons on front panel
-    // setpointtemperaturex10 += temporary_set_point_offsetx10;    
+    }  
 
     // sanitize setpoint
     if (config.use_archaic_units)
@@ -505,9 +532,9 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     }    
 
     // initial set points are identical
-    web.thermostat_set_point = setpointtemperaturex10;
-    web.thermostat_heating_set_point = setpointtemperaturex10;
-    web.thermostat_cooling_set_point = setpointtemperaturex10;
+    web.thermostat_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;
+    web.thermostat_heating_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;;
+    web.thermostat_cooling_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;;
 
     // bias set points to avoid overlapping heating and cooling targets 
     if (last_active == HEATING_IN_PROGRESS)

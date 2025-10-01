@@ -834,7 +834,12 @@ int get_int_with_tenths_from_string(char *value_string)
 
     CLIP(tenths_part, 0, 9);
 
-    new_value = whole_part*10 + tenths_part;   
+    new_value = whole_part*10 + tenths_part;  
+    
+    if (new_value == 662)
+    {
+        printf("AHHHHHHHGGGGGG!!!!\n");
+    }
 
     return(new_value);
 }
