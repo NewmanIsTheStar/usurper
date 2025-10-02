@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="10">
+<style>
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 25px;
+}
+
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 120px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  font-size: 28px; /* Increased text to enable scrolling */
+  input[type='text'] { font-size: 28px; }
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- date-fns library -->
+<script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
+<!-- Chart.js adapter for date-fns -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+<body>
+
+  <div class="sidenav">
+    <a href="/network.shtml">Network</a>   
+    <a href="/time.shtml">Time</a>
+    <a href="<!--#rpage-->">Relay</a>
+    <a href="/t_sensors.shtml">Foibles</a>  
+    <a href="/powerwall.shtml">Foibles</a>     
+    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/units.shtml">Foibles</a>                  
+    <a href="/t_status.shtml">Status</a>   
+    <p><a href="/index.shtml">&#8629</a></p>    
+  </div>
+
+<div class="main">
+  <h2>Temperature History</h2> 
+  <div style="width: 80%; margin: auto;">
+    <canvas id="timeSeriesChart"></canvas>
+  </div>       
+  <script>
+    // Your chart script will go here
+    const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+
+    // Data for the chart. The 'x' value can be a date string or a JavaScript Date object.
+    const data = {
+    datasets: [{
+        label: 'Temperature',
+        data: [
+        <!--#this1-->
+        <!--#this2-->
+        <!--#this3-->
+        <!--#this4-->
+        <!--#this5-->
+        <!--#this6-->
+        <!--#this7-->
+        <!--#this8-->
+        <!--#this9-->
+        <!--#this10-->
+        <!--#this11-->
+        <!--#this12-->
+        <!--#this13-->
+        <!--#this14-->
+        <!--#this15-->
+        <!--#this16-->
+        <!--#this17-->
+        <!--#this18-->
+        <!--#this19-->
+        <!--#this20-->
+        ],
+        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        fill: false,
+    }]
+    };
+
+    // Configuration options for the chart
+    const config = {
+    type: 'line',
+    data: data,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+        x: {
+            // Set the axis type to 'time'
+            type: 'time',
+            time: {
+            // Define the display unit, such as minute, hour, day, etc.
+            unit: 'hour',
+            // Customize the format of the tooltip
+            tooltipFormat: 'MMM d, HH:mm',
+            // Customize the format of the tick labels
+            displayFormats: {
+                hour: 'HH:mm',
+            }
+            },
+            title: {
+            display: true,
+            text: 'Time'
+            }
+        },
+        y: {
+            title: {
+            display: true,
+            text: 'Value'
+            }
+        }
+        }
+    }
+    };
+
+    // Create the new chart instance
+    new Chart(ctx, config);
+
+  </script>
+
+</div>   
+</body>
+</html> 

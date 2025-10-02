@@ -560,7 +560,28 @@ extern NON_VOL_VARIABLES_T config;
     x(sp30mde) \
     x(sp31mde) \
     x(sp32mde) \
-    x(hvachys)               
+    x(hvachys)\
+    x(this1) \
+    x(this2) \
+    x(this3) \
+    x(this4) \
+    x(this5) \
+    x(this6) \
+    x(this7) \
+    x(this8) \
+    x(this9) \
+    x(this10) \
+    x(this11) \
+    x(this12) \
+    x(this13) \
+    x(this14) \
+    x(this15) \
+    x(this16) \
+    x(this17) \
+    x(this18) \
+    x(this19) \
+    x(this20)              
+            
 
   
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
@@ -2238,9 +2259,34 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_hvachys:  // hysteresis
         {
             //printed = snprintf(pcInsert, iInsertLen, "%d.%d", config.thermostat_hysteresis/10, config.thermostat_hysteresis%10);  // TODO add to config!
-            printed = snprintf(pcInsert, iInsertLen, "%d.%d", web.thermostat_hysteresis/10, web.thermostat_hysteresis%10);
-            printed = snprintf(pcInsert, iInsertLen, "%d", web.thermostat_hysteresis);                        
+            printed = snprintf(pcInsert, iInsertLen, "%d.%d", web.thermostat_hysteresis/10, web.thermostat_hysteresis%10);                      
         }
+        break;
+        case SSI_this1:
+        case SSI_this2:
+        case SSI_this3:
+        case SSI_this4:
+        case SSI_this5:
+        case SSI_this6:
+        case SSI_this7:
+        case SSI_this8:
+        case SSI_this9:
+        case SSI_this10:
+        case SSI_this11:
+        case SSI_this12:
+        case SSI_this13:
+        case SSI_this14:
+        case SSI_this15:
+        case SSI_this16:
+        case SSI_this17:
+        case SSI_this18:
+        case SSI_this19:
+        case SSI_this20:                
+        // temperature history
+        {
+            printed = print_temperature_history(pcInsert, iInsertLen, iIndex-SSI_this1, 1);                                   
+        }
+         
         break;   
 #endif                                        
         default:

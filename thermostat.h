@@ -66,6 +66,7 @@ void mark_hvac_off(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void track_hvac_extrema(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type);
 void log_climate_change(int temperaturex10, int humidityx10);
+int print_temperature_history(char *buffer, int length, int start_position, int num_data_points);
 
 // thermostat_aht10.c
 int aht10_initialize(int clock_gpio, int data_gpio);

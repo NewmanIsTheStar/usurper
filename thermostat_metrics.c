@@ -62,6 +62,7 @@ typedef enum
 
 typedef struct
 {
+    time_t unix_time;
     long int temperaturex10;
     long int humidityx10;
 } CLIMATE_DATAPOINT_T;
@@ -107,6 +108,8 @@ typedef struct
     long int  momentum_temperature_delta[NUM_MOMENTUMS];    
 } CLIMATE_MOMENTUM_DATA_T;
 
+// external variables
+extern uint32_t unix_time;
 
 // gobal variables
 CLIMATE_HISTORY_T climate_history;
@@ -142,6 +145,7 @@ int accumlate_temperature_metrics(long int temperaturex10)
 
     climate_trend.buffer[climate_history.buffer_index].temperaturex10 = temperaturex10 - climate_history.buffer[(climate_history.buffer_index + NUM_ROWS(climate_history.buffer) - 1)%NUM_ROWS(climate_history.buffer)].temperaturex10;
     climate_history.buffer[climate_history.buffer_index].temperaturex10 = temperaturex10;
+    climate_history.buffer[climate_history.buffer_index].unix_time = unix_time;
 
     climate_history.buffer_index  = (climate_history.buffer_index  + 1)%NUM_ROWS(climate_history.buffer);
 
@@ -318,3 +322,58 @@ void log_climate_change(int temperaturex10, int humidityx10)
     
     return;
 }
+
+/*!
+ * \brief print temperature history for insertion into web page  
+ *
+ * \param[in]   log_name      name of log file on server
+ * \param[in]   format, ...   variable parameters printf style  
+ * 
+ * \return num bytes sent or -1 on error
+ */
+int print_temperature_history(char *buffer, int length, int start_position, int num_data_points)
+{
+    int i;
+    int printed_characters = 0;
+    int total_printed_characters = 0;
+    char iso_timestamp[32];
+    char *buff = 0;
+
+    buff = buffer;
+    *buffer = 0;
+
+    if (start_position < climate_history.buffer_population)
+    {
+        // output xy data in format expected by javascript
+        // { x: '2025-10-01T08:00:00', y: 65 },
+        for(i=start_position; (i<climate_history.buffer_population) && (i<(start_position+num_data_points)); i++)
+        {
+            // generatre timestamp string
+            unix_to_iso8601(climate_history.buffer[i].unix_time, iso_timestamp, sizeof(iso_timestamp)); 
+
+            // print xy data
+            printed_characters = snprintf(buffer, length, "{x: '%s', y: %d },\n", iso_timestamp, climate_history.buffer[i].temperaturex10);
+
+            if (printed_characters < length)
+            {
+                total_printed_characters += printed_characters;
+                length -= printed_characters;
+                buffer += printed_characters;
+            }
+            else
+            {
+                // hit the end of buffer truncate at START of last print attempt (erasing the last line printed)
+                *buffer = 0;
+                printf("BUFFER TERMINATED due to excess length\n%s\n", buff);
+                break;
+            }
+        }
+    }
+    printf("At exit strlen = %d and total_printed = %d\n", strlen(buff), total_printed_characters);
+    printf("FINAL BUFFER =\n%s\n", buff);
+
+    //total_printed_characters = snprintf(buffer, length, "MONKEY%d\n", start_position);
+
+    return(total_printed_characters);
+}
+        

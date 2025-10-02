@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chart.js Time Series Example</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- date-fns library -->
+  <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
+  <!-- Chart.js adapter for date-fns -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+<body>
+  <div style="width: 80%; margin: auto;">
+    <canvas id="timeSeriesChart"></canvas>
+  </div>
+  <script>
+    // Your chart script will go here
+    const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+
+    // Data for the chart. The 'x' value can be a date string or a JavaScript Date object.
+    const data = {
+    datasets: [{
+        label: 'Temperature',
+        data: [
+        { x: '2025-10-01T08:00:00', y: 65 },
+        { x: '2025-10-01T10:00:00', y: 70 },
+        { x: '2025-10-01T12:00:00', y: 75 },
+        { x: '2025-10-01T14:00:00', y: 82 },
+        { x: '2025-10-01T16:00:00', y: 79 },
+        { x: '2025-10-01T18:00:00', y: 72 },
+        ],
+        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        fill: false,
+    }]
+    };
+
+    // Configuration options for the chart
+    const config = {
+    type: 'line',
+    data: data,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+        x: {
+            // Set the axis type to 'time'
+            type: 'time',
+            time: {
+            // Define the display unit, such as minute, hour, day, etc.
+            unit: 'hour',
+            // Customize the format of the tooltip
+            tooltipFormat: 'MMM d, HH:mm',
+            // Customize the format of the tick labels
+            displayFormats: {
+                hour: 'HH:mm',
+            }
+            },
+            title: {
+            display: true,
+            text: 'Time'
+            }
+        },
+        y: {
+            title: {
+            display: true,
+            text: 'Value'
+            }
+        }
+        }
+    }
+    };
+
+    // Create the new chart instance
+    new Chart(ctx, config);
+
+  </script>
+</body>
+</html>

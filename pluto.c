@@ -844,3 +844,14 @@ int get_int_with_tenths_from_string(char *value_string)
     return(new_value);
 }
 
+void unix_to_iso8601(time_t unix_timestamp, char *iso_string, size_t buffer_size)
+{
+    struct tm *timeinfo;
+    
+    // Convert Unix timestamp to a broken-down time structure (UTC)
+    timeinfo = gmtime(&unix_timestamp);
+
+    // Format the broken-down time into an ISO 8601 string
+    // Example format: YYYY-MM-DDTHH:mm:ssZ
+    strftime(iso_string, buffer_size, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+}

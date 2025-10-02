@@ -40,7 +40,8 @@
 			"exception": "c",
 			"fstream": "c",
 			"limits": "c",
-			"sstream": "c"
+			"sstream": "c",
+			"string_view": "c"
 		}
 	}
 }
