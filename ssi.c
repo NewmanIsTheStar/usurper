@@ -2284,7 +2284,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_this20:                
         // temperature history
         {
-            printed = print_temperature_history(pcInsert, iInsertLen, iIndex-SSI_this1, 1);                                   
+            printed = print_temperature_history(pcInsert, iInsertLen, (iIndex-SSI_this1)*4, 4);                                   
         }
          
         break;   

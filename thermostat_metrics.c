@@ -43,6 +43,8 @@
 #include "pluto.h"
 #include "tm1637.h"
 
+// chews up a lot of RAM
+#define SIZE_CLIMATE_HISTORY (100)
 
 typedef enum
 {
@@ -69,7 +71,7 @@ typedef struct
 
 typedef struct
 {
-    CLIMATE_DATAPOINT_T buffer[10];
+    CLIMATE_DATAPOINT_T buffer[SIZE_CLIMATE_HISTORY];
     int buffer_index;
     int buffer_population;
 } CLIMATE_HISTORY_T;
@@ -84,7 +86,7 @@ typedef enum
 
 typedef struct
 {
-    CLIMATE_DATAPOINT_T buffer[10];
+    CLIMATE_DATAPOINT_T buffer[SIZE_CLIMATE_HISTORY];
     int buffer_index;
     int buffer_population;
     CLIMATE_DATAPOINT_T moving_average;
@@ -334,6 +336,7 @@ void log_climate_change(int temperaturex10, int humidityx10)
 int print_temperature_history(char *buffer, int length, int start_position, int num_data_points)
 {
     int i;
+    int history_index = 0;
     int printed_characters = 0;
     int total_printed_characters = 0;
     char iso_timestamp[32];
@@ -346,33 +349,63 @@ int print_temperature_history(char *buffer, int length, int start_position, int 
     {
         // output xy data in format expected by javascript
         // { x: '2025-10-01T08:00:00', y: 65 },
-        for(i=start_position; (i<climate_history.buffer_population) && (i<(start_position+num_data_points)); i++)
+        //for(i=(start_position+1; (i<climate_history.buffer_population) && (i<(start_position+num_data_points)); i++)
+
+        // limit data points to number in the circular buffer
+        if (start_position > climate_history.buffer_population)
         {
-            // generatre timestamp string
-            unix_to_iso8601(climate_history.buffer[i].unix_time, iso_timestamp, sizeof(iso_timestamp)); 
+            num_data_points = 0;
+        }
+        else if ((start_position + num_data_points) > climate_history.buffer_population)
+        {
+            num_data_points = climate_history.buffer_population - start_position;
+        }
 
-            // print xy data
-            printed_characters = snprintf(buffer, length, "{x: '%s', y: %d },\n", iso_timestamp, climate_history.buffer[i].temperaturex10);
+        if (num_data_points > 0)
+        {
+            for(i=0; i < num_data_points; i++)
+            {
+                if (climate_history.buffer_population == NUM_ROWS(climate_history.buffer))
+                {
+                    // circular buffer is full, so oldest entry is the current buffer index (that we will overwrite next with new data)
+                    history_index = (climate_history.buffer_index + start_position + i)%climate_history.buffer_population;
+                }
+                else
+                {
+                    // circular buffer not full, so oldest entry is at buffer index 0
+                    history_index = start_position + i;   
+                    
+                    //printf("Circular buffer not full because %d != %d\n", climate_history.buffer_population, NUM_ROWS(climate_history.buffer));
+                }
 
-            if (printed_characters < length)
-            {
-                total_printed_characters += printed_characters;
-                length -= printed_characters;
-                buffer += printed_characters;
-            }
-            else
-            {
-                // hit the end of buffer truncate at START of last print attempt (erasing the last line printed)
-                *buffer = 0;
-                printf("BUFFER TERMINATED due to excess length\n%s\n", buff);
-                break;
+                // generatre timestamp string
+                unix_to_iso8601(climate_history.buffer[history_index].unix_time, iso_timestamp, sizeof(iso_timestamp)); 
+
+                // print xy data
+                printed_characters = snprintf(buffer, length, "{x: '%s', y: %d.%d },\n", iso_timestamp, climate_history.buffer[history_index].temperaturex10/10, climate_history.buffer[history_index].temperaturex10%10);
+                //printf("i=%d history_index=%d time=%s\n", i, history_index, iso_timestamp);
+                if (printed_characters < length)
+                {
+                    total_printed_characters += printed_characters;
+                    length -= printed_characters;
+                    buffer += printed_characters;
+                }
+                else
+                {
+                    // hit the end of buffer truncate at START of last print attempt (erasing the last line printed)
+                    *buffer = 0;
+                    printf("BUFFER TERMINATED due to excess length\n%s\n", buff);
+                    break;
+                }
             }
         }
     }
-    printf("At exit strlen = %d and total_printed = %d\n", strlen(buff), total_printed_characters);
-    printf("FINAL BUFFER =\n%s\n", buff);
+    // printf("At exit strlen = %d and total_printed = %d\n", strlen(buff), total_printed_characters);
+    // printf("FINAL BUFFER =\n%s\n", buff);
 
     //total_printed_characters = snprintf(buffer, length, "MONKEY%d\n", start_position);
+
+    //printf("Minimum heap = %d\n", xPortGetMinimumEverFreeHeapSize());
 
     return(total_printed_characters);
 }

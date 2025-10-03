@@ -56,7 +56,8 @@ body {
     <a href="/t_advanced.shtml">Advanced</a>     
     <a href="/syslog.shtml">Syslog</a>    
     <a href="/units.shtml">Foibles</a>     
-    <a href="/status.shtml">Status</a>   
+    <a href="/status.shtml">Status</a>
+    <a href="/t_history.shtml">History</a>     
     <p><a href="/index.shtml">&#8629</a></p>    
   </div>
 

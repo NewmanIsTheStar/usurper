@@ -115,7 +115,7 @@ void thermostat_task(void *params)
     // config.thermostat_temperature_sensor_clock_gpio = 11;
   
     // initialize i2c for temperature sensor  
-    aht10_initialize(config.thermostat_temperature_sensor_clock_gpio, config.thermostat_temperature_sensor_data_gpio);
+    //aht10_initialize(config.thermostat_temperature_sensor_clock_gpio, config.thermostat_temperature_sensor_data_gpio);
 
     // initialize powerwall communication
     powerwall_init();
