@@ -72,12 +72,12 @@ body {
               </td>              
           </tr>
           <tr>
-              <td><label for="tcr">Heating minimum run time in minutes</label></td>
-              <td><input type="text" size="4" id="mhonm" name="mhonm" value="<!--#mhonm-->"></td>
+              <td><label for="tcr">Heating minimum run time</label></td>
+              <td><input type="text" size="4" id="mhonm" name="mhonm" value="<!--#mhonm-->"> <label>minutes</label></td>
           </tr>
           <tr>
-              <td><label for="tcr">Heating minimum off time in minutes</label></td>
-              <td><input type="text" size="4" id="mhoffm" name="mhoffm" value="<!--#mhoffm-->"></td>
+              <td><label for="tcr">Heating minimum off time</label></td>
+              <td><input type="text" size="4" id="mhoffm" name="mhoffm" value="<!--#mhoffm-->"> <label>minutes</label></td>
           </tr>
           <tr>            
               <td style="text-align: left;font-weight: bold;">
@@ -85,12 +85,12 @@ body {
               </td>
           </tr>          
           <tr>
-              <td><label for="tfr">Cooling minimum run time in minutes</label></td>
-              <td><input type="text" size="4" id="mconm" name="mconm" value="<!--#mconm-->"></td>
+              <td><label for="tfr">Cooling minimum run time</label></td>
+              <td><input type="text" size="4" id="mconm" name="mconm" value="<!--#mconm-->"> <label>minutes</label></td>
           </tr>      
           <tr>
-              <td><label for="tfr">Cooling minimum off time in minutes</label></td>
-              <td><input type="text" size="4" id="mcoffm" name="mcoffm" value="<!--#mcoffm-->"></td>
+              <td><label for="tfr">Cooling minimum off time</label></td>
+              <td><input type="text" size="4" id="mcoffm" name="mcoffm" value="<!--#mcoffm-->"> <label>minutes</label></td>
           </tr>               
           <tr>
           <tr>            
@@ -99,12 +99,12 @@ body {
               </td>
           </tr>            
           <tr>
-              <td><label for="tfr">Heating &hArr; Cooling delay in minutes</label></td>
-              <td><input type="text" size="4" id="htclm" name="htclm" value="<!--#htclm-->"></td>
+              <td><label for="tfr">Heating &hArr; Cooling delay</label></td>
+              <td><input type="text" size="4" id="htclm" name="htclm" value="<!--#htclm-->"> <label>minutes</label></td>
           </tr>  
           <tr>
-              <td><label for="tfr">Setpoint hysteresis in degrees</label></td>
-              <td><input type="text" size="4" id="hvachys" name="hvachys" value="<!--#hvachys-->"></td>
+              <td><label for="tfr">Setpoint hysteresis</label></td>
+              <td><input type="text" size="4" id="hvachys" name="hvachys" value="<!--#hvachys-->"> <label>&deg;<!--#tmpu--></label></td>
           </tr>                                                          
           <tr>            
               <td>
@@ -117,4 +117,3 @@ body {
 
 </body>
 </html> 
-  

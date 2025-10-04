@@ -210,7 +210,7 @@ typedef struct WEB_VARIABLES
   int thermostat_set_point;                // desired temperature when neither heating nor cooling 
   int thermostat_heating_set_point;        // desired temperature when heating
   int thermostat_cooling_set_point;        // desired temperature when cooling 
-  int thermostat_hysteresis;
+  //int thermostat_hysteresis;
   int thermostat_day;              // used for rendering thermostat event web page -- making that page single user / session only
   int thermostat_period_row;
   int thermostat_day_events[7];

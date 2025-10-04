@@ -92,7 +92,7 @@ void thermostat_task(void *params)
     web.powerwall_grid_status = GRID_UNKNOWN;
 
     config.thermostat_enable = 1;
-    web.thermostat_hysteresis = 10; 
+    config.thermostat_hysteresis = 5; 
 
     // make sure safeguards are valid to prevent short cycling
     CLIP(config.heating_to_cooling_lockout_mins, 1, 60);
@@ -100,6 +100,7 @@ void thermostat_task(void *params)
     CLIP(config.minimum_cooling_on_mins, 1, 60);
     CLIP(config.minimum_heating_off_mins, 1, 60);
     CLIP(config.minimum_cooling_off_mins, 1, 60);
+    CLIP(config.thermostat_hysteresis, 5, 50);
 
  
     printf("thermostat_task started!\n");

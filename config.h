@@ -135,7 +135,7 @@ typedef struct
     int setpoint_number;
     char setpoint_name[16][32];     // obsolete
     int setpoint_temperaturex10[32];  // <== increased from 16 to 32
-    int thermostat_period_number;   // obsolete
+    int thermostat_hysteresis; 
     int setpoint_start_mow[32];  // <== increased from 16 to 32
     //int thermostat_period_end_mow[16]; // obsolete
     //int thermostat_period_setpoint_index[16]; // obsolete
@@ -597,5 +597,6 @@ typedef struct
     char temperature_sensor_remote_ip[6][32]; 
     uint16_t crc;
 } NON_VOL_VARIABLES_T_VERSION_6;
+
 
 #endif

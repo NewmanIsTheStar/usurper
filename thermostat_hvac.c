@@ -128,7 +128,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
     {
     default:    
     case HEATING_AND_COOLING_OFF:
-        if (cooling_allowed & (temperaturex10 > (web.thermostat_cooling_set_point + web.thermostat_hysteresis)))
+        if (cooling_allowed & (temperaturex10 > (web.thermostat_cooling_set_point + config.thermostat_hysteresis)))
         {
             if (last_active != HEATING_IN_PROGRESS)
             {
@@ -157,7 +157,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                 next_active =  HEATING_AND_COOLING_OFF;
                 last_active =  HEATING_AND_COOLING_OFF;                                   
             }
-        } else if (heating_allowed && (temperaturex10 < (web.thermostat_heating_set_point - web.thermostat_hysteresis)))
+        } else if (heating_allowed && (temperaturex10 < (web.thermostat_heating_set_point - config.thermostat_hysteresis)))
         {
             if (last_active != COOLING_IN_PROGRESS)
             {
@@ -190,7 +190,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         }
         break;
     case HEATING_IN_PROGRESS:
-        if (temperaturex10 > (web.thermostat_heating_set_point + web.thermostat_hysteresis))
+        if (temperaturex10 > (web.thermostat_heating_set_point + config.thermostat_hysteresis))
         {
             send_syslog_message("thermostat", "Heating completed");            
             snprintf(web.status_message, sizeof(web.status_message), "Heating completed");  
@@ -199,7 +199,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             set_hvac_gpio(HEATING_AND_COOLING_OFF);
 
             // check for excessive overshoot that could trigger cooling
-            if (temperaturex10 > (web.thermostat_cooling_set_point - web.thermostat_hysteresis))
+            if (temperaturex10 > (web.thermostat_cooling_set_point - config.thermostat_hysteresis))
             {
                 send_syslog_message("thermostat", "Excessive overshoot. Suspending operation.");            
                 snprintf(web.status_message, sizeof(web.status_message), "Excessive overshoot. Suspending operation."); 
@@ -221,7 +221,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         } 
         break;
     case COOLING_IN_PROGRESS:
-        if (temperaturex10 < (web.thermostat_cooling_set_point - web.thermostat_hysteresis))
+        if (temperaturex10 < (web.thermostat_cooling_set_point - config.thermostat_hysteresis))
         {
             send_syslog_message("thermostat", "Cooling completed");            
             snprintf(web.status_message, sizeof(web.status_message), "Cooling completed"); 
@@ -230,7 +230,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             set_hvac_gpio(HEATING_AND_COOLING_OFF);
 
             // check for excessive overshoot that could trigger heating
-            if (temperaturex10 < (web.thermostat_heating_set_point + web.thermostat_hysteresis))
+            if (temperaturex10 < (web.thermostat_heating_set_point + config.thermostat_hysteresis))
             {
                 send_syslog_message("thermostat", "Excessive overshoot. Suspending operation.");            
                 snprintf(web.status_message, sizeof(web.status_message), "Excessive overshoot. Suspending operation."); 
@@ -280,7 +280,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         break;    
     case EXCESSIVE_OVERSHOOT:    
         if ((last_active == HEATING_IN_PROGRESS) &&
-            (temperaturex10 < (web.thermostat_heating_set_point + web.thermostat_hysteresis)))
+            (temperaturex10 < (web.thermostat_heating_set_point + config.thermostat_hysteresis)))
         {
             send_syslog_message("thermostat", "Temperature has fallen to target range. Resuming operation");            
             snprintf(web.status_message, sizeof(web.status_message), "Resuming operation"); 
@@ -289,7 +289,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         }
 
         if ((last_active == COOLING_IN_PROGRESS) &&
-            (temperaturex10 > (web.thermostat_cooling_set_point - web.thermostat_hysteresis)))
+            (temperaturex10 > (web.thermostat_cooling_set_point - config.thermostat_hysteresis)))
         {
             send_syslog_message("thermostat", "Temperature has risen to target range. Resuming operation");            
             snprintf(web.status_message, sizeof(web.status_message), "Resuming operation"); 
@@ -540,11 +540,11 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     if (last_active == HEATING_IN_PROGRESS)
     {
         // increase cooling setpoint since we have recently run a heating cycle
-        web.thermostat_cooling_set_point += (3*web.thermostat_hysteresis);
+        web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
     } else if (last_active == COOLING_IN_PROGRESS)
     {
          // decrease heating setpoint since we have recently run a cooling cycle
-         web.thermostat_heating_set_point -= (3*web.thermostat_hysteresis);       
+         web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis);       
     }
 
     // adjust setpoint according to powerwall status
