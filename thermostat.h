@@ -51,6 +51,12 @@ typedef struct
     int change_temperature;   
 } HVAC_STATE_CHANGE_LOG_T;
 
+typedef struct
+{
+    uint32_t unix_time;   // TODO: should be using time_t
+    long int temperaturex10;
+    long int humidityx10;
+} CLIMATE_DATAPOINT_T;
 
 //prototypes
 void thermostat_task(__unused void *params);
@@ -61,7 +67,7 @@ void sanatize_schedule_temperatures(void);
 
 // thermostat_metrics.c
 int initialize_climate_metrics(void);
-int accumlate_temperature_metrics(long int temperaturex10);
+int accumlate_metrics(CLIMATE_DATAPOINT_T *sample);
 void mark_hvac_off(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void track_hvac_extrema(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
 void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type);

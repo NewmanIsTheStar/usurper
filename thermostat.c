@@ -45,6 +45,7 @@
 
 
 // external variables
+extern uint32_t unix_time;
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
 
@@ -67,8 +68,9 @@ void thermostat_task(void *params)
     int i2c_bytes_read = 0;
     bool aht10_initialized = false;
     bool tm1637_initialized = false;
-
+    long int temperaturex10 = 0;
     long int humidityx10 = 0;
+    CLIMATE_DATAPOINT_T sample;
     int retry = 0;
     int oneshot = false;
     int i;
@@ -171,7 +173,12 @@ void thermostat_task(void *params)
                 track_hvac_extrema(COOLING_MOMENTUM, temperaturex10);
                 track_hvac_extrema(HEATING_MOMENTUM, temperaturex10); 
                 
-                accumlate_temperature_metrics(temperaturex10);
+                // create sample
+                sample.unix_time = unix_time;
+                sample.temperaturex10 = temperaturex10;
+                sample.humidityx10 = humidityx10;
+
+                accumlate_metrics(&sample);
 
                 // update web ui
                 web.thermostat_temperature = temperaturex10;
