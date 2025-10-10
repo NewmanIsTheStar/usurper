@@ -219,6 +219,10 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                 last_active = HEATING_IN_PROGRESS;
             }
         } 
+        else
+        {
+                predicted_time_to_temperature(web.thermostat_heating_set_point + config.thermostat_hysteresis);
+        }
         break;
     case COOLING_IN_PROGRESS:
         if (temperaturex10 < (web.thermostat_cooling_set_point - config.thermostat_hysteresis))
@@ -249,6 +253,10 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                 next_active =  HEATING_AND_COOLING_OFF;    
                 last_active = COOLING_IN_PROGRESS;  
             }          
+        }
+        else
+        {
+             predicted_time_to_temperature(web.thermostat_cooling_set_point - config.thermostat_hysteresis);
         } 
         break;
     case DUCT_PURGE:

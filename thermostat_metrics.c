@@ -127,6 +127,33 @@ CLIMATE_TREND_T climate_trend;
 
 
 /*!
+ * \brief Predict time until temperature reached
+ * 
+ * \return 0 
+ */
+int predicted_time_to_temperature(long int target_temperature)
+{
+    CLIMATE_DATAPOINT_T latest_sample;
+    long int temperature_delta = 0;
+    long int predicted_time_in_samples = 0;
+
+    // get a copy of the latest sample from the history buffer
+    latest_sample = climate_history.buffer[(climate_history.buffer_index + NUM_ROWS(climate_history.buffer) - 1)%NUM_ROWS(climate_history.buffer)];
+    temperature_delta = target_temperature - latest_sample.temperaturex10;
+
+    predicted_time_in_samples = (temperature_delta*100)/climate_trend.gradient; 
+
+    if (predicted_time_in_samples < 0)
+    {
+        predicted_time_in_samples = 0;   // never or already there
+    }
+
+    printf("CURRENT PREDICTion: temperature will reach %d in %d samples\n", target_temperature, predicted_time_in_samples);
+
+    return(predicted_time_in_samples);
+}
+
+/*!
  * \brief Initialize Temperature Metrics
  * 
  * \return 0 
