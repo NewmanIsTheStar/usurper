@@ -556,6 +556,7 @@ int init_web_variables(void)
     web.irrigation_test_enable = 0; 
 
     STRNCPY(web.last_usurped_timestring,"never", sizeof(web.last_usurped_timestring));
+    STRNCPY(web.last_completed_timestring,"never", sizeof(web.last_completed_timestring));    
     STRNCPY(web.watchdog_timestring,"never", sizeof(web.watchdog_timestring));
 
     web.status_message[0] = 0;
@@ -679,6 +680,7 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
         {
         case SCHEDULE_FUTURE:
             send_syslog_message("usurper", "Irrigation ended according to schedule");
+            get_timestamp(web.last_completed_timestring, sizeof(web.last_completed_timestring), 0); 
             snprintf(web.status_message, sizeof(web.status_message), "Next irrigation %s at %02d:%02d", day_name(schedule_start_mow/(24*60)), (schedule_start_mow%(24*60))/60, (schedule_start_mow%(24*60))%60);                                                
             irrigation_state = IRRIGATION_OFF;
             break;

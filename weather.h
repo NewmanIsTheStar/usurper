@@ -179,6 +179,7 @@ typedef enum
 
 typedef struct WEB_VARIABLES
 {
+  char last_completed_timestring[50];
   char last_usurped_timestring[50];
   int outside_temperature;
   int wind_speed;

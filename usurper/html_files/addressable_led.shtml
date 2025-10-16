@@ -61,33 +61,64 @@ body {
   </div>
 
 <div class="main">
-  <h2>LED Strip Control</h2> 
-  <form action="/aled.cgi">
-    <label for="dsenable">Use LED strips to indicate irrigation status</label>
-    <input type="checkbox" id="lie" name="lie" value="on" style="height:20px; width:20px; vertical-align: middle;" onclick="this.form.submit()"<!--#lie--> ><br><br>       
-    <label for="pattern">Default pattern</label>
-    <a href="/led_pattern.cgi?p=2" style="text-decoration:none"><!--#lpat--></a><br><br>   
-    <label for="pata">Pattern when irrigation active</label>
-    <a href="/led_pattern.cgi?p=0" style="text-decoration:none"><!--#lia--></a><br><br> 
-    <label for="lednum">Pattern when irrigation skipped</label>
-    <a href="/led_pattern.cgi?p=1" style="text-decoration:none"><!--#liu--></a><br><br>  
-    <label for="speed">Pattern transitition delay (ms)</label>
-    <input type="text" id="lspd" name="lspd" value="<!--#lspd-->"><br><br>     
-    <label for="lednum">Sustain pattern after irrigation (minutes)</label>
-    <input type="text" id="lis" name="lis" value="<!--#lis-->"><br><br>  
-    <br>
-    <h3>Directly Connected LED Strip</h3> 
-    <label for="ledgpio">GPIO</label>
-    <input type="text" id="lpin" name="lpin" value="<!--#lpin-->"><br><br>  
-    <label for="ledrgbw">RGBW</label>
-    <input type="checkbox" id="lrgbw" name="lrgbw" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#lrgbw-->><br><br>         
-    <label for="lednum">Number of LEDs</label>
-    <input type="text" id="lnum" name="lnum" value="<!--#lnum-->"><br><br>      
-    <br>                       
-    <input type="submit" value="Save" style="font-size: 25px;">
-  </form><br><br>    
-  <a href="/remote_led_strips.shtml" style="text-decoration:none">Remote LED Strip Configuration &#8594</a>    
-</div>   
+
+  <h2>LED Strip Control</h2>  
+  <table>
+      <form action="/aled.cgi">
+          <tr>
+              <td><label for="dsenable">Use LED strips to indicate irrigation status</label></td>
+              <td><input type="checkbox" id="lie" name="lie" value="on" style="height:20px; width:20px; vertical-align: middle;" onclick="this.form.submit()"<!--#lie--> ></td>
+          </tr>         
+          <tr>
+              <td><label for="pattern">Default pattern</label></td>
+              <td><a href="/led_pattern.cgi?p=2" style="text-decoration:none"><!--#lpat--></a></td>
+          </tr>
+          <tr>
+              <td><label for="pata">Pattern when irrigation active</label></td>
+              <td><a href="/led_pattern.cgi?p=0" style="text-decoration:none"><!--#lia--></a></td>
+          </tr>              
+          <tr>
+              <td><label for="lednum">Pattern when irrigation skipped</label></td>
+              <td><a href="/led_pattern.cgi?p=1" style="text-decoration:none"><!--#liu--></a></td>
+          </tr>                     
+          <tr>
+              <td><label for="speed">Pattern transitition delay</label></td>
+              <td><input type="text" size="4" id="lspd" name="lspd" value="<!--#lspd-->"></td>
+              <td><label>ms</label></td>
+          </tr>      
+          <tr>
+              <td><label for="lednum">Sustain pattern after irrigation</label></td>
+              <td><input type="text" size="4" id="lis" name="lis" value="<!--#lis-->"></td>
+              <td><label>minutes</label></td>              
+          </tr> 
+          <tr>            
+            <td style="text-align: left;font-weight: bold;">
+              <label>Directly Connected LED Strip</label>
+            </td>
+          </tr>                     
+          <tr>
+              <td><label for="ledgpio">GPIO</label></td>
+              <td><input type="text" size="4" id="lpin" name="lpin" value="<!--#lpin-->"></td>           
+          </tr> 
+          <tr>
+              <td><label for="ledrgbw">RGBW</label></td>
+              <td><input type="checkbox" id="lrgbw" name="lrgbw" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#lrgbw-->></td>           
+          </tr>     
+          <tr>
+              <td><label for="lednum">Number of LEDs</label></td>
+              <td><input type="text" size="4" id="lnum" name="lnum" value="<!--#lnum-->"></td>           
+          </tr>                                                                      
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+      </form>
+  </table> 
+  <br>
+  <br>
+  <a href="/remote_led_strips.shtml" style="text-decoration:none">Remote LED Strip Configuration &#8594</a>  
+</div>
+   
 </body>
 </html> 
-

@@ -9,8 +9,8 @@ set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 
 # Set board type
-#set(PICO_BOARD pico_w CACHE STRING "Board type")
-set(PICO_BOARD pico2_w CACHE STRING "Board type")
+set(PICO_BOARD pico_w CACHE STRING "Board type")
+#set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # ====================================================================================
 
 set(CMAKE_C_STANDARD 11)
@@ -152,18 +152,17 @@ set(pluto_link_libraries
         pico_stdlib
         pico_rand
         FreeRTOS-Kernel-Heap4
-        # hardware_rtc
         pico_flash
         hardware_pio
         hardware_i2c)
 
-# pico_w has hardware rtc (fake rtc is used for other variants)
-if(PICO_BOARD STREQUAL "pico_w")
-        set(pluto_link_libraries ${pluto_link_libraries}        
-                hardware_rtc)  
-endif()
+# pico_w has hardware rtc but fake rtc is currently used for all variants
+# if(PICO_BOARD STREQUAL "pico_w")
+#         set(pluto_link_libraries ${pluto_link_libraries}        
+#                 hardware_rtc)  
+# endif()
 
-# pico_w has insiffucient RAM to incorporate HTTPS web client (thus tesla powerwall monitoring is disabled on pico_w)
+# pico_w has insufficent RAM to incorporate HTTPS web client (thus tesla powerwall monitoring is disabled on pico_w)
 if(NOT PICO_BOARD STREQUAL "pico_w")
         set(pluto_link_libraries ${pluto_link_libraries}        
                 pico_lwip_mbedtls
@@ -180,17 +179,18 @@ execute_process(COMMAND
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/usurper/
         )
 
-if(NOT PICO_BOARD STREQUAL "pico_w")
+#if(NOT PICO_BOARD STREQUAL "pico_w")
         set(usurper_source_files ${common_source_files}   
-                worker_tasks.c     
+                usurper/worker_tasks.c     
                 #thermostat.c
-                powerwall.c
+                #powerwall.c
                 shelly.c
                 json_parser.c
                 hc_task.c
                 discovery_task.c
-                tm1637.c)        
-endif()  
+                #tm1637.c
+                )        
+#endif()  
 
 add_executable(${PROJECT_NAME} ${usurper_source_files})      
 target_compile_definitions(${PROJECT_NAME} PRIVATE APP_NAME="Usurper" HTTPD_FSDATA_FILE="usurper/htmldata.c")

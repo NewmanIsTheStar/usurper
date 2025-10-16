@@ -43,6 +43,7 @@ extern NON_VOL_VARIABLES_T config;
 */
 #define SSI_TAGS \
     x(usurped)   \
+    x(cmplte)    \
     x(time)      \
     x(temp)      \
     x(wind)      \
@@ -622,6 +623,11 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             printed = snprintf(pcInsert, iInsertLen, "%s", web.last_usurped_timestring);    
         }
         break;
+        case SSI_cmplte:  // cmplte
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", web.last_completed_timestring);    
+        }
+        break;        
         case SSI_time: // time
         {
             if(!get_timestamp(timestamp, sizeof(timestamp), false)) {

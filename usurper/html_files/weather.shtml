@@ -62,25 +62,43 @@ body {
   </div>
 
 <div class="main">
-  <h2>Weather Station Settings</h2>      
-  <form action="/ecowitt.cgi">
-    <label for="gvee">Use Ecowitt weather station to constrain irrigation</label>
-    <input type="checkbox" id="wse" name="wse" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#wse-->><br><br>    
-    <label for="ecoip">Weather Station Address</label>
-    <input type="text" id="ecoip" name="ecoip" value="<!--#ecoip-->"><br><br> 
-    <label for="wkrn">Skip if rain last 7 days exceeds (<!--#dstu-->):</label>
-    <input type="text" id="wkrn" name="wkrn" value="<!--#wkrn-->"><br><br>
-    <label for="dyrn">Skip if rain today exceeds (<!--#dstu-->):</label>
-    <input type="text" id="dyrn" name="dyrn" value="<!--#dyrn-->"><br><br>
-    <label for="soil">Skip if soil moisture exceeds (%):</label>
-    <input type="text" id="soilt1" name="soilt1" value="<!--#soilt1-->"><br><br>      
-    <label for="wind">Skip if wind speed exceeds (<!--#spdu-->):</label>
-    <input type="text" id="wndt" name="wndt" value="<!--#wndt-->"><br><br>                
-    <br>
-    <input type="submit" value="Save" style="font-size: 25px;">
-  </form>    
+
+  <h2>Weather Station Settings</h2>  
+  <table>
+      <form action="/ecowitt.cgi">
+          <tr>
+              <td><label>Use weather station to constrain irrigation</label></td>
+              <td><input type="checkbox" id="wse" name="wse" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#wse-->></td>
+          </tr>         
+          <tr>
+              <td><label for="ecoip">Weather Station Address</label></td>
+              <td><input type="text" id="ecoip" name="ecoip" value="<!--#ecoip-->"></td>
+          </tr>
+          <tr>
+              <td><label for="wkrn">Skip if rain last 7 days exceeds</label></td>
+              <td><input type="text" size="4"  id="wkrn" name="wkrn" value="<!--#wkrn-->">&nbsp;<label><!--#dstu--></label></td>
+          </tr>         
+     
+          <tr>
+              <td><label for="dyrn">Skip if rain today exceeds</label></td>
+              <td><input type="text" size="4"  id="dyrn" name="dyrn" value="<!--#dyrn-->">&nbsp;<label><!--#dstu--></label></td>
+          </tr>                        
+          <tr>
+              <td><label for="soil">Skip if soil moisture exceeds</label></td>
+              <td><input type="text" size="4"  id="soilt1" name="soilt1" value="<!--#soilt1-->">&nbsp;<label>%</label></td>
+          </tr>      
+          <tr>
+              <td><label for="wind">Skip if wind speed exceeds</label></td>
+              <td><input type="text" size="4"  id="wndt" name="wndt" value="<!--#wndt-->">&nbsp;<label><!--#spdu--></label></td>            
+          </tr>                                           
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+      </form>
+  </table> 
 </div>
    
 </body>
 </html> 
-  
