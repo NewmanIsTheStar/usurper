@@ -43,7 +43,6 @@ extern NON_VOL_VARIABLES_T config;
 */
 #define SSI_TAGS \
     x(usurped)   \
-    x(cmplte)    \
     x(time)      \
     x(temp)      \
     x(wind)      \
@@ -581,7 +580,8 @@ extern NON_VOL_VARIABLES_T config;
     x(this17) \
     x(this18) \
     x(this19) \
-    x(this20)              
+    x(this20) \
+    x(cmplte)              
             
 
   
@@ -732,7 +732,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_strt6:
         case SSI_strt7:
         {
-            if (config.day_schedule_enable[iIndex-16])
+            if (config.day_schedule_enable[iIndex-SSI_strt1])
             {
                 printed = snprintf(pcInsert, iInsertLen, "%02d : %02d", config.day_start[iIndex-SSI_strt1]/60, config.day_start[iIndex-SSI_strt1]%60);
             }
