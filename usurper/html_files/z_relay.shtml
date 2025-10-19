@@ -62,38 +62,72 @@ body {
   </div>
 
 <div class="main">
-  <h2>Relay Settings</h2>      
-  <form action="/relay.cgi">             
-    <label for="wind">Normally Open (NO)</label>
-    <a href="/z_relay_no.shtml" style="text-decoration:none"> <small>   Why?</small></a> <br><br>    
-    <label for="ecoip">Number of Irrigation Zones</label>
-    <input type="text" id="zmax" name="zmax" value="<!--#zmax-->"><br><br>
-    <label for="wind" <!--#z1viz--> >Zone 1 GPIO:</label>
-    <input type="text" id="z1gpio" name="z1gpio" value="<!--#z1gpio-->" <!--#z1viz--> ><br>
-    <label for="wind" <!--#z2viz--> >Zone 2 GPIO:</label>
-    <input type="text" id="z2gpio" name="z2gpio" value="<!--#z2gpio-->" <!--#z2viz--> ><br>
-    <label for="wind" <!--#z3viz--> >Zone 3 GPIO:</label>
-    <input type="text" id="z3gpio" name="z3gpio" value="<!--#z3gpio-->" <!--#z3viz--> ><br>
-    <label for="wind" <!--#z4viz--> >Zone 4 GPIO:</label>
-    <input type="text" id="z4gpio" name="z4gpio" value="<!--#z4gpio-->" <!--#z4viz--> ><br>
-    <label for="wind" <!--#z5viz--> >Zone 5 GPIO:</label>
-    <input type="text" id="z5gpio" name="z5gpio" value="<!--#z5gpio-->" <!--#z5viz--> ><br>
-    <label for="wind" <!--#z6viz--> >Zone 6 GPIO:</label>
-    <input type="text" id="z6gpio" name="z6gpio" value="<!--#z6gpio-->" <!--#z6viz--> ><br>
-    <label for="wind" <!--#z7viz--> >Zone 7 GPIO:</label>
-    <input type="text" id="z7gpio" name="z7gpio" value="<!--#z7gpio-->" <!--#z7viz--> ><br>
-    <label for="wind" <!--#z8viz--> >Zone 8 GPIO:</label>
-    <input type="text" id="z8gpio" name="z8gpio" value="<!--#z8gpio-->" <!--#z8viz--> ><br>
-    <br>
-    <br>
-    <input type="submit" value="Save" style="font-size: 25px;">
-  </form> 
-  <br>  
+
+  <h2>Relay Settings</h2>  
+    <label for="wind">Normally Open contacts only</label>
+    <a href="/z_relay_no.shtml" style="text-decoration:none"> <small>   Why?</small></a> <br><br> 
+  <table>
+      <form action="/relay.cgi">
+          <tr>
+              <td><label for="ecoip">Number of Irrigation Zones</label></td>
+              <td><input type="text" id="zmax" name="zmax" value="<!--#zmax-->"></td>
+          </tr>
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>          
+      </form>
+  </table> 
+  <br>   
+  <table>
+      <form action="/relay.cgi">
+          <tr>
+              <td><label for="wind" <!--#z1viz--> >Zone 1 GPIO:</label></td>
+              <td><input type="text" id="z1gpio" name="z1gpio" value="<!--#z1gpio-->" <!--#z1viz--> ></td>
+          </tr>         
+          <tr>
+              <td><label for="wind" <!--#z2viz--> >Zone 2 GPIO:</label></td>
+              <td><input type="text" id="z2gpio" name="z2gpio" value="<!--#z2gpio-->" <!--#z2viz--> ></td>
+          </tr>      
+          <tr>
+              <td><label for="wind" <!--#z3viz--> >Zone 3 GPIO:</label></td>
+              <td><input type="text" id="z3gpio" name="z3gpio" value="<!--#z3gpio-->" <!--#z3viz--> ></td>
+          </tr>                        
+          <tr>
+              <td><label for="wind" <!--#z4viz--> >Zone 4 GPIO:</label></td>
+              <td><input type="text" id="z4gpio" name="z4gpio" value="<!--#z4gpio-->" <!--#z4viz--> ></td>
+          </tr>      
+          <tr>
+              <td><label for="wind" <!--#z5viz--> >Zone 5 GPIO:</label></td>
+              <td><input type="text" id="z5gpio" name="z5gpio" value="<!--#z5gpio-->" <!--#z5viz--> ></td>
+          </tr>    
+          <tr>
+              <td><label for="wind" <!--#z6viz--> >Zone 6 GPIO:</label></td>
+              <td><input type="text" id="z5gpio" name="z5gpio" value="<!--#z5gpio-->" <!--#z6viz--> ></td>
+          </tr>  
+          <tr>
+              <td><label for="wind" <!--#z7viz--> >Zone 7 GPIO:</label></td>
+              <td><input type="text" id="z5gpio" name="z5gpio" value="<!--#z5gpio-->" <!--#z7viz--> ></td>
+          </tr>  
+          <tr>
+              <td><label for="wind" <!--#z8viz--> >Zone 8 GPIO:</label></td>
+              <td><input type="text" id="z5gpio" name="z5gpio" value="<!--#z5gpio-->" <!--#z8viz--> ></td>
+          </tr>                                                                       
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+      </form>
+  </table>
+  <br>
+  <label>Relay changes will be applied after reboot</label>
   <form action="/reboot.cgi" method="get">
-    <input type="submit" value="Reboot" name="reboot" id="reboot" style="font-size: 25px;">
-</form>    
+      <input type="submit" value="Reboot" name="reboot" id="reboot" style="font-size: 25px;">
+  </form>   
 </div>
-   
+
 </body>
 </html> 
   

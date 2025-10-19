@@ -99,15 +99,15 @@ body {
           <tr>
               <td><label for="ledgpio">GPIO</label></td>
               <td><input type="text" size="4" id="lpin" name="lpin" value="<!--#lpin-->"></td>           
+          </tr>    
+          <tr>
+              <td><label for="lednum">Number of LEDs</label></td>
+              <td><input type="text" size="4" id="lnum" name="lnum" value="<!--#lnum-->"></td>           
           </tr> 
           <tr>
               <td><label for="ledrgbw">RGBW</label></td>
               <td><input type="checkbox" id="lrgbw" name="lrgbw" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#lrgbw-->></td>           
-          </tr>     
-          <tr>
-              <td><label for="lednum">Number of LEDs</label></td>
-              <td><input type="text" size="4" id="lnum" name="lnum" value="<!--#lnum-->"></td>           
-          </tr>                                                                      
+          </tr>                                                                                 
           <tr>            
               <td>
                   <button type="submit" style="font-size: 25px;">Save</button>

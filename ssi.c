@@ -581,7 +581,70 @@ extern NON_VOL_VARIABLES_T config;
     x(this18) \
     x(this19) \
     x(this20) \
-    x(cmplte)              
+    x(cmplte)   \
+    x(c1d1d)     \
+    x(c1d2d)     \
+    x(c1d3d)     \
+    x(c1d4d)     \
+    x(c1d5d)     \
+    x(c1d6d)     \
+    x(c1d7d)     \
+    x(c2d1d)     \
+    x(c2d2d)     \
+    x(c2d3d)     \
+    x(c2d4d)     \
+    x(c2d5d)     \
+    x(c2d6d)     \
+    x(c2d7d)     \
+    x(c3d1d)     \
+    x(c3d2d)     \
+    x(c3d3d)     \
+    x(c3d4d)     \
+    x(c3d5d)     \
+    x(c3d6d)     \
+    x(c3d7d)     \
+    x(c4d1d)     \
+    x(c4d2d)     \
+    x(c4d3d)     \
+    x(c4d4d)     \
+    x(c4d5d)     \
+    x(c4d6d)     \
+    x(c4d7d)     \
+    x(c5d1d)     \
+    x(c5d2d)     \
+    x(c5d3d)     \
+    x(c5d4d)     \
+    x(c5d5d)     \
+    x(c5d6d)     \
+    x(c5d7d)     \
+    x(c6d1d)     \
+    x(c6d2d)     \
+    x(c6d3d)     \
+    x(c6d4d)     \
+    x(c6d5d)     \
+    x(c6d6d)     \
+    x(c6d7d)     \
+    x(c7d1d)     \
+    x(c7d2d)     \
+    x(c7d3d)     \
+    x(c7d4d)     \
+    x(c7d5d)     \
+    x(c7d6d)     \
+    x(c7d7d)     \
+    x(c8d1d)     \
+    x(c8d2d)     \
+    x(c8d3d)     \
+    x(c8d4d)     \
+    x(c8d5d)     \
+    x(c8d6d)     \
+    x(c8d7d)     \
+    x(ctrt1)     \
+    x(ctrt2)     \
+    x(ctrt3)     \
+    x(ctrt4)     \
+    x(ctrt5)     \
+    x(ctrt6)     \
+    x(ctrt7)         
             
 
   
@@ -749,6 +812,25 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             }
         }
         break;
+        case SSI_ctrt1:
+        case SSI_ctrt2:
+        case SSI_ctrt3:
+        case SSI_ctrt4:
+        case SSI_ctrt5:
+        case SSI_ctrt6:
+        case SSI_ctrt7:
+        {
+            if (config.day_schedule_enable[iIndex-SSI_ctrt1])
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%02d : %02d", config.day_start[iIndex-SSI_ctrt1]/60, config.day_start[iIndex-SSI_ctrt1]%60);
+            }
+            else
+            {
+
+                printed = snprintf(pcInsert, iInsertLen, "&nbsp;");             
+            }
+        }
+        break;        
         case SSI_dur1:
         case SSI_dur2:
         case SSI_dur3:
@@ -1321,6 +1403,73 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             }                                 
         }
         break;
+        case SSI_c1d1d:
+        case SSI_c1d2d:
+        case SSI_c1d3d:
+        case SSI_c1d4d:
+        case SSI_c1d5d:
+        case SSI_c1d6d:
+        case SSI_c1d7d:
+        case SSI_c2d1d:
+        case SSI_c2d2d:
+        case SSI_c2d3d:
+        case SSI_c2d4d:
+        case SSI_c2d5d:
+        case SSI_c2d6d:
+        case SSI_c2d7d:
+        case SSI_c3d1d:
+        case SSI_c3d2d:
+        case SSI_c3d3d:
+        case SSI_c3d4d:
+        case SSI_c3d5d:
+        case SSI_c3d6d:
+        case SSI_c3d7d:
+        case SSI_c4d1d:
+        case SSI_c4d2d:
+        case SSI_c4d3d:
+        case SSI_c4d4d:
+        case SSI_c4d5d:
+        case SSI_c4d6d:
+        case SSI_c4d7d:
+        case SSI_c5d1d:
+        case SSI_c5d2d:
+        case SSI_c5d3d:
+        case SSI_c5d4d:
+        case SSI_c5d5d:
+        case SSI_c5d6d:
+        case SSI_c5d7d:
+        case SSI_c6d1d:
+        case SSI_c6d2d:
+        case SSI_c6d3d:
+        case SSI_c6d4d:
+        case SSI_c6d5d:
+        case SSI_c6d6d:
+        case SSI_c6d7d:
+        case SSI_c7d1d:
+        case SSI_c7d2d:
+        case SSI_c7d3d:
+        case SSI_c7d4d:
+        case SSI_c7d5d:
+        case SSI_c7d6d:
+        case SSI_c7d7d:
+        case SSI_c8d1d:
+        case SSI_c8d2d:
+        case SSI_c8d3d:
+        case SSI_c8d4d:
+        case SSI_c8d5d:
+        case SSI_c8d6d:
+        case SSI_c8d7d:
+        {  
+            if (config.day_schedule_enable[(iIndex-SSI_c1d1d)%7])
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d min", config.zone_duration[(iIndex-SSI_c1d1d)/7][(iIndex-SSI_c1d1d)%7]);
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "&nbsp;");    
+            }                                 
+        }
+        break;        
         case SSI_clpat: //clpat
         {
             printed = snprintf(pcInsert, iInsertLen, "%d", web.led_current_pattern);
