@@ -596,7 +596,12 @@ const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], ch
             if (strcasecmp("wndt", param) == 0)
             {
                 config.wind_threshold = get_int_with_tenths_from_string(value);                
-            }                                     
+            }     
+
+            if (strcasecmp("tempth", param) == 0)
+            {
+                config.outside_temperature_threshold= get_int_with_tenths_from_string(value);                
+            }               
         }
 
         i++;

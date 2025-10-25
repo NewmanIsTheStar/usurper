@@ -90,7 +90,11 @@ body {
           <tr>
               <td><label for="wind">Skip if wind speed exceeds</label></td>
               <td><input type="text" size="4"  id="wndt" name="wndt" value="<!--#wndt-->">&nbsp;<label><!--#spdu--></label></td>            
-          </tr>                                           
+          </tr>     
+          <tr>
+              <td><label for="wind">Skip if temperature below</label></td>
+              <td><input type="text" size="4"  id="tempth" name="tempth" value="<!--#tempth-->">&nbsp;<label>&deg;<!--#tmpu--></label></td>            
+          </tr>                                                 
           <tr>            
               <td>
                   <button type="submit" style="font-size: 25px;">Save</button>

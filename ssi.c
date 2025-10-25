@@ -644,8 +644,8 @@ extern NON_VOL_VARIABLES_T config;
     x(ctrt4)     \
     x(ctrt5)     \
     x(ctrt6)     \
-    x(ctrt7)         
-            
+    x(ctrt7)     \
+    x(tempth)            
 
   
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
@@ -2252,7 +2252,12 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         {
             printed = snprintf(pcInsert, iInsertLen, "%s", config.temperature_sensor_remote_ip[iIndex-SSI_tsadr1]); 
         }                     
-        break;       
+        break;      
+        case SSI_tempth: //SSI_tempth
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d.%d", config.outside_temperature_threshold/10, config.outside_temperature_threshold%10);   
+        }               
+        break;          
 #ifdef INCORPORATE_THERMOSTAT  
         case SSI_tint:  // thermostat indoor temperature
         {

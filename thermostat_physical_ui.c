@@ -60,7 +60,6 @@ extern WEB_VARIABLES_T web;
 extern THERMOSTAT_MODE_T mode;
 extern int setpointtemperaturex10;
 extern int temporary_set_point_offsetx10;
-extern long int temperaturex10;
 
 // global variables
 QueueHandle_t irq_queue = NULL;
@@ -121,7 +120,7 @@ int handle_button_press_with_timeout(TickType_t timeout)
         }
 
         // update display
-        hvac_update_display(temperaturex10, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
+        hvac_update_display(web.thermostat_temperature, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
         printf("TEMP = %d SETPOINT = %d (%d + %d) MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, setpointtemperaturex10, temporary_set_point_offsetx10,mode);
 
     } while (button_pressed);  //TODO deal with continual spurious interrupts holding us in this loop forever
@@ -138,8 +137,8 @@ int handle_button_press_with_timeout(TickType_t timeout)
  */
 void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hvac_setpointx10)
 {
-    static int display_state = 0;
-    static int last_hvac_mode = 0;
+    static DISPLAY_STATE_T display_state = DISPLAY_SETPOINT;
+    static THERMOSTAT_MODE_T last_hvac_mode = 0;
     static int last_hvac_setpoint = 0;    
     static TickType_t last_display_state_change_tick = 0;
     TickType_t now_tick = 0;

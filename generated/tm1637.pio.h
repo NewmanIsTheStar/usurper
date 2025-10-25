@@ -14,7 +14,7 @@
 
 #define tm1637_wrap_target 0
 #define tm1637_wrap 30
-#define tm1637_pio_version 0
+#define tm1637_pio_version 1
 
 static const uint16_t tm1637_program_instructions[] = {
             //     .wrap_target

@@ -402,6 +402,13 @@ void log_climate_change(int temperaturex10, int humidityx10)
     if ((temperaturex10 != sent_temperaturex10) || (humidityx10 != sent_humidityx10))
     {
         send_syslog_message("temperature", "Temperature = %ld.%ld Humidity = %ld.%ld\n", temperaturex10/10, temperaturex10%10, humidityx10/10, humidityx10%10);
+//TODO: handle negative values etc as in this example
+//     printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.outside_temperature<0?'-':'\0', abs(web.outside_temperature/10), abs(web.outside_temperature%10)); 
+// }
+// else
+// {
+//     temp = (web.outside_temperature*9)/5 + 320;
+//     printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
 
         // remember what we sent
         sent_temperaturex10 = temperaturex10;

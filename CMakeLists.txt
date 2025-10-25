@@ -9,8 +9,8 @@ set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 
 # Set board type
-set(PICO_BOARD pico_w CACHE STRING "Board type")
-#set(PICO_BOARD pico2_w CACHE STRING "Board type")
+#set(PICO_BOARD pico_w CACHE STRING "Board type")
+set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # ====================================================================================
 
 set(CMAKE_C_STANDARD 11)

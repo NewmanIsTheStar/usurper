@@ -1038,6 +1038,10 @@ bool terminate_irrigation_due_to_weather (void)
     int rain_day = 0;
     int rain_week = 0; 
     int soil_moisture = 0;
+    int outside_temperature = 0;
+    long temp;
+
+    //TODO -- ignore missing measurements (e.g set to threshold is value unknown)
 
     // convert current measurements to archaic units if necessary
     switch(config.use_archaic_units)
@@ -1046,7 +1050,9 @@ bool terminate_irrigation_due_to_weather (void)
         wind_speed = (web.wind_speed*3281 + 500)/1000;                 // feet per second
         rain_week = (10*web.trailing_seven_days_rain + 127)/254;       // inches
         rain_day = (10*web.daily_rain + 127)/254;                      // inches
-        soil_moisture = web.soil_moisture[0];                          // percentage        
+        soil_moisture = web.soil_moisture[0];                          // percentage    
+        outside_temperature = ((web.outside_temperature - 320)*5)/9;   // Fahrenheit 
+        printf("TERMINATE condition using temperature = %d\n", outside_temperature);   // TODO:  check scaling / Is it already in F?
         break;
         
     default:
@@ -1055,27 +1061,30 @@ bool terminate_irrigation_due_to_weather (void)
         rain_week = web.trailing_seven_days_rain;         // mm   
         rain_day = web.daily_rain;                        // mm      
         soil_moisture = web.soil_moisture[0];             // percentage
+        outside_temperature = web.outside_temperature;    // Celsius
         break;
     } 
 
     // check if we should terminate irrigation due to weather
-    if ((wind_speed > config.wind_threshold)      ||
-        (rain_day > config.rain_day_threshold)    ||
-        (rain_week  > config.rain_week_threshold) ||     
-        (soil_moisture > config.soil_moisture_threshold[0]))                   
+    if ((wind_speed > config.wind_threshold)                ||
+        (rain_day > config.rain_day_threshold)              ||
+        (rain_week  > config.rain_week_threshold)           ||     
+        (soil_moisture > config.soil_moisture_threshold[0]) ||
+        (outside_temperature > config.outside_temperature_threshold))                   
     {
         terminate_irrigation = true;
 
         switch(config.use_archaic_units)
         {
         case true:
-            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d ft/s Daily rain = %d.%d inches 7-day rain = %d.%d inches Soil Moisture = %d%%",
-                wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
+            temp = (web.outside_temperature*9)/5 + 320;
+            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d ft/s Daily rain = %d.%d inches 7-day rain = %d.%d inches Soil Moisture = %d%% Temperature = %c%ld.%ld",
+                wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
             break;            
         default:
         case false:
-            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d m/s Daily rain = %d.%d mm 7-day rain = %d.%d mm Soil Moisture = %d%%",
-                wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0]);
+            send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d m/s Daily rain = %d.%d mm 7-day rain = %d.%d mm Soil Moisture = %d%% Temperature = %c%d.%d",
+                wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], web.outside_temperature<0?'-':'\0', abs(web.outside_temperature/10), abs(web.outside_temperature%10));
             break;
         }         
         get_timestamp(web.last_usurped_timestring, sizeof(web.last_usurped_timestring), 0);                 

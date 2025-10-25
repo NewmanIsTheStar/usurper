@@ -49,10 +49,6 @@ extern uint32_t unix_time;
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
 
-// global variables
-long int temperaturex10 = 0;                             // current temperature
-
-
 
 /*!
  * \brief Monitor weather and control relay based on conditions and schedule
