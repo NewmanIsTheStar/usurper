@@ -1279,12 +1279,15 @@ const char * cgi_units_handler(int iIndex, int iNumParams, char *pcParam[], char
             case false:  // convert from archaic units to SI
                 config.wind_threshold = (1000*config.wind_threshold + 1641)/3281;
                 config.rain_week_threshold = (254*config.rain_week_threshold + 5)/10;
-                config.rain_day_threshold = (254*config.rain_day_threshold + 5)/10;                            
+                config.rain_day_threshold = (254*config.rain_day_threshold + 5)/10;
+                config.outside_temperature_threshold = ((config.outside_temperature_threshold*9)/5) + 320;
+
             break;
             case true:   // convert from SI to archaic units
                 config.wind_threshold = (config.wind_threshold*3281 + 500)/1000;
                 config.rain_week_threshold = (10*config.rain_week_threshold + 127)/254;
-                config.rain_day_threshold = (10*config.rain_day_threshold + 127)/254;                    
+                config.rain_day_threshold = (10*config.rain_day_threshold + 127)/254; 
+                config.outside_temperature_threshold = ((config.outside_temperature_threshold - 320)*5)/9;                   
                 break;
             default:
             break;
