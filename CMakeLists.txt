@@ -133,7 +133,7 @@ set(common_source_files
 
 # if(NOT PICO_BOARD STREQUAL "pico_w")
 #         set(usurper_source_files ${usurper_source_files}        
-#                 thermostat.c
+#                 thermostat_task.c
 #                 powerwall.c
 #                 shelly.c
 #                 json_parser.c
@@ -182,7 +182,7 @@ execute_process(COMMAND
 #if(NOT PICO_BOARD STREQUAL "pico_w")
         set(usurper_source_files ${common_source_files}   
                 usurper/worker_tasks.c     
-                #thermostat.c
+                #thermostat_task.c
                 #powerwall.c
                 shelly.c
                 json_parser.c
@@ -254,7 +254,7 @@ execute_process(COMMAND
 if(NOT PICO_BOARD STREQUAL "pico_w")
         set(thermostat_source_files ${common_source_files}
                 thermostat/worker_tasks.c        
-                thermostat.c
+                thermostat_task.c
                 thermostat_aht10.c
                 thermostat_metrics.c
                 thermostat_physical_ui.c
@@ -321,7 +321,7 @@ execute_process(COMMAND
 if(NOT PICO_BOARD STREQUAL "pico_w")
         set(home_controller_source_files ${common_source_files}   
                 home_controller/worker_tasks.c   
-                #thermostat.c
+                #thermostat_task.c
                 powerwall.c
                 shelly.c
                 json_parser.c

@@ -109,13 +109,6 @@ void thermostat_task(void *params)
     // initialize hvac gpio and timers
     initialize_hvac_control();
   
-    // TEST TEST TEST -- force configuration of aht10 pins  
-    // config.thermostat_temperature_sensor_data_gpio = 10;
-    // config.thermostat_temperature_sensor_clock_gpio = 11;
-  
-    // initialize i2c for temperature sensor  
-    //aht10_initialize(config.thermostat_temperature_sensor_clock_gpio, config.thermostat_temperature_sensor_data_gpio);
-
     // initialize powerwall communication
     powerwall_init();
 

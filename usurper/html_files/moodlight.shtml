@@ -62,23 +62,40 @@ body {
   </div>
 
 <div class="main">
-  <h2>Moodlight Settings</h2>     
-  <form action="/mood.cgi">             
-      <label for="gvee">Use Govee Light to indicate irrigation status</label>
-      <input type="checkbox" id="gvee" name="gvee" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#gvee-->><br><br>
-      <label for="goveeip">Govee Light hostname or IP</label><br> 
-      <input type="text" id="gvea" name="gvea" value="<!--#gvea-->"><br><br> 
-      <label for="gvee">Irrigation in progress <!--#colour--> (r.g.b)</label><br>   
-      <input type="text" id="gvei" name="gvei" value="<!--#gvei-->"><br><br>
-      <label for="gvee">Irrigation skipped <!--#colour-->  (r.g.b)</label><br>   
-      <input type="text" id="gveu" name="gveu" value="<!--#gveu-->"><br><br> 
-      <label for="gvee">Sustain status <!--#colour--> after scheduled irrigation (in minutes)</label><br>   
-      <input type="text" id="gves" name="gves" value="<!--#gves-->"><br><br>                                                             
-      <br>
-      <input type="submit" value="Save" style="font-size: 25px;">
-  </form>  
+
+  <h2>Moodlight Settings</h2>  
+  <table>
+      <form action="/mood.cgi">>
+          <tr>
+              <td><label for="gvee">Use Moodlight to indicate irrigation status</label></td>
+              <td><input type="checkbox" id="gvee" name="gvee" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#gvee-->></td>
+          </tr>         
+          <tr>
+              <td><label for="goveeip">MoodLight address</label></td>
+              <td><input type="text" id="gvea" name="gvea" value="<!--#gvea-->"></td>
+          </tr>
+          <tr>
+              <td><label for="gvee">Irrigation in progress <!--#colour--></label></td>
+              <td><input type="text" id="gvei" name="gvei" value="<!--#gvei-->">&nbsp;<label>r.g.b</label></td>
+          </tr>         
+     
+          <tr>
+              <td><label for="gvee">Irrigation skipped <!--#colour--></label></td>
+              <td><input type="text" id="gveu" name="gveu" value="<!--#gveu-->">&nbsp;<label>r.g.b</label></td>
+          </tr>                        
+          <tr>
+              <td><label for="gvee">Sustain <!--#colour--> after irrigation</label></td>
+              <td><input type="text" id="gves" name="gves" value="<!--#gves-->">&nbsp;<label>minutes</label></td>
+          </tr>                                                      
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+      </form>
+  </table> 
 </div>
-   
+
 </body>
 </html> 
 
