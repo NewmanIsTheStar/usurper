@@ -80,7 +80,7 @@ int aht10_initialize(int clock_gpio, int data_gpio);
 int aht10_measurement(long int *temperaturex10, long int *humidityx10);
 
 // thermostat_physcial_ui.c
-int handle_button_press_with_timeout(TickType_t timeout);
+bool handle_button_press_with_timeout(TickType_t timeout);
 void enable_irq(bool state);
 void gpio_isr(uint gpio, uint32_t events);
 void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hvac_setpoint);

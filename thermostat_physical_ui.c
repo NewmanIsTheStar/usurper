@@ -70,33 +70,33 @@ uint8_t passed_value;
  * 
  * \return nothing
  */
-int handle_button_press_with_timeout(TickType_t timeout)
+bool handle_button_press_with_timeout(TickType_t timeout)
 {
-    int button_pressed = 0;
+    bool button_pressed = false;
+    int max_iterations = 400;
 
     do
     {
         if (xQueueReceive(irq_queue, &passed_value, 1000) == pdPASS)
         {
-            switch(passed_value)
+            if ((passed_value == config.thermostat_increase_button_gpio) ||
+                (passed_value == config.thermostat_decrease_button_gpio) ||
+                (passed_value == config.thermostat_mode_button_gpio))
             {
-                default:
-                    printf("Unexpected IRQ in message: %d\n", passed_value);
-                    printf("WARNING: not reenabling IRQ\n");
-                    button_pressed = 0;
-                    break;
-                case 16:
-                case 17:
-                case 22:
-                    printf("IRQ detected from GPIO%d\n", passed_value);
-                    enable_irq(true);
-                    button_pressed = 1;
-                    break;
+                printf("IRQ detected from GPIO%d\n", passed_value);
+                enable_irq(true);
+                button_pressed = true;                
+            }
+            else
+            {
+                printf("Unexpected IRQ in message: %d\n", passed_value);
+                printf("WARNING: not reenabling IRQ\n");
+                button_pressed = false;                
             }
         }
         else
         {
-            button_pressed = 0;
+            button_pressed = false;
         }
 
         if (gpio_get(config.thermostat_increase_button_gpio) == false)
@@ -123,7 +123,10 @@ int handle_button_press_with_timeout(TickType_t timeout)
         hvac_update_display(web.thermostat_temperature, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
         printf("TEMP = %d SETPOINT = %d (%d + %d) MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, setpointtemperaturex10, temporary_set_point_offsetx10,mode);
 
-    } while (button_pressed);  //TODO deal with continual spurious interrupts holding us in this loop forever
+        // deal with continual spurious interrupts or stuck button holding us in this loop forever
+        if (--max_iterations <=0) break;
+
+    } while (button_pressed);  
 
     return(button_pressed);
 }

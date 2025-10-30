@@ -70,12 +70,13 @@ void thermostat_task(void *params)
     int retry = 0;
     int oneshot = false;
     int i;
-    int button_pressed = 0;
+    bool button_pressed = false;
 
     if (strcasecmp(APP_NAME, "Thermostat") == 0)
     {
-        // force personality to match single purpose application
+        // single purpose application -- force personality and enable
         config.personality = HVAC_THERMOSTAT;
+        config.thermostat_enable = 1;
     }
 
     if (config.use_archaic_units)
@@ -89,8 +90,8 @@ void thermostat_task(void *params)
     
     web.powerwall_grid_status = GRID_UNKNOWN;
 
-    config.thermostat_enable = 1;
-    config.thermostat_hysteresis = 5; 
+    
+    //config.thermostat_hysteresis = 5; 
 
     // make sure safeguards are valid to prevent short cycling
     CLIP(config.heating_to_cooling_lockout_mins, 1, 60);
@@ -120,7 +121,7 @@ void thermostat_task(void *params)
     
     while (true)
     {        
-        if ((config.personality == HVAC_THERMOSTAT))
+        if ((config.personality == HVAC_THERMOSTAT))  // TODO should this be config.thermostat_enable ?
         {
             if (!tm1637_initialized)
             {
