@@ -44,7 +44,7 @@ void tm1637_init(uint clk, uint dio);
  * For example `tm1637_put_2_bytes(2, 0x3f05)` will show the number 10 on the
  * right half of the display. */
 void tm1637_put_2_bytes(uint startPos, uint data);
-
+void tm1637_pad_2_bytes(uint start_pos, uint data); // TEST TEST TEST for 6 digit display
 /** Display one to four bytes of raw data on the display. 
  *
  * @param startPos The digit index to start at. Ranges from `0` to `3`, where 
@@ -52,6 +52,7 @@ void tm1637_put_2_bytes(uint startPos, uint data);
  * @param data The data for one to four bytes, the least significant byte will 
  *        be put to the left. */
 void tm1637_put_4_bytes(uint startPos, uint data);
+void tm1637_put_6_bytes(uint start_pos, uint data); // TEST TEST TEST for 6 digit display
 
 /** Display a positive number with 4 digits or a negative number with 3 digits.
  * 

@@ -192,7 +192,7 @@ void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hv
     {
         default:
         case DISPLAY_TEMPERATURE:
-            tm1637_display(temperaturex10/10, false);        
+            tm1637_display(temperaturex10/10, true);        
             break;
         case DISPLAY_HVAC_OFF:
             tm1637_display_word("OFF", false);       
@@ -210,7 +210,7 @@ void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hv
             tm1637_display_word("AUTO", false);    
             break;                                                 
         case DISPLAY_SETPOINT:
-            tm1637_display(hvac_setpointx10/10, false); 
+            tm1637_display(hvac_setpointx10/10, true); 
             break;
     }
 }

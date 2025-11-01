@@ -65,9 +65,9 @@ body {
 
   <h2>Moodlight Settings</h2>  
   <table>
-      <form action="/mood.cgi">>
+      <form action="/mood.cgi">
           <tr>
-              <td><label for="gvee">Use Moodlight to indicate irrigation status</label></td>
+              <td><label for="gvee">Use Moodlight to show irrigation status</label></td>
               <td><input type="checkbox" id="gvee" name="gvee" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#gvee-->></td>
           </tr>         
           <tr>
@@ -76,16 +76,16 @@ body {
           </tr>
           <tr>
               <td><label for="gvee">Irrigation in progress <!--#colour--></label></td>
-              <td><input type="text" id="gvei" name="gvei" value="<!--#gvei-->">&nbsp;<label>r.g.b</label></td>
+              <td><input type="text" size="11" id="gvei" name="gvei" value="<!--#gvei-->">&nbsp;<label>r.g.b</label></td>
           </tr>         
      
           <tr>
               <td><label for="gvee">Irrigation skipped <!--#colour--></label></td>
-              <td><input type="text" id="gveu" name="gveu" value="<!--#gveu-->">&nbsp;<label>r.g.b</label></td>
+              <td><input type="text" size="11" id="gveu" name="gveu" value="<!--#gveu-->">&nbsp;<label>r.g.b</label></td>
           </tr>                        
           <tr>
               <td><label for="gvee">Sustain <!--#colour--> after irrigation</label></td>
-              <td><input type="text" id="gves" name="gves" value="<!--#gves-->">&nbsp;<label>minutes</label></td>
+              <td><input type="text" size="11" id="gves" name="gves" value="<!--#gves-->">&nbsp;<label>minutes</label></td>
           </tr>                                                      
           <tr>            
               <td>

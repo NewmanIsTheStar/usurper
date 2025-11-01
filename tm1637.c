@@ -118,6 +118,11 @@ void tm1637_put_2_bytes(uint start_pos, uint data) {
   set_display_on();
 }
 
+void tm1637_pad_2_bytes(uint start_pos, uint data) {
+  uint address = WRITE_ADDRESS + start_pos;
+  pio_sm_put_blocking(pio, sm, (data << 16) + (address << 8) +  SET_WRITEMODE);
+}
+
 void tm1637_put_4_bytes(uint start_pos, uint data) {
   uint address = WRITE_ADDRESS + start_pos;
   uint data1 = data & 0xffff;  // first two bytes
@@ -127,6 +132,18 @@ void tm1637_put_4_bytes(uint start_pos, uint data) {
   set_display_on();
 }
 
+void tm1637_put_6_bytes(uint start_pos, uint data) {
+  uint address = WRITE_ADDRESS + start_pos;
+  uint data1 = data & 0xffff;  // first two bytes
+  uint data2 = data >> 16;     // last two bytes
+  uint data3 = 0;
+
+  pio_sm_put_blocking(pio, sm, (data3 << 16) + (address << 16) + SET_WRITEMODE);  
+  pio_sm_put_blocking(pio, sm, (data1 << 16) + (address << 8) /*+ SET_WRITEMODE*/);
+  pio_sm_put_blocking(pio, sm, (data2 << 16));  
+  
+  set_display_on();
+}
 /* Convert a number to something readable for the 'put bytes' functions.
  *
  * Warning, input must not be more than 4 digits. Then least significant digits
@@ -221,7 +238,9 @@ void tm1637_display(int number, bool leadingZeros) {
   }
   
   // Display number
-  tm1637_put_4_bytes(startPos, hex);
+  //tm1637_pad_2_bytes(0, 0); // TEST TEST TEST for 6 digit display
+  //tm1637_put_4_bytes(startPos, hex);  // ORIGINAL
+  tm1637_put_6_bytes(startPos, hex); // TEST TEST TEST for 6 digit display
 }
 
 void tm1637_display_word(char *word, bool leftAlign) {
