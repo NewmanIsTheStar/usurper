@@ -58,7 +58,7 @@ typedef struct
     long int humidityx10;
 } CLIMATE_DATAPOINT_T;
 
-//prototypes
+// thermostat_task.c
 void thermostat_task(__unused void *params);
 int make_schedule_grid(void);
 //int update_current_setpoints(void);
@@ -96,5 +96,6 @@ bool schedule_setpoint_valid(int temperaturex10, int mow);
 // thermostat_hvac.c
 int initialize_hvac_control(void);
 THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10);
+
 
 #endif

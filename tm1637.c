@@ -34,6 +34,9 @@
 #define BRIGHTNESS_BASE 0x88
 #define MAX_DIGITS 4
 
+// uncomment this to use four digits of a six digit display
+#define USE_SIX_DIGIT_DISPLAY (1)
+
 /* Global variables */
 PIO pio;
 uint clkPin, dioPin, sm, brightness = 0;
@@ -109,7 +112,14 @@ void tm1637_init(uint clk, uint dio) {
 }
 
 void set_display_on() {
-  pio_sm_put_blocking(pio, sm, BRIGHTNESS_BASE + brightness);
+  uint8_t w_command = BRIGHTNESS_BASE + brightness;
+  uint8_t r_command = 0x46;  // read key scan data (dummy operation to avoid sending junk)
+  uint32_t w_data = 0;
+
+  //pio_sm_put_blocking(pio, sm, BRIGHTNESS_BASE + brightness);  // ORIGINAL sends 3 junk bytes after command
+
+  w_data = (w_command << 0) | (r_command << 8) | (r_command << 16) | (r_command << 24);
+  pio_sm_put_blocking(pio, sm, w_data);  // repeat command 4 times
 }
 
 void tm1637_put_2_bytes(uint start_pos, uint data) {
@@ -134,14 +144,27 @@ void tm1637_put_4_bytes(uint start_pos, uint data) {
 
 void tm1637_put_6_bytes(uint start_pos, uint data) {
   uint address = WRITE_ADDRESS + start_pos;
-  uint data1 = data & 0xffff;  // first two bytes
-  uint data2 = data >> 16;     // last two bytes
-  uint data3 = 0;
+  uint8_t w_command = SET_WRITEMODE;
+  uint8_t w_address = WRITE_ADDRESS;
 
-  pio_sm_put_blocking(pio, sm, (data3 << 16) + (address << 16) + SET_WRITEMODE);  
-  pio_sm_put_blocking(pio, sm, (data1 << 16) + (address << 8) /*+ SET_WRITEMODE*/);
-  pio_sm_put_blocking(pio, sm, (data2 << 16));  
-  
+  // remap digits as display is in weird order
+  uint8_t w_digit0 = (data>>0x00) & 0xFF;
+  uint8_t w_digit1 = 0x00;                               // fixed blank until 32 bit data parameter increased to 48 bits
+  uint8_t w_digit2 = 0x00;                               // fixed blank until 32 bit data parameter increased to 48 bits
+  uint8_t w_digit3 = (data>>0x18) & 0xFF;
+  uint8_t w_digit4 = (data>>0x10) & 0xFF;                        
+  uint8_t w_digit5 = (data>>0x08) & 0xFF;                         
+  uint32_t w_data  = 0x00;
+
+  w_data = (w_command << 0) | ((w_address+0) << 8) | (w_digit0 << 16) | (w_digit1 << 24);
+  pio_sm_put_blocking(pio, sm, w_data);
+
+  w_data = (w_command << 0) | ((w_address+2) << 8) | (w_digit2 << 16) | (w_digit3 << 24);
+  pio_sm_put_blocking(pio, sm, w_data);
+
+  w_data = (w_command << 0) | ((w_address+4) << 8) | (w_digit4 << 16) | (w_digit5 << 24);
+  pio_sm_put_blocking(pio, sm, w_data);
+
   set_display_on();
 }
 /* Convert a number to something readable for the 'put bytes' functions.
@@ -238,9 +261,11 @@ void tm1637_display(int number, bool leadingZeros) {
   }
   
   // Display number
-  //tm1637_pad_2_bytes(0, 0); // TEST TEST TEST for 6 digit display
-  //tm1637_put_4_bytes(startPos, hex);  // ORIGINAL
-  tm1637_put_6_bytes(startPos, hex); // TEST TEST TEST for 6 digit display
+#ifndef USE_SIX_DIGIT_DISPLAY  
+  tm1637_put_4_bytes(startPos, hex); 
+#else
+  tm1637_put_6_bytes(startPos, hex); 
+#endif
 }
 
 void tm1637_display_word(char *word, bool leftAlign) {
@@ -275,7 +300,11 @@ void tm1637_display_word(char *word, bool leftAlign) {
   if (col >= 0) {
     bin |= (0x80 << col*8);
   }
+#ifndef USE_SIX_DIGIT_DISPLAY  
   tm1637_put_4_bytes(startIndex, bin);
+#else
+  tm1637_put_6_bytes(startIndex, bin);
+#endif
 }
 
 /* Helper for getting the segment representation for a 2 digit number. */
