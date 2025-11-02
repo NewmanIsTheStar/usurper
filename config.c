@@ -33,6 +33,7 @@ void config_v4_to_v5(void);
 void config_v5_to_v6(void);
 void config_v6_to_v7(void);
 void config_v7_to_v8(void);
+void config_v8_to_v9(void);
 
 NON_VOL_VARIABLES_T config;
 static int config_dirty_flag = 0;
@@ -45,7 +46,8 @@ static NON_VOL_CONVERSION_T config_info[] =
     {5,      offsetof(NON_VOL_VARIABLES_T_VERSION_5, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_5, crc),   &config_v4_to_v5}, 
     {6,      offsetof(NON_VOL_VARIABLES_T_VERSION_6, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_6, crc),   &config_v5_to_v6},   
     {7,      offsetof(NON_VOL_VARIABLES_T_VERSION_7, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_7, crc),   &config_v6_to_v7},   
-    {8,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v7_to_v8},                   
+    {8,      offsetof(NON_VOL_VARIABLES_T_VERSION_8, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_8, crc),   &config_v7_to_v8},  
+    {9,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v8_to_v9},                      
 };
 
 
@@ -373,10 +375,22 @@ void config_v7_to_v8(void)
     printf("Converting configuration from version 7 to version 8\n"); 
     config.version = 8;     
 
-   config.outside_temperature_threshold = 50;  
+    config.outside_temperature_threshold = 50;  
 
 }
 
+/*!
+ * \brief Convert configuration from v8 to v9 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v8_to_v9(void)
+{
+    printf("Converting configuration from version 8 to version 9\n"); 
+    config.version = 9;     
+
+    config.thermostat_display_brightness = 7;  
+}
 
 /*!
  * \brief Record that configuration copy in RAM was altered and may now differ from the flash copy

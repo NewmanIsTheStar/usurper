@@ -3187,6 +3187,12 @@ const char * cgi_advanced_settings(int iIndex, int iNumParams, char *pcParam[], 
                 CLIP(setting, 10, 100);
                 config.thermostat_hysteresis = setting; 
             }
+            if (strcasecmp("disbri", param) == 0)
+            {
+                sscanf(value, "%d", &setting);
+                CLIP(setting, 0, 7);
+                config.thermostat_display_brightness = setting; 
+            }            
         }
 
         i++;

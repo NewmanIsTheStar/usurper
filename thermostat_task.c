@@ -126,9 +126,9 @@ void thermostat_task(void *params)
             if (!tm1637_initialized)
             {
                 tm1637_init(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
+                tm1637_set_brightness(config.thermostat_display_brightness); 
                 tm1637_display_word("BOOT", false);
-                //tm1637_set_brightness(7); 
-
+                
                 tm1637_initialized = true;               
             }
             

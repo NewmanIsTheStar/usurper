@@ -645,7 +645,8 @@ extern NON_VOL_VARIABLES_T config;
     x(ctrt5)     \
     x(ctrt6)     \
     x(ctrt7)     \
-    x(tempth)            
+    x(tempth)    \
+    x(disbri)        
 
   
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
@@ -2444,9 +2445,13 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         // temperature history
         {
             printed = print_temperature_history(pcInsert, iInsertLen, (iIndex-SSI_this1)*4, 4);                                   
-        }
-         
+        }         
         break;   
+        case SSI_disbri: // display brightness
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_display_brightness);
+        }
+        break;
 #endif                                        
         default:
         {

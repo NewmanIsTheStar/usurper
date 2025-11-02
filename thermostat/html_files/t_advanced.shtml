@@ -105,7 +105,16 @@ body {
           <tr>
               <td><label for="tfr">Setpoint hysteresis</label></td>
               <td><input type="text" size="4" id="hvachys" name="hvachys" value="<!--#hvachys-->"> <label>&deg;<!--#tmpu--></label></td>
-          </tr>                                                          
+          </tr>
+          <tr>            
+              <td style="text-align: left;font-weight: bold;">
+                  <label for="thrl">Display</label>
+              </td>
+          </tr>            
+          <tr>
+              <td><label for="tfr">Brightness</label></td>
+              <td><input type="disbri" size="4" id="disbri" name="disbri" value="<!--#disbri-->"> <label>0 to 7</label></td>
+          </tr>                                                                     
           <tr>            
               <td>
                   <button type="submit" style="font-size: 25px;">Save</button>
