@@ -25,6 +25,7 @@ typedef enum
     HVAC_HEATING_ONLY = 2,
     HVAC_COOLING_ONLY = 3,
     HVAC_FAN_ONLY = 4,
+    NUM_HVAC_MODES = 5
 } THERMOSTAT_MODE_T;          // set by user -- do not reorder -- html and ssi.c rely on order
 
 typedef enum

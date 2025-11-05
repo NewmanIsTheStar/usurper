@@ -114,7 +114,7 @@ bool handle_button_press_with_timeout(TickType_t timeout)
         if (gpio_get(config.thermostat_mode_button_gpio) == false)
         {                
             mode++;
-            if (mode > HVAC_AUTO) mode = HVAC_OFF;
+            if (mode >= NUM_HVAC_MODES) mode = HVAC_AUTO;
 
             printf("MODE Button pressed. Mode = %d\n", mode);                
         }

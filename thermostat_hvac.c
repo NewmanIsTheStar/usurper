@@ -385,13 +385,13 @@ int set_hvac_gpio(THERMOSTAT_STATE_T thermostat_state)
             printf("Heating on, Cooling and Fan off\n");
             gpio_put(config.heating_gpio, 1);
             gpio_put(config.cooling_gpio, 0);
-            gpio_put(config.fan_gpio, 0);   
+            gpio_put(config.fan_gpio, 0);      // when heating the thermostat is *not* responsible for turning on the fan (to avoid blowing cold air)
             break;
         case COOLING_IN_PROGRESS:
-            printf("Cooling on, Heating and Fan off\n");
+            printf("Cooling on, Fan on and Heating off\n");
             gpio_put(config.heating_gpio, 0);
             gpio_put(config.cooling_gpio, 1);
-            gpio_put(config.fan_gpio, 0);   
+            gpio_put(config.fan_gpio, 1);      //TODO: it is conventional for the thermostat to turn on the fan when cooling -- add delay or make optional on modern equipment?
             break;            
         case DUCT_PURGE:
             printf("Heating and Cooling off and Fan on\n");
