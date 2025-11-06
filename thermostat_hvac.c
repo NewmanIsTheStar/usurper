@@ -69,7 +69,7 @@ extern WEB_VARIABLES_T web;
 extern long int temperaturex10;
 
 // gloabl variables
-THERMOSTAT_MODE_T mode = HVAC_OFF;                       // operation mode
+THERMOSTAT_MODE_T mode = HVAC_AUTO;                       // operation mode
 int setpointtemperaturex10 = 0;                          // scheduled setpoint
 int temporary_set_point_offsetx10 = 0;                   // temporary offset set using physical buttons
 CLIMATE_TIMERS_T climate_timers[NUM_HVAC_TIMERS];        // set of timers used to control state

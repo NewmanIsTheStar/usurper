@@ -195,6 +195,7 @@ int copy_schedule(int source_day, int destination_day)
             // mark unused    
             config.setpoint_start_mow[i] = -1;
             config.setpoint_temperaturex10[i] = SETPOINT_TEMP_UNDEFINED;
+            config.setpoint_mode[i] = HVAC_OFF; 
         }
     }
 
@@ -222,6 +223,11 @@ int copy_schedule(int source_day, int destination_day)
                         config.setpoint_temperaturex10[k] = config.setpoint_temperaturex10[i];
                         config.setpoint_mode[k] = config.setpoint_mode[i];
 
+                        if (config.setpoint_mode[k] < 0)
+                        {
+                            printf("ERROR: copied invalid mode\n");
+                            printf("Copied row. New row %d [dest day = %d source day j = %d source row i = %d]\n", k, day, j, i);
+                        }
                         //printf("Copied row. New row %d [dest day = %d source day j = %d source row i = %d]\n", k, day, j, i);
                     }
                 }

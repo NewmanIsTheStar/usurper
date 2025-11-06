@@ -1840,6 +1840,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                 printed = snprintf(pcInsert, iInsertLen, "Fan Only");
                 break;
             default:
+                printed = snprintf(pcInsert, iInsertLen, "Default (%d)", config.setpoint_mode[iIndex-SSI_sp1mde]);            
+                break;              
             case HVAC_OFF:
                 printed = snprintf(pcInsert, iInsertLen, "Off");            
                 break;   

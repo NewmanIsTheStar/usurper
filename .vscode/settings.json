@@ -50,5 +50,6 @@
         "utility": "c",
         "variant": "c",
         "powerwall.h": "c"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": false
 }
