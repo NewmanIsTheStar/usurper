@@ -2176,6 +2176,7 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
     int j = 0;
     int key_mow = 0;
     int key_temp = 0;
+    THERMOSTAT_MODE_T key_mode = HVAC_AUTO;
     char *param = NULL;
     char *value = NULL;
     int new_relay_normally_open = 0; 
@@ -2357,18 +2358,22 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
     for(i=1; i<NUM_ROWS(config.setpoint_start_mow); i++)
     {
         key_mow = config.setpoint_start_mow[i];
-        key_temp = config.setpoint_temperaturex10[i];        
+        key_temp = config.setpoint_temperaturex10[i];   
+        key_mode = config.setpoint_mode[i];
+
         j = i - 1;
 
         while ((j >= 0) && (config.setpoint_start_mow[j] > key_mow))
         {
             config.setpoint_start_mow[j+1] = config.setpoint_start_mow[j];
-            config.setpoint_temperaturex10[j+1] = config.setpoint_temperaturex10[j];            
+            config.setpoint_temperaturex10[j+1] = config.setpoint_temperaturex10[j]; 
+            config.setpoint_mode[j+1] = config.setpoint_mode[j];            
             j = j - 1;
         }
 
         config.setpoint_start_mow[j+1] = key_mow;
-        config.setpoint_temperaturex10[j+1] = key_temp;            
+        config.setpoint_temperaturex10[j+1] = key_temp; 
+        config.setpoint_mode[j+1] = key_mode;             
     }
 
     // update the schedule grid

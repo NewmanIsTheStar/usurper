@@ -119,6 +119,7 @@ int update_trend_buffer(CLIMATE_DATAPOINT_T *sample, CLIMATE_DATAPOINT_T *previo
 
 // external variables
 extern uint32_t unix_time;
+extern WEB_VARIABLES_T web;
 
 // gobal variables
 CLIMATE_HISTORY_T climate_history;
@@ -148,7 +149,8 @@ int predicted_time_to_temperature(long int target_temperature)
         predicted_time_in_samples = 0;   // never or already there
     }
 
-    printf("CURRENT PREDICTion: temperature will reach %d in %d samples\n", target_temperature, predicted_time_in_samples);
+    printf("CURRENT PREDICTION: temperature will reach %d in %d samples\n", target_temperature, predicted_time_in_samples);
+    web.thermostat_temperature_prediction = predicted_time_in_samples;
 
     return(predicted_time_in_samples);
 }
@@ -209,6 +211,9 @@ int update_history_buffer(CLIMATE_DATAPOINT_T *sample)
     // increment index for history buffer
     climate_history.buffer_index  = (climate_history.buffer_index  + 1)%NUM_ROWS(climate_history.buffer);    
 
+    // update population for history buffer
+    if (climate_history.buffer_population < NUM_ROWS(climate_history.buffer)) climate_history.buffer_population++;  
+
     return(0);
 }
 
@@ -241,21 +246,25 @@ int update_trend_buffer(CLIMATE_DATAPOINT_T *sample, CLIMATE_DATAPOINT_T *previo
     // compute moving average and gradient
     climate_trend.moving_average.temperaturex10 = 0;
     gradient = 0;
-    for(i=0; i < climate_history.buffer_population; i++)
+    for(i=0; i < climate_trend.buffer_population; i++)
     {
         climate_trend.moving_average.temperaturex10 += climate_trend.sample_buffer[i].temperaturex10; 
         gradient += climate_trend.delta_buffer[i].temperaturex10;
     }
     climate_trend.moving_average.temperaturex10 = climate_trend.moving_average.temperaturex10/climate_trend.buffer_population;
-    climate_trend.gradient = gradient*100/climate_history.buffer_population;
+    climate_trend.gradient = gradient*100/climate_trend.buffer_population;
 
+    // update web interface
+    web.thermostat_temperature_moving_average = climate_trend.moving_average.temperaturex10;
+    web.thermostat_temperature_gradient = climate_trend.gradient;
+   
     // zero delta counters
     climate_trend.deltas[NEGATIVE_DELTA] = 0;
     climate_trend.deltas[POSITIVE_DELTA] = 0;
     climate_trend.deltas[SMALL_DELTA] = 0;
 
     // count deltas
-    for(i=0; i < climate_history.buffer_population; i++)
+    for(i=0; i < climate_trend.buffer_population; i++)
     {
         if (climate_trend.delta_buffer[i].temperaturex10 < 0) climate_trend.deltas[NEGATIVE_DELTA]++;
         if (climate_trend.delta_buffer[i].temperaturex10 > 0) climate_trend.deltas[POSITIVE_DELTA]++;

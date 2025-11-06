@@ -219,6 +219,9 @@ typedef struct WEB_VARIABLES
   int thermostat_temperature;       // current temperature
   int powerwall_grid_status;
   int powerwall_battery_percentage;
+  int thermostat_temperature_moving_average;
+  int thermostat_temperature_gradient;
+  int thermostat_temperature_prediction;
 } WEB_VARIABLES_T;                  //remember to add initialization code when adding to this structure !!!
 
 #endif

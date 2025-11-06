@@ -646,7 +646,10 @@ extern NON_VOL_VARIABLES_T config;
     x(ctrt6)     \
     x(ctrt7)     \
     x(tempth)    \
-    x(disbri)        
+    x(disbri)    \
+    x(ttma)      \
+    x(ttgrd)     \
+    x(ttpred)
 
   
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
@@ -2454,6 +2457,21 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             printed = snprintf(pcInsert, iInsertLen, "%d", config.thermostat_display_brightness);
         }
         break;
+        case SSI_ttma:  // thermostat temperature moving average
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", web.thermostat_temperature_moving_average);                           
+        }
+        break;
+        case SSI_ttgrd:  // thermostat temperature gradient
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", web.thermostat_temperature_gradient);                           
+        }
+        break;
+        case SSI_ttpred:  // thermostat temperature prediction (samples until target reached)
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%d", web.thermostat_temperature_prediction);                           
+        }
+        break;                
 #endif                                        
         default:
         {
