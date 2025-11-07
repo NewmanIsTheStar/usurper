@@ -33,9 +33,10 @@ typedef enum
     HEATING_AND_COOLING_OFF = 0,
     HEATING_IN_PROGRESS = 1,
     COOLING_IN_PROGRESS = 2,
-    DUCT_PURGE = 3,
-    THERMOSTAT_LOCKOUT = 4,
-    EXCESSIVE_OVERSHOOT = 5
+    FAN_ONLY_IN_PROGRESS = 3,
+    DUCT_PURGE = 4,
+    THERMOSTAT_LOCKOUT = 5,
+    EXCESSIVE_OVERSHOOT = 6
 } THERMOSTAT_STATE_T;         // operational state
 
 typedef enum
@@ -86,6 +87,7 @@ void enable_irq(bool state);
 void gpio_isr(uint gpio, uint32_t events);
 void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hvac_setpoint);
 int initialize_physical_buttons(int mode_button_gpio, int increase_button_gpio, int decrease_button_gpio);
+THERMOSTAT_MODE_T get_front_panel_mode(void);
 
 // thermostat_web_ui.c
 int get_free_schedule_row(void);
@@ -99,6 +101,7 @@ bool schedule_mode_valid(int mode);
 // thermostat_hvac.c
 int initialize_hvac_control(void);
 THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10);
+
 
 
 #endif

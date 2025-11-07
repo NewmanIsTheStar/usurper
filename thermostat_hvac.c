@@ -59,6 +59,7 @@ typedef enum
 // prototypes
 int set_hvac_gpio(THERMOSTAT_STATE_T thermostat_state);
 int hvac_timer_start(CLIMATE_TIMER_INDEX_T timer_index, int minutes);
+int hvac_timer_stop(CLIMATE_TIMER_INDEX_T timer_index);
 bool hvac_timer_expired(CLIMATE_TIMER_INDEX_T timer_index);
 void vTimerCallback(TimerHandle_t xTimer);
 int update_current_setpoints(THERMOSTAT_STATE_T last_active);
@@ -69,7 +70,8 @@ extern WEB_VARIABLES_T web;
 extern long int temperaturex10;
 
 // gloabl variables
-THERMOSTAT_MODE_T mode = HVAC_AUTO;                       // operation mode
+
+THERMOSTAT_MODE_T scheduled_mode = HVAC_AUTO;            // scheduled mode
 int setpointtemperaturex10 = 0;                          // scheduled setpoint
 int temporary_set_point_offsetx10 = 0;                   // temporary offset set using physical buttons
 CLIMATE_TIMERS_T climate_timers[NUM_HVAC_TIMERS];        // set of timers used to control state
@@ -83,7 +85,9 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
 {
     static THERMOSTAT_STATE_T thermostat_state = HEATING_AND_COOLING_OFF;
     static THERMOSTAT_STATE_T last_active = HEATING_AND_COOLING_OFF;
-    static THERMOSTAT_STATE_T next_active = HEATING_AND_COOLING_OFF;  
+    static THERMOSTAT_STATE_T next_active = HEATING_AND_COOLING_OFF; 
+    static THERMOSTAT_MODE_T effective_mode = HVAC_AUTO;  
+    THERMOSTAT_MODE_T front_panel_mode;
     TickType_t lockout_remaining_ticks = 0;  
     bool cooling_allowed = false;
     bool heating_allowed = false;
@@ -92,8 +96,31 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
     // determine current setpoints based on schedule, powerwall status and last cycle
     update_current_setpoints(last_active);
 
+    // determine effective mode
+    front_panel_mode = get_front_panel_mode();
+
+    if (front_panel_mode == HVAC_AUTO)
+    {
+        effective_mode = scheduled_mode;
+    }
+    else if (front_panel_mode != effective_mode)  
+    {
+        // user has set a new mode on the front panel
+        effective_mode = front_panel_mode;
+
+        // reset state machine to immediately process mode change
+        hvac_timer_stop(HVAC_LOCKOUT_TIMER);
+        hvac_timer_stop(HVAC_OVERSHOOT_TIMER);
+        thermostat_state = HEATING_AND_COOLING_OFF;
+        next_active =  HEATING_AND_COOLING_OFF;
+        last_active =  HEATING_AND_COOLING_OFF;    
+        
+        // reset hvac gpio
+        set_hvac_gpio(thermostat_state);
+    }
+
     // determine permitted operations
-    switch(mode)
+    switch(effective_mode)
     {
         default:
         case HVAC_OFF:
@@ -121,13 +148,14 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             heating_allowed = true;
             fan_allowed = true;
             break;        
-    }    
+    }   
 
     // update thermostat state
     switch(thermostat_state)
     {
     default:    
     case HEATING_AND_COOLING_OFF:
+    case FAN_ONLY_IN_PROGRESS:
         if (cooling_allowed & (temperaturex10 > (web.thermostat_cooling_set_point + config.thermostat_hysteresis)))
         {
             if (last_active != HEATING_IN_PROGRESS)
@@ -188,6 +216,11 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                 last_active =  HEATING_AND_COOLING_OFF;                                                      
             }                        
         }
+        else if ((effective_mode == HVAC_FAN_ONLY) && (thermostat_state != FAN_ONLY_IN_PROGRESS))
+        {           
+            set_hvac_gpio(FAN_ONLY_IN_PROGRESS);  
+            thermostat_state = FAN_ONLY_IN_PROGRESS;     
+        }        
         break;
     case HEATING_IN_PROGRESS:
         if (temperaturex10 > (web.thermostat_heating_set_point + config.thermostat_hysteresis))
@@ -347,6 +380,21 @@ int hvac_timer_start(CLIMATE_TIMER_INDEX_T timer_index, int minutes)
 }
 
 /*!
+ * \brief Stop timer
+ * 
+ * \return true if timer expired
+ */
+int hvac_timer_stop(CLIMATE_TIMER_INDEX_T timer_index)
+{
+    int err = 0;         
+ 
+    xTimerStart(climate_timers[HVAC_LOCKOUT_TIMER].timer_handle, 0);
+    climate_timers[timer_index].timer_expired = true;
+    
+    return(err);
+}
+
+/*!
  * \brief Check timer
  * 
  * \return true if timer expired
@@ -355,7 +403,7 @@ bool hvac_timer_expired(CLIMATE_TIMER_INDEX_T timer_index)
 {
     bool expired = false;          
  
-    expired = climate_timers[HVAC_LOCKOUT_TIMER].timer_expired;
+    expired = climate_timers[timer_index].timer_expired;
     
     return(expired);
 }
@@ -391,8 +439,14 @@ int set_hvac_gpio(THERMOSTAT_STATE_T thermostat_state)
             printf("Cooling on, Fan on and Heating off\n");
             gpio_put(config.heating_gpio, 0);
             gpio_put(config.cooling_gpio, 1);
-            gpio_put(config.fan_gpio, 1);      //TODO: it is conventional for the thermostat to turn on the fan when cooling -- add delay or make optional on modern equipment?
-            break;            
+            gpio_put(config.fan_gpio, 1);      // it is conventional for the thermostat to turn on the fan when cooling
+            break;                 
+        case FAN_ONLY_IN_PROGRESS:
+            printf("Fan on, Cooling and Heating off\n");
+            gpio_put(config.heating_gpio, 0);
+            gpio_put(config.cooling_gpio, 0);
+            gpio_put(config.fan_gpio, 1);      // air circulation only
+            break;                    
         case DUCT_PURGE:
             printf("Heating and Cooling off and Fan on\n");
             gpio_put(config.heating_gpio, 0);
@@ -516,10 +570,8 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
         }
 
         setpointtemperaturex10 = candidate_temperature;
+        scheduled_mode = candidate_mode;
     }
-
-    //TODO -- decide if shceudled mode should override what user set on front panel **************************!!!!!!!!!!!
-    //OFF should stay off, what about other modes?
 
     // check if we've entered a new schedule period
     if (current_start_mow != candidate_start_mow)

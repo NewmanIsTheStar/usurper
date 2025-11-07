@@ -57,11 +57,12 @@ typedef enum
 // external variables
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
-extern THERMOSTAT_MODE_T mode;
 extern int setpointtemperaturex10;
 extern int temporary_set_point_offsetx10;
 
 // global variables
+THERMOSTAT_MODE_T front_panel_mode = HVAC_AUTO;
+TickType_t front_panel_mode_change_tick = 0;
 QueueHandle_t irq_queue = NULL;
 uint8_t passed_value;
 
@@ -113,15 +114,17 @@ bool handle_button_press_with_timeout(TickType_t timeout)
 
         if (gpio_get(config.thermostat_mode_button_gpio) == false)
         {                
-            mode++;
-            if (mode >= NUM_HVAC_MODES) mode = HVAC_AUTO;
+            front_panel_mode++;
+            if (front_panel_mode >= NUM_HVAC_MODES) front_panel_mode = HVAC_AUTO;
 
-            printf("MODE Button pressed. Mode = %d\n", mode);                
+            front_panel_mode_change_tick = xTaskGetTickCount();
+
+            printf("MODE Button pressed. Mode = %d\n", front_panel_mode);                
         }
 
         // update display
-        hvac_update_display(web.thermostat_temperature, mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
-        printf("TEMP = %d SETPOINT = %d (%d + %d) MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, setpointtemperaturex10, temporary_set_point_offsetx10,mode);
+        hvac_update_display(web.thermostat_temperature, front_panel_mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
+        printf("TEMP = %d SETPOINT = %d (%d + %d) MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, setpointtemperaturex10, temporary_set_point_offsetx10, front_panel_mode);
 
         // deal with continual spurious interrupts or stuck button holding us in this loop forever
         if (--max_iterations <=0) break;
@@ -276,4 +279,19 @@ int initialize_physical_buttons(int mode_button_gpio, int increase_button_gpio, 
     enable_irq(true);
 
     return(0);
+}
+
+THERMOSTAT_MODE_T get_front_panel_mode(void)
+{
+    static THERMOSTAT_MODE_T stable_mode = HVAC_AUTO;
+    TickType_t now_tick = 0;
+
+    now_tick = xTaskGetTickCount();
+
+    if ((stable_mode != front_panel_mode) && ((now_tick - front_panel_mode_change_tick) > 5000))
+    {
+        stable_mode = front_panel_mode;
+    } 
+   
+    return (stable_mode);
 }
