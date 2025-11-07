@@ -401,12 +401,12 @@ void sanatize_schedule_temperatures(void)
  * 
  * \return nothing
  */
-bool schedule_setpoint_valid(int temperaturex10, int mow)
+bool schedule_setpoint_valid(int temperaturex10, int mow, THERMOSTAT_MODE_T mode)
 {
     bool valid = false;
 
 
-    if ((mow >= 0) && (mow < 60*24*7))
+    if (schedule_mow_valid(mow) && schedule_mode_valid(mode))
     {
         if (config.use_archaic_units)
         {
@@ -423,6 +423,50 @@ bool schedule_setpoint_valid(int temperaturex10, int mow)
             }
         }
 
+    }
+
+    return(valid);
+}
+
+/*!
+ * \brief check if schedule minute of week is valid
+ * 
+ * \return nothing
+ */
+bool schedule_mow_valid(int mow)
+{
+    bool valid = false; 
+
+     if ((mow >= 0) && (mow < 60*24*7))
+     {
+        valid = true;
+     }
+
+     return(valid);
+}
+
+/*!
+ * \brief check if schedule mode is valid
+ * 
+ * \return nothing
+ */
+bool schedule_mode_valid(int mode)
+{
+    bool valid = false; 
+
+    switch(mode)
+    {
+    case HVAC_AUTO:
+    case HVAC_OFF:
+    case HVAC_HEATING_ONLY:
+    case HVAC_COOLING_ONLY:
+    case HVAC_FAN_ONLY:
+    case NUM_HVAC_MODES:
+        valid = true;
+        break;
+    default:
+        valid = false;
+        break;
     }
 
     return(valid);

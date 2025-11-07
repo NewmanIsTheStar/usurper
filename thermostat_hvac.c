@@ -89,7 +89,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
     bool heating_allowed = false;
     bool fan_allowed = false;     
 
-    // determine current setpoints based on schedule and powerwall status
+    // determine current setpoints based on schedule, powerwall status and last cycle
     update_current_setpoints(last_active);
 
     // determine permitted operations
@@ -486,12 +486,12 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     int mow;
     int candidate_start_mow = 0;
     int candidate_temperature = 0;
+    THERMOSTAT_MODE_T candidate_mode = HVAC_AUTO;
+    int candidate_delta = 0;
     static bool cooling_disabled = false;
     static bool heating_disabled = false;
     static int current_start_mow = 0;
-    int wtf = 0;
-
-    wtf = setpointtemperaturex10;
+    int delta = 10079;  // number of minutes in a week
 
     // get setpoint according to schedule
     if (!get_mow_local_tz(&mow))
@@ -499,10 +499,19 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
         for(i=0; i < NUM_ROWS(config.setpoint_temperaturex10); i++)
         {
             
-            if (schedule_setpoint_valid(config.setpoint_temperaturex10[i], config.setpoint_start_mow[i]))
+            if (schedule_setpoint_valid(config.setpoint_temperaturex10[i], config.setpoint_start_mow[i], config.setpoint_mode[i]))
             {
-                candidate_temperature = config.setpoint_temperaturex10[i];
-                candidate_start_mow = config.setpoint_start_mow[i];
+
+                candidate_delta = mow_future_delta(config.setpoint_start_mow[i], mow);
+
+                if (candidate_delta < delta)
+                {
+                    delta = candidate_delta;
+
+                    candidate_temperature = config.setpoint_temperaturex10[i];
+                    candidate_start_mow = config.setpoint_start_mow[i];
+                    candidate_mode = config.setpoint_mode[i];
+                }
             }
         }
 
@@ -547,11 +556,11 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     // bias set points to avoid overlapping heating and cooling targets 
     if (last_active == HEATING_IN_PROGRESS)
     {
-        // increase cooling setpoint since we have recently run a heating cycle
+        // increase cooling setpoint since we last ran a heating cycle
         web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
     } else if (last_active == COOLING_IN_PROGRESS)
     {
-         // decrease heating setpoint since we have recently run a cooling cycle
+         // decrease heating setpoint since we last ran a cooling cycle
          web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis);       
     }
 
@@ -562,6 +571,22 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
         // grid down setpoint adjustments -- relax setpoints when grid down
         web.thermostat_heating_set_point -= config.grid_down_heating_setpoint_decrease;
         web.thermostat_cooling_set_point += config.grid_down_cooling_setpoint_increase;
+
+        // sanitize user configured battery levels
+        CLIP(config.grid_down_cooling_disable_battery_level, 300, 950);   // 30% - 95%
+        CLIP(config.grid_down_heating_disable_battery_level, 300, 950);   // 30% - 95%
+        CLIP(config.grid_down_cooling_enable_battery_level,  350, 1000);  // 35% - 100%
+        CLIP(config.grid_down_heating_enable_battery_level,  350, 1000);  // 35% - 100%
+
+        if (config.grid_down_cooling_disable_battery_level >= config.grid_down_cooling_enable_battery_level)
+        {
+            config.grid_down_cooling_disable_battery_level = config.grid_down_cooling_enable_battery_level - 50;
+        }
+
+        if (config.grid_down_heating_disable_battery_level >= config.grid_down_heating_enable_battery_level)
+        {
+            config.grid_down_heating_disable_battery_level = config.grid_down_heating_enable_battery_level - 50;
+        }        
 
         // disable cooling if battery level too low -- keep disabled until satisfactory level reached
         if ((web.powerwall_battery_percentage < config.grid_down_cooling_disable_battery_level) || cooling_disabled)
@@ -577,7 +602,6 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
             heating_disabled = true;
         }
 
-        //TODO -- add some hysteresis before turning back on
         // enable cooling if battery level satisfactory
         if ((web.powerwall_battery_percentage > config.grid_down_cooling_enable_battery_level))
         {

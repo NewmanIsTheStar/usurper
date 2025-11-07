@@ -2486,7 +2486,7 @@ const char * cgi_thermostat_period_add_handler(int iIndex, int iNumParams, char 
 
     for(i=0; i < NUM_ROWS(config.setpoint_start_mow); i++)
     {
-        if (config.setpoint_start_mow[i] < 0)
+        if (config.setpoint_start_mow[i] < 0)  // TODO: should we use the setpoint valid function? slower
         {
             web.thermostat_period_row = i;
             config.setpoint_start_mow[i] = web.thermostat_day*24*60;
@@ -2498,6 +2498,7 @@ const char * cgi_thermostat_period_add_handler(int iIndex, int iNumParams, char 
             {
                 config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;
             }
+            config.setpoint_mode[i] = HVAC_AUTO;
             next_page = "/tp_edit.shtml";
             break;
         }
