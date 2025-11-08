@@ -620,7 +620,7 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
         setpoint_bias = SETPOINT_BIAS_HEATING;
         break;
     case COOLING_IN_PROGRESS:
-        setpoint_bias = SETPOINT_BIAS_HEATING;
+        setpoint_bias = SETPOINT_BIAS_COOLING;
         break; 
     default:
         break;       
