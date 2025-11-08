@@ -23,7 +23,7 @@
 
 #define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 //#define DISABLE_CONFIG_VALIDATION (1)
-
+#define DISABLE_CONFIG_UPGRADE (1)
 
 int config_validate(void);
 void config_v1_to_v2(void);
@@ -298,11 +298,11 @@ void config_v5_to_v6(void)
     config.heating_gpio = -1;
     config.cooling_gpio = -1;
     config.fan_gpio = -1;
-    config.heating_to_cooling_lockout_mins = 1;
-    config.minimum_heating_on_mins = 1;
-    config.minimum_cooling_on_mins = 1;
-    config.minimum_heating_off_mins = 1;
-    config.minimum_cooling_off_mins = 1;
+    config.heating_to_cooling_lockout_mins = 10;
+    config.minimum_heating_on_mins = 5;
+    config.minimum_cooling_on_mins = 5;
+    config.minimum_heating_off_mins = 5;
+    config.minimum_cooling_off_mins = 5;
     config.thermostat_mode = 0;
     config.max_cycles_per_hour = 6;
 
@@ -343,13 +343,13 @@ void config_v6_to_v7(void)
     printf("Converting configuration from version 6 to version 7\n"); 
     config.version = 7;     
 
-    config.thermostat_mode_button_gpio = GP_UNINITIALIZED;
-    config.thermostat_increase_button_gpio = GP_UNINITIALIZED;
-    config.thermostat_decrease_button_gpio = GP_UNINITIALIZED;
-    config.thermostat_temperature_sensor_clock_gpio = GP_UNINITIALIZED;
-    config.thermostat_temperature_sensor_data_gpio = GP_UNINITIALIZED;
-    config.thermostat_seven_segment_display_clock_gpio = GP_UNINITIALIZED;
-    config.thermostat_seven_segment_display_data_gpio = GP_UNINITIALIZED;   
+    config.thermostat_mode_button_gpio = -1;
+    config.thermostat_increase_button_gpio = -1;
+    config.thermostat_decrease_button_gpio = -1;
+    config.thermostat_temperature_sensor_clock_gpio = -1;
+    config.thermostat_temperature_sensor_data_gpio = -1;
+    config.thermostat_seven_segment_display_clock_gpio = -1;
+    config.thermostat_seven_segment_display_data_gpio = -1;   
     
     // TEST TEST TEST
     // config.thermostat_mode_button_gpio = 22;
@@ -555,6 +555,7 @@ int config_validate(void)
         }
     }
 
+#ifndef DISABLE_CONFIG_UPGRADE    
     // upgrade configuration sequentially to latest version 
     for(i=0; i < NUM_ROWS(config_info); i++)
     {
@@ -563,6 +564,18 @@ int config_validate(void)
             config_info[i].upgrade_function();
         }
     }
+#else
+    if (latest_valid_config_version < config_info[i].version)
+    {
+        for (;;)
+        {
+            printf("BAD CONFIG!\n");
+            flash_dump();
+
+            SLEEP_MS(10000);
+        }
+    }
+#endif
 
     return(err);
 }
