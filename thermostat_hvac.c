@@ -51,10 +51,17 @@ typedef struct
 
 typedef enum
 {
-    HVAC_LOCKOUT_TIMER = 0,
+    HVAC_LOCKOUT_TIMER   = 0,
     HVAC_OVERSHOOT_TIMER = 1,   
-    NUM_HVAC_TIMERS   = 2
+    NUM_HVAC_TIMERS      = 2
 } CLIMATE_TIMER_INDEX_T;
+
+typedef enum
+{
+    SETPOINT_BIAS_UNDEFINED = 0,
+    SETPOINT_BIAS_HEATING   = 1,   
+    SETPOINT_BIAS_COOLING   = 2
+} SETPOINT_BIAS_T;
 
 // prototypes
 int set_hvac_gpio(THERMOSTAT_STATE_T thermostat_state);
@@ -62,12 +69,12 @@ int hvac_timer_start(CLIMATE_TIMER_INDEX_T timer_index, int minutes);
 int hvac_timer_stop(CLIMATE_TIMER_INDEX_T timer_index);
 bool hvac_timer_expired(CLIMATE_TIMER_INDEX_T timer_index);
 void vTimerCallback(TimerHandle_t xTimer);
-int update_current_setpoints(THERMOSTAT_STATE_T last_active);
+int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperaturex10);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
-extern long int temperaturex10;
+//extern long int temperaturex10;
 
 // gloabl variables
 
@@ -94,7 +101,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
     bool fan_allowed = false;     
 
     // determine current setpoints based on schedule, powerwall status and last cycle
-    update_current_setpoints(last_active);
+    update_current_setpoints(last_active, temperaturex10);
 
     // determine effective mode
     front_panel_mode = get_front_panel_mode();
@@ -534,8 +541,9 @@ void vTimerCallback(TimerHandle_t xTimer)
  * 
  * \return nothing
  */
-int update_current_setpoints(THERMOSTAT_STATE_T last_active)
+int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperaturex10)
 {
+    static SETPOINT_BIAS_T setpoint_bias = SETPOINT_BIAS_UNDEFINED;
     int i;
     int mow;
     int candidate_start_mow = 0;
@@ -605,15 +613,41 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active)
     web.thermostat_heating_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;;
     web.thermostat_cooling_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;;
 
-    // bias set points to avoid overlapping heating and cooling targets 
-    if (last_active == HEATING_IN_PROGRESS)
+    // adjust setpoint bias based on last heating or cooling cycle run
+    switch(last_active)
     {
+    case HEATING_IN_PROGRESS:
+        setpoint_bias = SETPOINT_BIAS_HEATING;
+        break;
+    case COOLING_IN_PROGRESS:
+        setpoint_bias = SETPOINT_BIAS_HEATING;
+        break; 
+    default:
+        break;       
+    }
+    
+    // bias set points to avoid overlapping heating and cooling targets     
+    switch(setpoint_bias)
+    {
+    case SETPOINT_BIAS_HEATING:
         // increase cooling setpoint since we last ran a heating cycle
         web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
-    } else if (last_active == COOLING_IN_PROGRESS)
-    {
+        break;
+    case SETPOINT_BIAS_COOLING:
          // decrease heating setpoint since we last ran a cooling cycle
-         web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis);       
+         web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis); 
+    case SETPOINT_BIAS_UNDEFINED:
+        if (temperaturex10 < web.thermostat_set_point)
+        {
+            // increase cooling setpoint since we will likely run a heating cycle next
+            web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
+        }
+        else
+        {
+            // decrease heating setpoint since we assume we will run a cooling cycle next
+            web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis);         
+        }
+        break;    
     }
 
     // adjust setpoint according to powerwall status
