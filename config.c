@@ -355,8 +355,8 @@ void config_v6_to_v7(void)
     // config.thermostat_mode_button_gpio = 22;
     // config.thermostat_increase_button_gpio = 16;
     // config.thermostat_decrease_button_gpio = 17;
-    // config.thermostat_temperature_sensor_data_gpio = 14;
-    // config.thermostat_temperature_sensor_clock_gpio = 15;
+    // config.thermostat_temperature_sensor_data_gpio = 10;
+    // config.thermostat_temperature_sensor_clock_gpio = 11;
     // config.thermostat_seven_segment_display_clock_gpio = 13;
     // config.thermostat_seven_segment_display_data_gpio = 12;      
 

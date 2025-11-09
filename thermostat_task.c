@@ -49,6 +49,11 @@ extern uint32_t unix_time;
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
 
+// global variables
+
+
+// prototype
+int validate_gpio_set(void);
 
 /*!
  * \brief Monitor weather and control relay based on conditions and schedule
@@ -60,6 +65,7 @@ extern WEB_VARIABLES_T web;
 void thermostat_task(void *params)
 {
     int ath10_error = 0;
+    int tm1637_error = 0;
     int i2c_bytes_written = 0;
     int i2c_bytes_read = 0;
     bool aht10_initialized = false;
@@ -90,8 +96,6 @@ void thermostat_task(void *params)
     
     web.powerwall_grid_status = GRID_UNKNOWN;
 
-    
-    //config.thermostat_hysteresis = 5; 
 
     // make sure safeguards are valid to prevent short cycling
     CLIP(config.heating_to_cooling_lockout_mins, 1, 60);
@@ -103,6 +107,7 @@ void thermostat_task(void *params)
 
  
     printf("thermostat_task started!\n");
+    validate_gpio_set();
 
     // initialize data structures for climate metrics
     initialize_climate_metrics();
@@ -120,19 +125,24 @@ void thermostat_task(void *params)
     initialize_physical_buttons(config.thermostat_mode_button_gpio, config.thermostat_increase_button_gpio, config.thermostat_decrease_button_gpio);
     
     while (true)
-    {        
+    {
         if ((config.personality == HVAC_THERMOSTAT))  // TODO should this be config.thermostat_enable ?
         {
+            validate_gpio_set();
+
+            //tm1637_error = 0;
+
             if (!tm1637_initialized)
             {
-                tm1637_init(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
-                tm1637_set_brightness(config.thermostat_display_brightness); 
-                tm1637_display_word("BOOT", false);
+                tm1637_error = dispay_initialize(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
                 
-                tm1637_initialized = true;               
+                if (!tm1637_error)
+                {
+                    tm1637_initialized = true;             
+                }                              
             }
             
-            ath10_error = 0;
+            //ath10_error = 0;
 
             if (!aht10_initialized)
             {
@@ -174,7 +184,7 @@ void thermostat_task(void *params)
                 // update web ui
                 web.thermostat_temperature = temperaturex10;
             }
-
+            
             // check powerwall status
             powerwall_check();
 
@@ -193,6 +203,108 @@ void thermostat_task(void *params)
         watchdog_pulse((int *)params);               
     }
 }
+
+/*!
+ * \brief Validate set of GPIOs
+ *
+ * \param params max_set
+ * 
+ * \return nothing
+ */
+int validate_gpio_set(void)
+{
+    int gpio_list[10];
+    bool relay_gpio_valid = false;
+    bool ath10_gpio_valid = false;
+    bool display_gpio_valid = false;
+    bool button_gpio_valid = false;    
+
+    // relays
+    gpio_list[0] = config.cooling_gpio;
+    gpio_list[1] = config.heating_gpio;
+    gpio_list[2] = config.fan_gpio;
+
+    // temperature sensor
+    gpio_list[3] = config.thermostat_temperature_sensor_clock_gpio;
+    gpio_list[4] = config.thermostat_temperature_sensor_data_gpio;
+
+    // display
+    gpio_list[5] = config.thermostat_seven_segment_display_clock_gpio;
+    gpio_list[6] = config.thermostat_seven_segment_display_data_gpio;
+
+    // front panel buttons
+    gpio_list[7] = config.thermostat_increase_button_gpio;
+    gpio_list[8] = config.thermostat_decrease_button_gpio;
+    gpio_list[9] = config.thermostat_mode_button_gpio;
+
+    // check for gpio conflicts
+    if (!gpio_conflict(gpio_list, 10))
+    {
+        // no conflicts
+        relay_gpio_valid = true;
+        ath10_gpio_valid = true;
+        display_gpio_valid = true;
+        button_gpio_valid = true;
+    }
+    else
+    {
+        // conflicts found
+        relay_gpio_valid = false;
+        ath10_gpio_valid = false;
+        display_gpio_valid = false;
+        button_gpio_valid = false;
+
+        // incrementally expand list to find non-conflicting functions
+        if (gpio_conflict(gpio_list, 3))
+        {
+            relay_gpio_valid = true;
+        } 
+
+        if (gpio_conflict(gpio_list, 5))
+        {
+            ath10_gpio_valid = true;
+        }   
+        
+        if (gpio_conflict(gpio_list, 7))
+        {
+            display_gpio_valid = true;
+        }  
+        
+        if (gpio_conflict(gpio_list, 10))
+        {
+            button_gpio_valid = true;
+        }         
+    }
+
+    // check gpios are valid
+    if (!gpio_valid(config.cooling_gpio) || !gpio_valid(config.heating_gpio) || !gpio_valid(config.fan_gpio))
+    {
+        relay_gpio_valid = false;
+    }
+    if (!gpio_valid(config.thermostat_temperature_sensor_clock_gpio) || !gpio_valid(config.thermostat_temperature_sensor_data_gpio))
+    {
+        ath10_gpio_valid = false;
+    }
+
+    if (!gpio_valid(config.thermostat_seven_segment_display_clock_gpio) || !gpio_valid(config.thermostat_seven_segment_display_data_gpio))
+    {
+        display_gpio_valid = false;
+    }
+
+    if (!gpio_valid(config.thermostat_increase_button_gpio) || !gpio_valid(config.thermostat_decrease_button_gpio) || !gpio_valid(config.thermostat_mode_button_gpio))
+    {
+        relay_gpio_valid = false;
+    }    
+
+    // tell modules if they can use gpio
+    relay_gpio_enable(relay_gpio_valid);
+    ath10_gpio_enable(ath10_gpio_valid);
+    display_gpio_enable(display_gpio_valid);
+    button_gpio_enable(button_gpio_valid);
+
+    return(0);
+}
+
 
 
 

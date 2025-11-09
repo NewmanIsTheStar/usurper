@@ -80,6 +80,7 @@ int predicted_time_to_temperature(long int target_temperature);
 // thermostat_aht10.c
 int aht10_initialize(int clock_gpio, int data_gpio);
 int aht10_measurement(long int *temperaturex10, long int *humidityx10);
+int ath10_gpio_enable(bool enable);
 
 // thermostat_physcial_ui.c
 bool handle_button_press_with_timeout(TickType_t timeout);
@@ -88,6 +89,9 @@ void gpio_isr(uint gpio, uint32_t events);
 void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hvac_setpoint);
 int initialize_physical_buttons(int mode_button_gpio, int increase_button_gpio, int decrease_button_gpio);
 THERMOSTAT_MODE_T get_front_panel_mode(void);
+int dispay_initialize(int clock_gpio, int data_gpio);
+int display_gpio_enable(bool enable);
+int button_gpio_enable(bool enable);
 
 // thermostat_web_ui.c
 int get_free_schedule_row(void);
@@ -101,6 +105,7 @@ bool schedule_mode_valid(int mode);
 // thermostat_hvac.c
 int initialize_hvac_control(void);
 THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10);
+int relay_gpio_enable(bool enable);
 
 
 

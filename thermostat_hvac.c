@@ -77,11 +77,11 @@ extern WEB_VARIABLES_T web;
 //extern long int temperaturex10;
 
 // gloabl variables
-
 THERMOSTAT_MODE_T scheduled_mode = HVAC_AUTO;            // scheduled mode
 int setpointtemperaturex10 = 0;                          // scheduled setpoint
 int temporary_set_point_offsetx10 = 0;                   // temporary offset set using physical buttons
 CLIMATE_TIMERS_T climate_timers[NUM_HVAC_TIMERS];        // set of timers used to control state
+bool relay_gpio_ok = false;                              // ok to use configured gpio
 
 /*!
  * \brief Open or close relay based on schedule and climate conditions
@@ -424,8 +424,9 @@ int set_hvac_gpio(THERMOSTAT_STATE_T thermostat_state)
 {
     int err = 0;
 
-    // set the gpio output connected to the relay
-    if (config.thermostat_enable && gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
+    // set the gpio output connected to the relay    
+    //if (config.thermostat_enable && gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
+    if (config.thermostat_enable && relay_gpio_ok)
     {
         switch (thermostat_state)
         {
@@ -630,21 +631,18 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
     switch(setpoint_bias)
     {
     case SETPOINT_BIAS_HEATING:
-        // increase cooling setpoint since we last ran a heating cycle
         web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
         break;
     case SETPOINT_BIAS_COOLING:
-         // decrease heating setpoint since we last ran a cooling cycle
          web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis); 
+         break;
     case SETPOINT_BIAS_UNDEFINED:
         if (temperaturex10 < web.thermostat_set_point)
         {
-            // increase cooling setpoint since we will likely run a heating cycle next
             web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
         }
         else
         {
-            // decrease heating setpoint since we assume we will run a cooling cycle next
             web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis);         
         }
         break;    
@@ -712,4 +710,9 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
     }
 
     return(setpointtemperaturex10);
+}
+
+int relay_gpio_enable(bool enable)
+{
+    relay_gpio_ok = enable;
 }

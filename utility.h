@@ -33,5 +33,6 @@ int test_http(int on);
 int print_printable_text(char *contaminated_string);
 int indent(int num_spaces);  
 bool gpio_valid(int gpio_number);
+bool gpio_conflict(int *gpio_list, int len);
 
 #endif

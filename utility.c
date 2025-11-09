@@ -704,7 +704,33 @@ bool gpio_valid(int gpio_number)
     return(valid);
 }
 
+/*!
+ * \brief Check for GPIO conflict
+ * 
+ * \return true if valid
+ */
+bool gpio_conflict(int *gpio_list, int len)
+{
+    int x,y;
+    bool conflict = false;
 
+    for (x=0; x++; x<len)
+    {
+        for(y=0; y++; y<len)
+        {
+            if (x != y)
+            {
+                if (gpio_valid(gpio_list[x]) && (gpio_list[x] == gpio_list[y]))
+                {
+                    conflict = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    return(conflict);
+}
 
 /*!
  * \brief Replace plus with space in string
