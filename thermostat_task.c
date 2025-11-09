@@ -281,6 +281,7 @@ int validate_gpio_set(void)
     {
         relay_gpio_valid = false;
     }
+
     if (!gpio_valid(config.thermostat_temperature_sensor_clock_gpio) || !gpio_valid(config.thermostat_temperature_sensor_data_gpio))
     {
         ath10_gpio_valid = false;
@@ -296,7 +297,7 @@ int validate_gpio_set(void)
         relay_gpio_valid = false;
     }    
 
-    // tell modules if they can use gpio
+    // tell modules they can use gpio
     relay_gpio_enable(relay_gpio_valid);
     ath10_gpio_enable(ath10_gpio_valid);
     display_gpio_enable(display_gpio_valid);

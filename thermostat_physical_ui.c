@@ -273,25 +273,36 @@ void gpio_isr(uint gpio, uint32_t events)
 
 int initialize_physical_buttons(int mode_button_gpio, int increase_button_gpio, int decrease_button_gpio)
 {
-    // configure gpio for front panel push buttons
-    gpio_init(config.thermostat_mode_button_gpio);
-    gpio_set_dir(config.thermostat_mode_button_gpio, false);    
-    gpio_pull_up(config.thermostat_mode_button_gpio);
+    int err = 0;
 
-    gpio_init(config.thermostat_increase_button_gpio);
-    gpio_set_dir(config.thermostat_increase_button_gpio, false);    
-    gpio_pull_up(config.thermostat_increase_button_gpio);
+    if (button_gpio_enable)
+    {
+        // configure gpio for front panel push buttons
+        gpio_init(config.thermostat_mode_button_gpio);
+        gpio_set_dir(config.thermostat_mode_button_gpio, false);    
+        gpio_pull_up(config.thermostat_mode_button_gpio);
 
-    gpio_init(config.thermostat_decrease_button_gpio);
-    gpio_set_dir(config.thermostat_decrease_button_gpio, false);    
-    gpio_pull_up(config.thermostat_decrease_button_gpio);    
+        gpio_init(config.thermostat_increase_button_gpio);
+        gpio_set_dir(config.thermostat_increase_button_gpio, false);    
+        gpio_pull_up(config.thermostat_increase_button_gpio);
 
-    // create queue for to pass interrupt messages to task
-    irq_queue = xQueueCreate(1, sizeof(uint8_t));
+        gpio_init(config.thermostat_decrease_button_gpio);
+        gpio_set_dir(config.thermostat_decrease_button_gpio, false);    
+        gpio_pull_up(config.thermostat_decrease_button_gpio);    
 
-    enable_irq(true);
+        // create queue for to pass interrupt messages to task
+        irq_queue = xQueueCreate(1, sizeof(uint8_t));
 
-    return(0);
+        enable_irq(true);
+
+        err = 0;
+    }
+    else
+    {
+        err = 1;
+    }
+
+    return(err);
 }
 
 THERMOSTAT_MODE_T get_front_panel_mode(void)

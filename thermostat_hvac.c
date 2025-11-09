@@ -501,40 +501,63 @@ void vTimerCallback(TimerHandle_t xTimer)
 
  int initialize_hvac_control(void)
 {
+    int err = 0;
     int i;
 
-    // create hvac timers
-    for (i=0; i < NUM_HVAC_TIMERS; i++)
+    if (relay_gpio_enable)
     {
-        climate_timers[i].timer_handle = xTimerCreate("Timer", 1000, pdFALSE, (void *)i, vTimerCallback);  
-
-        printf("Created timer with handle = %p\n", climate_timers[i].timer_handle);
-    }
-
-    // check hvac gpios are valid
-    if (gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
-    {    
-        // check hvac gpios are unique
-        if ((config.heating_gpio != config.cooling_gpio) &&
-            (config.heating_gpio != config.fan_gpio) &&
-            (config.cooling_gpio != config.fan_gpio))
+        // create hvac timers
+        for (i=0; i < NUM_HVAC_TIMERS; i++)
         {
-            //initialize hvac gpios
-            gpio_init(config.heating_gpio);
-            gpio_put(config.heating_gpio, 0);
-            gpio_set_dir(config.heating_gpio, true);
+            climate_timers[i].timer_handle = xTimerCreate("Timer", 1000, pdFALSE, (void *)i, vTimerCallback);  
 
-            gpio_init(config.cooling_gpio);
-            gpio_put(config.cooling_gpio, 0);
-            gpio_set_dir(config.cooling_gpio, true);  
-            
-            gpio_init(config.fan_gpio);
-            gpio_put(config.fan_gpio, 0);
-            gpio_set_dir(config.fan_gpio, true);
-        }  
+            printf("Created timer with handle = %p\n", climate_timers[i].timer_handle);
+        }
+
+        //initialize hvac gpios
+        gpio_init(config.heating_gpio);
+        gpio_put(config.heating_gpio, 0);
+        gpio_set_dir(config.heating_gpio, true);
+
+        gpio_init(config.cooling_gpio);
+        gpio_put(config.cooling_gpio, 0);
+        gpio_set_dir(config.cooling_gpio, true);  
+        
+        gpio_init(config.fan_gpio);
+        gpio_put(config.fan_gpio, 0);
+        gpio_set_dir(config.fan_gpio, true);
+
+        err = 0;
+
+        // // check hvac gpios are valid
+        // if (gpio_valid(config.heating_gpio) && gpio_valid(config.cooling_gpio) && gpio_valid(config.fan_gpio))
+        // {    
+        //     // check hvac gpios are unique
+        //     if ((config.heating_gpio != config.cooling_gpio) &&
+        //         (config.heating_gpio != config.fan_gpio) &&
+        //         (config.cooling_gpio != config.fan_gpio))
+        //     {
+        //         //initialize hvac gpios
+        //         gpio_init(config.heating_gpio);
+        //         gpio_put(config.heating_gpio, 0);
+        //         gpio_set_dir(config.heating_gpio, true);
+
+        //         gpio_init(config.cooling_gpio);
+        //         gpio_put(config.cooling_gpio, 0);
+        //         gpio_set_dir(config.cooling_gpio, true);  
+                
+        //         gpio_init(config.fan_gpio);
+        //         gpio_put(config.fan_gpio, 0);
+        //         gpio_set_dir(config.fan_gpio, true);
+        //     }  
+        // }
+    }
+    else
+    {
+        err = 1;
     }
 
-    return(0);
+    return(err);
 }
 
 /*!
