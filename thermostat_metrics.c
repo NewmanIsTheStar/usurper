@@ -109,9 +109,9 @@ typedef struct
     bool measurement_in_progress[NUM_MOMENTUMS];
     TickType_t extrema_delay[NUM_MOMENTUMS]; 
     long int extrema_temperature[NUM_MOMENTUMS];
-    TickType_t momentum_delay[NUM_MOMENTUMS];    
-    long int  momentum_temperature_delta[NUM_MOMENTUMS];    
-} CLIMATE_MOMENTUM_DATA_T;
+    TickType_t lag_delay[NUM_MOMENTUMS];    
+    long int  lag_temperature_delta[NUM_MOMENTUMS];    
+} CLIMATE_LAG_DATA_T;
 
 // prototypes
 int update_history_buffer(CLIMATE_DATAPOINT_T *sample);
@@ -123,7 +123,7 @@ extern WEB_VARIABLES_T web;
 
 // gobal variables
 CLIMATE_HISTORY_T climate_history;
-CLIMATE_MOMENTUM_DATA_T climate_momentum;
+CLIMATE_LAG_DATA_T climate_lag;
 CLIMATE_TREND_T climate_trend;
 
 
@@ -163,7 +163,7 @@ int predicted_time_to_temperature(long int target_temperature)
 int initialize_climate_metrics(void)
 {
     memset(&climate_history, 0, sizeof(climate_history));
-    memset(&climate_momentum, 0, sizeof(climate_momentum));
+    memset(&climate_lag, 0, sizeof(climate_lag));
     memset(&climate_trend, 0, sizeof(climate_trend));
     climate_trend.trend_up_max   = -500;   // -50.0  Celcius
     climate_trend.trend_down_min = -1500;  // +150.0 Celcius
@@ -176,22 +176,31 @@ int initialize_climate_metrics(void)
  * 
  * \return 0
  */
-int accumlate_metrics(CLIMATE_DATAPOINT_T *sample)
+    ;   // TODO: should be using time_t
+    ;
+    ;
+int accumlate_metrics(uint32_t unix_time, long int temperaturex10, long int humidityx10)
 {
-    int i;
-    int gradient = 0;
-    long int previous_temperaturex10 = 0;
-    long int previous_humidityx10 = 0;
+    // int i;
+    // int gradient = 0;
+    // long int previous_temperaturex10 = 0;
+    // long int previous_humidityx10 = 0;
+    CLIMATE_DATAPOINT_T new_sample;    
     CLIMATE_DATAPOINT_T previous_sample;
+
+    // create sample
+    new_sample.unix_time = unix_time;
+    new_sample.temperaturex10 = temperaturex10;
+    new_sample.humidityx10 = humidityx10;
 
     // remember previous sample *before* updating history buffer
     previous_sample = climate_history.buffer[(climate_history.buffer_index + NUM_ROWS(climate_history.buffer) - 1)%NUM_ROWS(climate_history.buffer)];
 
     // add new temperature and humidity to history buffer
-    update_history_buffer(sample);
+    update_history_buffer(&new_sample);
 
     // add new temperature and humidity to trend buffer
-    update_trend_buffer(sample, &previous_sample);
+    update_trend_buffer(&new_sample, &previous_sample);
 
     return(0);
 }
@@ -334,13 +343,13 @@ int update_trend_buffer(CLIMATE_DATAPOINT_T *sample, CLIMATE_DATAPOINT_T *previo
  * 
  * \return nothing
  */
-void mark_hvac_off(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10)
+void mark_hvac_off(CLIMATE_LAG_T lag_type, long int temperaturex10)
 {
-    climate_momentum.hvac_off_tick[momentum_type] = xTaskGetTickCount();
-    climate_momentum.hvac_off_temperature[momentum_type] = temperaturex10;    
-    climate_momentum.extrema_delay[momentum_type]= 0;
-    climate_momentum.extrema_temperature[momentum_type]= 0;    
-    climate_momentum.measurement_in_progress[momentum_type] = true;
+    climate_lag.hvac_off_tick[lag_type] = xTaskGetTickCount();
+    climate_lag.hvac_off_temperature[lag_type] = temperaturex10;    
+    climate_lag.extrema_delay[lag_type]= 0;
+    climate_lag.extrema_temperature[lag_type]= 0;    
+    climate_lag.measurement_in_progress[lag_type] = true;
 }
 
 /*!
@@ -348,24 +357,24 @@ void mark_hvac_off(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10)
  * 
  * \return nothing
  */
-void track_hvac_extrema(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10)
+void track_hvac_extrema(CLIMATE_LAG_T lag_type, long int temperaturex10)
 {
-    if (climate_momentum.measurement_in_progress[momentum_type])
+    if (climate_lag.measurement_in_progress[lag_type])
     {
-        switch(momentum_type)
+        switch(lag_type)
         {
-        case HEATING_MOMENTUM:
-            if (temperaturex10 > climate_momentum.extrema_temperature[momentum_type])
+        case HEATING_LAG:
+            if (temperaturex10 > climate_lag.extrema_temperature[lag_type])
             {
-                climate_momentum.extrema_delay[momentum_type] = xTaskGetTickCount() - climate_momentum.hvac_off_tick[momentum_type];
-                climate_momentum.extrema_temperature[momentum_type] =  temperaturex10;
+                climate_lag.extrema_delay[lag_type] = xTaskGetTickCount() - climate_lag.hvac_off_tick[lag_type];
+                climate_lag.extrema_temperature[lag_type] =  temperaturex10;
             }
             break;
-        case COOLING_MOMENTUM:
-            if (temperaturex10 < climate_momentum.extrema_temperature[momentum_type])
+        case COOLING_LAG:
+            if (temperaturex10 < climate_lag.extrema_temperature[lag_type])
             {
-                climate_momentum.extrema_delay[momentum_type] = xTaskGetTickCount() - climate_momentum.hvac_off_tick[momentum_type];
-                climate_momentum.extrema_temperature[momentum_type] =  temperaturex10;
+                climate_lag.extrema_delay[lag_type] = xTaskGetTickCount() - climate_lag.hvac_off_tick[lag_type];
+                climate_lag.extrema_temperature[lag_type] =  temperaturex10;
             }    
             break;
         default:
@@ -376,21 +385,21 @@ void track_hvac_extrema(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex1
 
 
 /*!
- * \brief Set momentum based on tracked extrema
+ * \brief Set lag based on tracked extrema
  * 
  * \return nothing
  */
-void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type)
+void set_hvac_lag(CLIMATE_LAG_T lag_type)
 {
-    if (climate_momentum.measurement_in_progress[momentum_type])
+    if (climate_lag.measurement_in_progress[lag_type])
     {
-        climate_momentum.momentum_delay[momentum_type] = xTaskGetTickCount() - climate_momentum.hvac_off_tick[momentum_type];
-        climate_momentum.momentum_temperature_delta[momentum_type] =  climate_momentum.extrema_temperature[momentum_type] - climate_momentum.hvac_off_temperature[momentum_type]; 
-        climate_momentum.measurement_in_progress[momentum_type] = false;
+        climate_lag.lag_delay[lag_type] = xTaskGetTickCount() - climate_lag.hvac_off_tick[lag_type];
+        climate_lag.lag_temperature_delta[lag_type] =  climate_lag.extrema_temperature[lag_type] - climate_lag.hvac_off_temperature[lag_type]; 
+        climate_lag.measurement_in_progress[lag_type] = false;
 
         // add sanity check / constraints
 
-        //printf("MOMENTUM LAST CYCLE:  Extrema occured %lu ms after HVAC shut off and temperature change was %ld\n", climate_momentum.momentum_delay[momentum_type], climate_momentum.momentum_temperature_delta[momentum_type]);
+        //printf("MOMENTUM LAST CYCLE:  Extrema occured %lu ms after HVAC shut off and temperature change was %ld\n", climate_lag.lag_delay[lag_type], climate_lag.lag_temperature_delta[lag_type]);
     }
 }
 

@@ -41,10 +41,10 @@ typedef enum
 
 typedef enum
 {
-    COOLING_MOMENTUM = 0,
-    HEATING_MOMENTUM = 1,   
+    COOLING_LAG = 0,
+    HEATING_LAG = 1,   
     NUM_MOMENTUMS   = 2
-} CLIMATE_MOMENTUM_T;
+} CLIMATE_LAG_T;
 
 typedef struct
 {
@@ -69,10 +69,10 @@ void sanatize_schedule_temperatures(void);
 
 // thermostat_metrics.c
 int initialize_climate_metrics(void);
-int accumlate_metrics(CLIMATE_DATAPOINT_T *sample);
-void mark_hvac_off(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
-void track_hvac_extrema(CLIMATE_MOMENTUM_T momentum_type, long int temperaturex10);
-void set_hvac_momentum(CLIMATE_MOMENTUM_T momentum_type);
+int accumlate_metrics(uint32_t unix_time, long int temperaturex10, long int humidityx10);
+void mark_hvac_off(CLIMATE_LAG_T lag_type, long int temperaturex10);
+void track_hvac_extrema(CLIMATE_LAG_T lag_type, long int temperaturex10);
+void set_hvac_lag(CLIMATE_LAG_T lag_type);
 void log_climate_change(int temperaturex10, int humidityx10);
 int print_temperature_history(char *buffer, int length, int start_position, int num_data_points);
 int predicted_time_to_temperature(long int target_temperature);

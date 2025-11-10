@@ -177,7 +177,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                 thermostat_state = THERMOSTAT_LOCKOUT;                 
                 next_active =  COOLING_IN_PROGRESS; 
 
-                set_hvac_momentum(COOLING_MOMENTUM);
+                set_hvac_lag(COOLING_LAG);
             }
             else
             {
@@ -207,7 +207,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
                 thermostat_state = THERMOSTAT_LOCKOUT;                
                 next_active =  HEATING_IN_PROGRESS;
 
-                set_hvac_momentum(HEATING_MOMENTUM);  
+                set_hvac_lag(HEATING_LAG);  
             }
             else
             {
@@ -234,7 +234,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         {
             send_syslog_message("thermostat", "Heating completed");            
             snprintf(web.status_message, sizeof(web.status_message), "Heating completed");  
-            mark_hvac_off(HEATING_MOMENTUM, temperaturex10);         
+            mark_hvac_off(HEATING_LAG, temperaturex10);         
 
             set_hvac_gpio(HEATING_AND_COOLING_OFF);
 
@@ -269,7 +269,7 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
         {
             send_syslog_message("thermostat", "Cooling completed");            
             snprintf(web.status_message, sizeof(web.status_message), "Cooling completed"); 
-            mark_hvac_off(COOLING_MOMENTUM, temperaturex10);
+            mark_hvac_off(COOLING_LAG, temperaturex10);
 
             set_hvac_gpio(HEATING_AND_COOLING_OFF);
 

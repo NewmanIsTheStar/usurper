@@ -41,7 +41,8 @@
 			"fstream": "c",
 			"limits": "c",
 			"sstream": "c",
-			"string_view": "c"
+			"string_view": "c",
+			"algorithm": "c"
 		}
 	}
 }
