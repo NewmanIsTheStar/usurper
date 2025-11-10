@@ -43,6 +43,25 @@
 #include "pluto.h"
 #include "tm1637.h"
 
+// defines
+#define THERMOSTAT_TASK_LOOP_DELAY (1000)
+
+// typdedefs
+typedef struct
+{
+    int (*initialization)(void);
+    bool initialization_complete;
+} THERMOSTAT_INITIALIZATION_T;
+
+// prototypes
+int thermostat_sanitize_user_config(void);
+int thermostat_initialize(void);
+int thermostat_deinitialize(int (*subsytem_init_func)(void));
+int thermostat_initialize_buttons(void);
+int thermostat_initialize_display(void);
+int thermostat_initialize_temperature_sensor(void);
+int thermostat_validate_gpio_set(void);
+long int thermostat_get_default_temperature(void);
 
 // external variables
 extern uint32_t unix_time;
@@ -50,13 +69,19 @@ extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
 
 // global variables
-
-
-// prototype
-int validate_gpio_set(void);
+THERMOSTAT_INITIALIZATION_T initialization_table[] =
+{
+    {initialize_climate_metrics,                false},
+    {initialize_hvac_control,                   false},    
+    {powerwall_init,                            false}, 
+    {thermostat_initialize_buttons,             false}, 
+    {thermostat_initialize_display,             false}, 
+    {thermostat_initialize_temperature_sensor,  false}             
+};
+bool buttons_initialized = false;
 
 /*!
- * \brief Monitor weather and control relay based on conditions and schedule
+ * \brief Monitor temperature and control hvac system based on schedule
  *
  * \param params unused garbage
  * 
@@ -68,8 +93,8 @@ void thermostat_task(void *params)
     int tm1637_error = 0;
     int i2c_bytes_written = 0;
     int i2c_bytes_read = 0;
-    bool aht10_initialized = false;
-    bool tm1637_initialized = false;
+    // bool aht10_initialized = false;
+    // bool tm1637_initialized = false;
     long int temperaturex10 = 0;
     long int humidityx10 = 0;
     CLIMATE_DATAPOINT_T sample;
@@ -85,90 +110,38 @@ void thermostat_task(void *params)
         config.thermostat_enable = 1;
     }
 
-    if (config.use_archaic_units)
-    {
-        temperaturex10 = SETPOINT_DEFAULT_FAHRENHEIT_X_10;
-    }
-    else
-    {
-        temperaturex10 = SETPOINT_DEFAULT_CELSIUS_X_10;
-    }
-    
+    printf("thermostat_task started!\n");
+
+    // set initial status
+    temperaturex10 = thermostat_get_default_temperature();   
     web.powerwall_grid_status = GRID_UNKNOWN;
 
-
-    // make sure safeguards are valid to prevent short cycling
-    CLIP(config.heating_to_cooling_lockout_mins, 1, 60);
-    CLIP(config.minimum_heating_on_mins, 1, 60);
-    CLIP(config.minimum_cooling_on_mins, 1, 60);
-    CLIP(config.minimum_heating_off_mins, 1, 60);
-    CLIP(config.minimum_cooling_off_mins, 1, 60);
-    CLIP(config.thermostat_hysteresis, 5, 50);
-
- 
-    printf("thermostat_task started!\n");
-    validate_gpio_set();
-
-    // initialize data structures for climate metrics
-    initialize_climate_metrics();
-  
-    // initialize hvac gpio and timers
-    initialize_hvac_control();
-  
-    // initialize powerwall communication
-    powerwall_init();
+    // check and correct critical user configuration settings
+    thermostat_sanitize_user_config();
 
     // create the schedule grid used in web inteface
     make_schedule_grid();
-  
-    // enable front panel buttons
-    initialize_physical_buttons(config.thermostat_mode_button_gpio, config.thermostat_increase_button_gpio, config.thermostat_decrease_button_gpio);
-    
+     
     while (true)
     {
         if ((config.personality == HVAC_THERMOSTAT))  // TODO should this be config.thermostat_enable ?
         {
-            validate_gpio_set();
-
-            //tm1637_error = 0;
-
-            if (!tm1637_initialized)
-            {
-                tm1637_error = dispay_initialize(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
-                
-                if (!tm1637_error)
-                {
-                    tm1637_initialized = true;             
-                }                              
-            }
+            // check user configured gpios
+            thermostat_validate_gpio_set();
             
-            //ath10_error = 0;
+            // initialize all subsystems that are not already up
+            thermostat_initialize();
 
-            if (!aht10_initialized)
-            {
-                SLEEP_MS(500);
-
-                // initialize temperature sensor
-                ath10_error = aht10_initialize(config.thermostat_temperature_sensor_clock_gpio, config.thermostat_temperature_sensor_data_gpio);
-
-                if (!ath10_error)
-                {
-                    aht10_initialized = true;                
-                }                
-
-                SLEEP_MS(500);
-            }
-
+            // measure temperature
             ath10_error = aht10_measurement(&temperaturex10, &humidityx10);
 
             if (ath10_error)
             {
-                printf("aht10: i2c error occured will attempt soft reset\n");
-                aht10_initialized = false;                
+                printf("aht10: i2c error occured will attempt soft reset\n");              
+                thermostat_deinitialize(thermostat_initialize_temperature_sensor);
             }
             else
-            {
-                //send_syslog_message("temperature", "Temperature = %ld.%ld Humidity = %ld.%ld\n", temperaturex10/10, temperaturex10%10, humidityx10/10, humidityx10%10);                    
+            {                
                 log_climate_change(temperaturex10, humidityx10);
 
                 track_hvac_extrema(COOLING_MOMENTUM, temperaturex10);
@@ -191,9 +164,16 @@ void thermostat_task(void *params)
             // set hvac relays
             control_thermostat_relays(temperaturex10);
 
-            // process button presses until 1 second of inactivity occurs
-            button_pressed = handle_button_press_with_timeout(1000);
-        }  
+            if (buttons_initialized)
+            {
+                // process button presses until 1 second of inactivity occurs
+                button_pressed = handle_button_press_with_timeout(THERMOSTAT_TASK_LOOP_DELAY);
+            }
+            else
+            {
+                SLEEP_MS(THERMOSTAT_TASK_LOOP_DELAY); 
+            }
+        }
         else
         {
             SLEEP_MS(60000); 
@@ -211,7 +191,7 @@ void thermostat_task(void *params)
  * 
  * \return nothing
  */
-int validate_gpio_set(void)
+int thermostat_validate_gpio_set(void)
 {
     int gpio_list[10];
     bool relay_gpio_valid = false;
@@ -297,7 +277,7 @@ int validate_gpio_set(void)
         relay_gpio_valid = false;
     }    
 
-    // tell modules they can use gpio
+    // tell subsystems they can use gpio
     relay_gpio_enable(relay_gpio_valid);
     ath10_gpio_enable(ath10_gpio_valid);
     display_gpio_enable(display_gpio_valid);
@@ -307,13 +287,158 @@ int validate_gpio_set(void)
 }
 
 
+/*!
+ * \brief initialize display
+ *
+ * \param params max_set
+ * 
+ * \return 0 on success
+ */
+int thermostat_initialize_display(void)
+{
+    int tm1637_error = 0;
+
+    tm1637_error = dispay_initialize(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
+
+    return(tm1637_error);
+}
+
+/*!
+ * \brief initialize temperature sensor
+ *
+ * \param params none
+ * 
+ * \return 0 on success
+ */
+int thermostat_initialize_temperature_sensor(void)
+{
+    int ath10_error = 0;
+
+    ath10_error = aht10_initialize(config.thermostat_temperature_sensor_clock_gpio, config.thermostat_temperature_sensor_data_gpio);
+
+    return(ath10_error);
+}
+
+/*!
+ * \brief initialize front panel buttons
+ *
+ * \param params none
+ * 
+ * \return 0 on success
+ */
+int thermostat_initialize_buttons(void)
+{
+    int button_error = 0;
+
+    button_error = initialize_physical_buttons(config.thermostat_mode_button_gpio, config.thermostat_increase_button_gpio, config.thermostat_decrease_button_gpio);    
+
+    if (!button_error)
+    {
+        buttons_initialized = true;
+    }
+
+    return(button_error);
+}
+
+/*!
+ * \brief initialize subsystems
+ *
+ * \param params none
+ * 
+ * \return 0 on success
+ */
+int thermostat_initialize(void)
+{
+    int err = 0;
+    int i;
+
+    for (i=0; i < NUM_ROWS(initialization_table); i++)
+    {
+        if (!initialization_table[i].initialization_complete)
+        {
+            initialization_table[i].initialization_complete = !initialization_table[i].initialization();
+
+            if (!initialization_table[i].initialization_complete)
+            {
+                err++;
+                printf("Error initializing subsystem %d\n", i);
+            }
+        }
+    }
+
+    if (err)
+    {
+        printf("%d subsystems failed to initialize\n", err);
+    }
+
+    return(err);
+}
+
+/*!
+ * \brief deinitialize a subsytem
+ *
+ * \param params none
+ * 
+ * \return 0 on success
+ */
+int thermostat_deinitialize(int (*subsytem_init_func)(void))
+{
+    int err = 1;
+    int i;
+
+    for (i=0; i < NUM_ROWS(initialization_table); i++)
+    {
+        if (initialization_table[i].initialization == subsytem_init_func)
+        {
+            initialization_table[i].initialization_complete = false;
+            err = 0;
+            break;
+        }
+    }
+
+    return(err);
+}
+
+/*!
+ * \brief deinitialize a subsytem
+ *
+ * \param params none
+ * 
+ * \return 0 on success
+ */
+long int thermostat_get_default_temperature(void)
+{
+    long int temperaturex10 = 0;
+
+    if (config.use_archaic_units)
+    {
+        temperaturex10 = SETPOINT_DEFAULT_FAHRENHEIT_X_10;
+    }
+    else
+    {
+        temperaturex10 = SETPOINT_DEFAULT_CELSIUS_X_10;
+    }    
+
+    return(temperaturex10);
+}
 
 
+ /*!
+ * \brief perform sanity check on critical user config values
+ *
+ * \param params none
+ * 
+ * \return 0 on success
+ */
+int thermostat_sanitize_user_config(void)
+{   
+    // make sure safeguards are valid to prevent short cycling
+    CLIP(config.heating_to_cooling_lockout_mins, 1, 60);
+    CLIP(config.minimum_heating_on_mins, 1, 60);
+    CLIP(config.minimum_cooling_on_mins, 1, 60);
+    CLIP(config.minimum_heating_off_mins, 1, 60);
+    CLIP(config.minimum_cooling_off_mins, 1, 60);
+    CLIP(config.thermostat_hysteresis, 5, 50);
 
-
-
-
-
-
-
-
+    return(0);
+}
