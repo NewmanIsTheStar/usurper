@@ -56,16 +56,16 @@ const uint8_t aht10_i2c_initialize[]  = {0xe1, 0x08, 0x00};     // initialize, u
 const uint8_t aht10_i2c_measurement[] = {0xac, 0x33, 0x00};     // start, measurement, nop
 const uint8_t aht10_soft_reset[]  = {0xba};                     // soft_reset
 bool ath10_gpio_ok = false;                                     // ok to use configured gpio
+i2c_inst_t *ath10_i2c_block = NULL;                                   // i2c block to use
 
 int aht10_initialize(int clock_gpio, int data_gpio)
 {
     bool i2c_error = false;
     int i2c_bytes_written = 0;
 
-    if (ath10_gpio_ok)
+    if (ath10_gpio_ok && ath10_i2c_block)
     {
-        // TODO: set i2c block based on selected gpio pins AND use passed pins rather than config directly
-        i2c_init(i2c1, 100000);
+        i2c_init(ath10_i2c_block, 100000);
         gpio_set_function(config.thermostat_temperature_sensor_data_gpio, GPIO_FUNC_I2C);
         gpio_set_function(config.thermostat_temperature_sensor_clock_gpio, GPIO_FUNC_I2C);
         gpio_pull_up(config.thermostat_temperature_sensor_data_gpio);
@@ -77,7 +77,7 @@ int aht10_initialize(int clock_gpio, int data_gpio)
         printf("Initializing temperature sensor...\n"); 
 
         // soft reset
-        i2c_bytes_written = i2c_write_timeout_us(i2c1, aht10_addr, aht10_soft_reset, sizeof(aht10_soft_reset), false, ath10_i2c_timeout_us);
+        i2c_bytes_written = i2c_write_timeout_us(ath10_i2c_block, aht10_addr, aht10_soft_reset, sizeof(aht10_soft_reset), false, ath10_i2c_timeout_us);
         if (i2c_bytes_written < 1) // only the first byte is acknowledged by some aht10 devices
         {
             printf("aht10: reset command i2c error\n");    
@@ -88,7 +88,7 @@ int aht10_initialize(int clock_gpio, int data_gpio)
         if (!i2c_error)
         {
             // initialize
-            i2c_bytes_written = i2c_write_timeout_us(i2c1, aht10_addr, aht10_i2c_initialize, sizeof(aht10_i2c_initialize), false, ath10_i2c_timeout_us);
+            i2c_bytes_written = i2c_write_timeout_us(ath10_i2c_block, aht10_addr, aht10_i2c_initialize, sizeof(aht10_i2c_initialize), false, ath10_i2c_timeout_us);
             if (i2c_bytes_written < 1) // only the first byte is acknowledged by some aht10 devices
             { 
                 printf("ath10: initialize command i2c error\n");   
@@ -120,12 +120,12 @@ int aht10_measurement(long int *temperaturex10, long int *humidityx10)
     uint32_t humidity_native; 
     uint8_t aht10_temp_humidity[7];
 
-    if (ath10_gpio_ok)
+    if (ath10_gpio_ok && ath10_i2c_block)
     {
         if (!i2c_error)
         {  
             // start measurement
-            i2c_bytes_written = i2c_write_timeout_us(i2c1, aht10_addr, aht10_i2c_measurement, sizeof(aht10_i2c_measurement), true, ath10_i2c_timeout_us);
+            i2c_bytes_written = i2c_write_timeout_us(ath10_i2c_block, aht10_addr, aht10_i2c_measurement, sizeof(aht10_i2c_measurement), true, ath10_i2c_timeout_us);
             if (i2c_bytes_written != sizeof(aht10_i2c_measurement))
             {    
                 i2c_error = true;                        
@@ -194,4 +194,6 @@ int aht10_measurement(long int *temperaturex10, long int *humidityx10)
 int ath10_gpio_enable(bool enable)
 {
     ath10_gpio_ok = enable;
+
+    ath10_i2c_block = gpio_get_i2c(config.thermostat_temperature_sensor_clock_gpio, config.thermostat_temperature_sensor_data_gpio);
 }

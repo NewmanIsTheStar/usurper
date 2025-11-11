@@ -71,7 +71,7 @@ body {
 <div class="main">
   <h2>Temperature History</h2> 
   <div style="width: 80%; margin: auto;">
-    <canvas id="timeSeriesChart"></canvas>
+    <canvas id="timeSeriesChart" width="800" height="800"></canvas>
   </div>       
   <script>
     // Your chart script will go here

@@ -367,14 +367,14 @@ void track_hvac_extrema(CLIMATE_LAG_T lag_type, long int temperaturex10)
             if (temperaturex10 > climate_lag.extrema_temperature[lag_type])
             {
                 climate_lag.extrema_delay[lag_type] = xTaskGetTickCount() - climate_lag.hvac_off_tick[lag_type];
-                climate_lag.extrema_temperature[lag_type] =  temperaturex10;
+                climate_lag.extrema_temperature[lag_type] =  temperaturex10 - climate_lag.hvac_off_temperature[lag_type];
             }
             break;
         case COOLING_LAG:
             if (temperaturex10 < climate_lag.extrema_temperature[lag_type])
             {
                 climate_lag.extrema_delay[lag_type] = xTaskGetTickCount() - climate_lag.hvac_off_tick[lag_type];
-                climate_lag.extrema_temperature[lag_type] =  temperaturex10;
+                climate_lag.extrema_temperature[lag_type] =  temperaturex10 - climate_lag.hvac_off_temperature[lag_type];
             }    
             break;
         default:
@@ -393,13 +393,14 @@ void set_hvac_lag(CLIMATE_LAG_T lag_type)
 {
     if (climate_lag.measurement_in_progress[lag_type])
     {
-        climate_lag.lag_delay[lag_type] = xTaskGetTickCount() - climate_lag.hvac_off_tick[lag_type];
+        climate_lag.lag_delay[lag_type] = climate_lag.extrema_delay[lag_type];
         climate_lag.lag_temperature_delta[lag_type] =  climate_lag.extrema_temperature[lag_type] - climate_lag.hvac_off_temperature[lag_type]; 
         climate_lag.measurement_in_progress[lag_type] = false;
 
+        send_syslog_message("lag", "Type = %s Time Lag = %ld ms Temperature Lag = %c%ld.%ld degrees\n", lag_type?"Heating":"Cooling", climate_lag.lag_delay[lag_type], climate_lag.lag_temperature_delta[lag_type]<0?'-':'\0', climate_lag.lag_temperature_delta[lag_type]/10, climate_lag.lag_temperature_delta[lag_type]%10);        
         // add sanity check / constraints
 
-        //printf("MOMENTUM LAST CYCLE:  Extrema occured %lu ms after HVAC shut off and temperature change was %ld\n", climate_lag.lag_delay[lag_type], climate_lag.lag_temperature_delta[lag_type]);
+        //printf("LAG LAST CYCLE:  Extrema occured %lu ms after HVAC shut off and temperature change was %ld\n", climate_lag.lag_delay[lag_type], climate_lag.lag_temperature_delta[lag_type]);
     }
 }
 
@@ -419,14 +420,7 @@ void log_climate_change(int temperaturex10, int humidityx10)
     // check if values changed
     if ((temperaturex10 != sent_temperaturex10) || (humidityx10 != sent_humidityx10))
     {
-        send_syslog_message("temperature", "Temperature = %ld.%ld Humidity = %ld.%ld\n", temperaturex10/10, temperaturex10%10, humidityx10/10, humidityx10%10);
-//TODO: handle negative values etc as in this example
-//     printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.outside_temperature<0?'-':'\0', abs(web.outside_temperature/10), abs(web.outside_temperature%10)); 
-// }
-// else
-// {
-//     temp = (web.outside_temperature*9)/5 + 320;
-//     printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
+        send_syslog_message("temperature", "Temperature = %c%ld.%ld Humidity = %ld.%ld\n", temperaturex10<0?'-':'\0', temperaturex10/10, temperaturex10%10, humidityx10/10, humidityx10%10);
 
         // remember what we sent
         sent_temperaturex10 = temperaturex10;

@@ -7,6 +7,8 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
+#include "hardware/i2c.h"
+
 typedef struct
 {
     int lock;
@@ -34,5 +36,6 @@ int print_printable_text(char *contaminated_string);
 int indent(int num_spaces);  
 bool gpio_valid(int gpio_number);
 bool gpio_conflict(int *gpio_list, int len);
+i2c_inst_t *gpio_get_i2c(int gpio_clock, int gpio_data);
 
 #endif

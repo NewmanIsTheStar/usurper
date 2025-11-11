@@ -733,6 +733,71 @@ bool gpio_conflict(int *gpio_list, int len)
 }
 
 /*!
+ * \brief Get i2c block corresponding to the gpio pins
+ * 
+ * \return true if valid
+ */
+i2c_inst_t *gpio_get_i2c(int gpio_clock, int gpio_data)
+{
+    i2c_inst_t *i2c_block[2] = {NULL, NULL};
+    int gpio_to_check[2] = {-1, -1};
+    int i;
+
+    gpio_to_check[0] = gpio_clock;
+    gpio_to_check[1] = gpio_data;    
+
+    for(i=0; i<2; i++)
+    {
+        switch(gpio_to_check[i])
+        {
+        // i2c block 0
+        case 0:
+        case 1:
+        case 4:
+        case 5:
+        case 8:
+        case 9:
+        case 12:
+        case 13:
+        case 16:
+        case 17:
+        case 20:
+        case 21:
+            i2c_block[i] = i2c0;
+            break;
+        // i2c block 1
+        case 2:
+        case 3:
+        case 6:
+        case 7:
+        case 10:
+        case 11:
+        case 14:
+        case 15:
+        case 18:
+        case 19:
+        case 22:
+        case 26:
+        case 27:
+            i2c_block[i] = i2c1;
+            break;
+        default:
+        case 28: 
+            i2c_block[i]= NULL;
+            break;
+
+        }
+    }   
+
+    if (i2c_block[0] != i2c_block[1])
+    {
+        i2c_block[0] = NULL;
+    }
+
+    return(i2c_block[0]);
+}
+
+/*!
  * \brief Replace plus with space in string
  * 
  * \return number of evil plus signs destroyed
