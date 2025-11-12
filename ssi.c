@@ -709,12 +709,12 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         {
             if (!config.use_archaic_units)
             {
-                printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.outside_temperature<0?'-':'\0', abs(web.outside_temperature/10), abs(web.outside_temperature%10)); 
+                printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.outside_temperature<0?'-':' ', abs(web.outside_temperature/10), abs(web.outside_temperature%10)); 
             }
             else
             {
                 temp = (web.outside_temperature*9)/5 + 320;
-                printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
+                printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':' ', abs(temp)/10, abs(temp%10));
             }              
         }
         break;
@@ -2151,15 +2151,15 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break; 
         case SSI_tct:  // thermostat current temperature
         {
-            printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.thermostat_temperature<0?'-':'\0', abs(web.thermostat_temperature/10), abs(web.thermostat_temperature%10)); 
+            printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.thermostat_temperature<0?'-':' ', abs(web.thermostat_temperature/10), abs(web.thermostat_temperature%10)); 
             // if (!config.use_archaic_units)
             // {
-            //     printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.thermostat_temperature<0?'-':'\0', abs(web.thermostat_temperature/10), abs(web.thermostat_temperature%10)); 
+            //     printed = snprintf(pcInsert, iInsertLen, "%c%d.%d", web.thermostat_temperature<0?'-':' ', abs(web.thermostat_temperature/10), abs(web.thermostat_temperature%10)); 
             // }
             // else
             // {
             //     temp = (web.thermostat_temperature*9)/5 + 320;
-            //     printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
+            //     printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':' ', abs(temp)/10, abs(temp%10));
             // }  
         }       
         break;  
@@ -2169,7 +2169,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             //temp = update_current_setpoints();
             temp = web.thermostat_set_point;
 
-            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':'\0', abs(temp)/10, abs(temp%10));                           
+            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", temp<0?'-':' ', abs(temp)/10, abs(temp%10));                           
         }
         break;
 #endif
@@ -2270,7 +2270,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             lower = web.thermostat_temperature;
             upper = web.thermostat_heating_set_point + config.thermostat_hysteresis;
 
-            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", lower<0?'-':'\0', abs(lower)/10, abs(lower%10));
+            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld", lower<0?'-':' ', abs(lower)/10, abs(lower%10));
         }
         break;            
         case SSI_tchs:  // thermostat current heating thresholds
@@ -2278,7 +2278,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             lower = web.thermostat_heating_set_point - config.thermostat_hysteresis;
             upper = web.thermostat_heating_set_point + config.thermostat_hysteresis;
 
-            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld", lower<0?'-':'\0', abs(lower)/10, abs(lower%10), upper<0?'-':'\0', abs(upper)/10, abs(upper%10));
+            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld", lower<0?'-':' ', abs(lower)/10, abs(lower%10), upper<0?'-':' ', abs(upper)/10, abs(upper%10));
         }
         break;
         case SSI_tccs:  // thermostat current cooling thresholds
@@ -2286,7 +2286,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             lower = web.thermostat_cooling_set_point - config.thermostat_hysteresis;
             upper = web.thermostat_cooling_set_point + config.thermostat_hysteresis;
 
-            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld", lower<0?'-':'\0', abs(lower)/10, abs(lower%10), upper<0?'-':'\0', abs(upper)/10, abs(upper%10));
+            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld", lower<0?'-':' ', abs(lower)/10, abs(lower%10), upper<0?'-':' ', abs(upper)/10, abs(upper%10));
         }
         break;   
         case SSI_grids:  // grid status

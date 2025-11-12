@@ -62,6 +62,7 @@ int make_schedule_grid(void)
     int i, j, x, y;
     int key_mow = 0;
     int key_temp = 0;
+
     //int mow;
     int mod;
     int setpointtemperaturex10 = 0;
@@ -96,18 +97,19 @@ int make_schedule_grid(void)
     for(i=1; i<NUM_ROWS(mow); i++)
     {
         key_mow = mow[i];
-        key_temp = temp[i];        
+        key_temp = temp[i];  
+
         j = i - 1;
 
         while ((j >= 0) && ((mow[j]%(60*24)) > (key_mow%(60*24))))
         {
             mow[j+1] = mow[j];
-            temp[j+1] = temp[j];            
+            temp[j+1] = temp[j];          
             j = j - 1;
         }
 
         mow[j+1] = key_mow;
-        temp[j+1] = key_temp;            
+        temp[j+1] = key_temp;          
     }
 
     // scan list of configured setpoints
@@ -292,7 +294,7 @@ bool day_compare(int day1, int day2)
  * 
  * \return true if temperature schedule entry is valid
  */
-bool schedule_row_valid(int row)  // TODO: handle INVALID temperature constants e.g. copying OFF mode
+bool schedule_row_valid(int row)
 {
     bool valid = true;
 
@@ -305,9 +307,20 @@ bool schedule_row_valid(int row)  // TODO: handle INVALID temperature constants 
     {
         valid = false;
     }
-    else if ((config.setpoint_temperaturex10[row] < (-1000)) ||  (config.setpoint_temperaturex10[row] > (1000))) 
+    else if ((config.setpoint_temperaturex10[row] < (-1000)) || (config.setpoint_temperaturex10[row] > (1000)))
     {
-        valid = false;
+        switch(config.setpoint_temperaturex10[row])
+        {
+        case SETPOINT_TEMP_UNDEFINED:
+        case SETPOINT_TEMP_INVALID_FAN:
+        case SETPOINT_TEMP_INVALID_OFF:
+            //printf("Special temperature value found and ignored while validating row\n");
+            break;
+        default:
+            valid = false;
+            break;
+        }
+
     }    
 
     //printf("ROW %d mow = %d temp = %d %s\n", row, config.setpoint_start_mow[row], config.setpoint_temperaturex10[row], valid?"TRUE":"FALSE");

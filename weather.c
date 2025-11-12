@@ -1081,7 +1081,7 @@ bool terminate_irrigation_due_to_weather (void)
         case true:
             temp = (web.outside_temperature*9)/5 + 320;
             //send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d ft/s Daily rain = %d.%d inches 7-day rain = %d.%d inches Soil Moisture = %d%% Temperature = %c%ld.%ld",
-            //    wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], temp<0?'-':'\0', abs(temp)/10, abs(temp%10));
+            //    wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], temp<0?'-':' ', abs(temp)/10, abs(temp%10));
 
             reason[0] = 0;
             reason_index = 0;
@@ -1115,7 +1115,7 @@ bool terminate_irrigation_due_to_weather (void)
 
             if (outside_temperature > config.outside_temperature_threshold)
             {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Temperature = %c%ld.%ld F", temp<0?'-':'\0', abs(temp)/10, abs(temp%10)); 
+                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Temperature = %c%ld.%ld F", temp<0?'-':' ', abs(temp)/10, abs(temp%10)); 
                 reason_index = strlen(reason);
             }
 
@@ -1125,7 +1125,7 @@ bool terminate_irrigation_due_to_weather (void)
         default:
         case false:
             // send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d m/s Daily rain = %d.%d mm 7-day rain = %d.%d mm Soil Moisture = %d%% Temperature = %c%d.%d",
-            //     wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], web.outside_temperature<0?'-':'\0', abs(web.outside_temperature/10), abs(web.outside_temperature%10));
+            //     wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], web.outside_temperature<0?'-':' ', abs(web.outside_temperature/10), abs(web.outside_temperature%10));
 
             reason[0] = 0;
             reason_index = 0;
@@ -1159,7 +1159,7 @@ bool terminate_irrigation_due_to_weather (void)
 
             if (outside_temperature > config.outside_temperature_threshold)
             {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Temperature = %c%ld.%ld C", temp<0?'-':'\0', abs(temp)/10, abs(temp%10)); 
+                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Temperature = %c%ld.%ld C", temp<0?'-':' ', abs(temp)/10, abs(temp%10)); 
                 reason_index = strlen(reason);
             }
 
