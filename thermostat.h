@@ -89,7 +89,7 @@ void gpio_isr(uint gpio, uint32_t events);
 void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hvac_setpoint);
 int initialize_physical_buttons(int mode_button_gpio, int increase_button_gpio, int decrease_button_gpio);
 THERMOSTAT_MODE_T get_front_panel_mode(void);
-int dispay_initialize(int clock_gpio, int data_gpio);
+int thermostat_display_initialize(void);
 int display_gpio_enable(bool enable);
 int button_gpio_enable(bool enable);
 

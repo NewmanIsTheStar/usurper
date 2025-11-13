@@ -116,8 +116,8 @@ body {
               <td><input type="text" size="4" id="disbri" name="disbri" value="<!--#disbri-->"> <label>0 - 7</label></td>
           </tr>     
           <tr>
-              <td><label for="trhl">Display Size</label></td>
-              <td><input type="text" size="4" id="disbri" name="disbri" value="<!--#disbri-->"> <label>digits</label></td>
+              <td><label for="trhl">Size</label></td>
+              <td><input type="text" size="4" id="disdig" name="disdig" value="<!--#disdig-->"> <label>digits</label></td>
           </tr>                                                                            
           <tr>            
               <td>

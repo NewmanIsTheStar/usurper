@@ -23,7 +23,7 @@
 
 #define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 //#define DISABLE_CONFIG_VALIDATION (1)
-#define DISABLE_CONFIG_UPGRADE (1)
+//#define DISABLE_CONFIG_UPGRADE (1)
 
 int config_validate(void);
 void config_v1_to_v2(void);

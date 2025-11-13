@@ -58,7 +58,6 @@ int thermostat_sanitize_user_config(void);
 int thermostat_initialize(void);
 int thermostat_deinitialize(int (*subsytem_init_func)(void));
 int thermostat_initialize_buttons(void);
-int thermostat_initialize_display(void);
 int thermostat_initialize_temperature_sensor(void);
 int thermostat_validate_gpio_set(void);
 long int thermostat_get_default_temperature(void);
@@ -75,7 +74,7 @@ THERMOSTAT_INITIALIZATION_T initialization_table[] =
     {initialize_hvac_control,                   false},    
     {powerwall_init,                            false}, 
     {thermostat_initialize_buttons,             false}, 
-    {thermostat_initialize_display,             false}, 
+    {thermostat_display_initialize,             false}, 
     {thermostat_initialize_temperature_sensor,  false}             
 };
 bool buttons_initialized = false;
@@ -278,22 +277,6 @@ int thermostat_validate_gpio_set(void)
     return(0);
 }
 
-
-/*!
- * \brief initialize display
- *
- * \param params max_set
- * 
- * \return 0 on success
- */
-int thermostat_initialize_display(void)
-{
-    int tm1637_error = 0;
-
-    tm1637_error = dispay_initialize(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
-
-    return(tm1637_error);
-}
 
 /*!
  * \brief initialize temperature sensor

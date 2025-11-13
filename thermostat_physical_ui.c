@@ -320,7 +320,7 @@ THERMOSTAT_MODE_T get_front_panel_mode(void)
     return (stable_mode);
 }
 
-int dispay_initialize(int clock_gpio, int data_gpio)
+int thermostat_display_initialize(void)
 {
     int err = 0;
 
