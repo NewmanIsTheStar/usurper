@@ -34,14 +34,13 @@
 #define BRIGHTNESS_BASE 0x88
 #define MAX_DIGITS 4
 
-// uncomment this to use four digits of a six digit display
-#define USE_SIX_DIGIT_DISPLAY (1)
 
 /* Global variables */
 PIO pio;
 uint clkPin, dioPin, sm, brightness = 0;
 bool colon = true;
 pio_sm_config smConfig;
+bool use_six_digit_display = false;
 
 static const uint8_t digitToSegment[] = {
   0b00111111,    // 0
@@ -261,11 +260,15 @@ void tm1637_display(int number, bool leadingZeros) {
   }
   
   // Display number
-#ifndef USE_SIX_DIGIT_DISPLAY  
-  tm1637_put_4_bytes(startPos, hex); 
-#else
-  tm1637_put_6_bytes(startPos, hex); 
-#endif
+  if (use_six_digit_display)
+  {
+    tm1637_put_4_bytes(startPos, hex); 
+  }
+  else
+  {
+    tm1637_put_6_bytes(startPos, hex);
+  }
+
 }
 
 void tm1637_display_word(char *word, bool leftAlign) {
@@ -300,11 +303,14 @@ void tm1637_display_word(char *word, bool leftAlign) {
   if (col >= 0) {
     bin |= (0x80 << col*8);
   }
-#ifndef USE_SIX_DIGIT_DISPLAY  
-  tm1637_put_4_bytes(startIndex, bin);
-#else
-  tm1637_put_6_bytes(startIndex, bin);
-#endif
+  if (use_six_digit_display)
+  {
+    tm1637_put_4_bytes(startIndex, bin);
+  }
+  else
+  {
+    tm1637_put_6_bytes(startIndex, bin);
+  }
 }
 
 /* Helper for getting the segment representation for a 2 digit number. */
@@ -393,4 +399,23 @@ void tm1637_wait() {
     d = pio_sm_get_blocking(pio, sm);
   }
   uart_default_tx_wait_blocking();
+}
+
+int tm1637_set_display_size(int num_digits) {
+  int err = 0;
+
+  switch(num_digits)
+  {
+  case 4:
+    use_six_digit_display = false;
+    break;
+  case 6:
+    use_six_digit_display = true;       // note that only 4 digits are actually used at present
+    break;
+  default:
+    err = 1;
+    break;
+  }
+
+  return(err);
 }

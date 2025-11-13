@@ -114,7 +114,11 @@ body {
           <tr>
               <td><label for="trhl">Brightness</label></td>
               <td><input type="text" size="4" id="disbri" name="disbri" value="<!--#disbri-->"> <label>0 - 7</label></td>
-          </tr>                                                                     
+          </tr>     
+          <tr>
+              <td><label for="trhl">Display Size</label></td>
+              <td><input type="text" size="4" id="disbri" name="disbri" value="<!--#disbri-->"> <label>digits</label></td>
+          </tr>                                                                            
           <tr>            
               <td>
                   <button type="submit" style="font-size: 25px;">Save</button>

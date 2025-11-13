@@ -134,4 +134,12 @@ void tm1637_refresh_frequency();
  * if you will enter sleep mode and want the display to update beforehand. */
 void tm1637_wait();
 
+/** Support output on 4 or 6 digit displays.
+ * 
+ * 4 digit and 6 digit displays are supported.  However, on 6 digit displays
+ * only 4 of the digits will actually be used.  This is because internally
+ * the value to display is passed around in a 32 bit integer (4 bytes).
+.* Returns an integer 0 on success or 1 on error.*/
+int tm1637_set_display_size(int num_digits);
+
 #endif // TM1637_H_

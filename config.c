@@ -34,6 +34,7 @@ void config_v5_to_v6(void);
 void config_v6_to_v7(void);
 void config_v7_to_v8(void);
 void config_v8_to_v9(void);
+void config_v9_to_v10(void);
 
 NON_VOL_VARIABLES_T config;
 static int config_dirty_flag = 0;
@@ -47,8 +48,10 @@ static NON_VOL_CONVERSION_T config_info[] =
     {6,      offsetof(NON_VOL_VARIABLES_T_VERSION_6, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_6, crc),   &config_v5_to_v6},   
     {7,      offsetof(NON_VOL_VARIABLES_T_VERSION_7, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_7, crc),   &config_v6_to_v7},   
     {8,      offsetof(NON_VOL_VARIABLES_T_VERSION_8, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_8, crc),   &config_v7_to_v8},  
-    {9,      offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v8_to_v9},                      
+    {9,      offsetof(NON_VOL_VARIABLES_T_VERSION_9, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_9, crc),   &config_v8_to_v9},    
+    {10,     offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v9_to_v10},                       
 };
+
 
 
 /*!
@@ -390,6 +393,19 @@ void config_v8_to_v9(void)
     config.version = 9;     
 
     config.thermostat_display_brightness = 7;  
+}
+
+ /*!
+ * \brief Convert configuration from v9 to v10 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v9_to_v10(void)
+{
+    printf("Converting configuration from version 9 to version 10\n"); 
+    config.version = 10;     
+
+    config.thermostat_display_num_digits = 4;  
 }
 
 /*!

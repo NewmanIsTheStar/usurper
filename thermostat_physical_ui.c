@@ -322,13 +322,25 @@ THERMOSTAT_MODE_T get_front_panel_mode(void)
 
 int dispay_initialize(int clock_gpio, int data_gpio)
 {
+    int err = 0;
+
     if (display_gpio_ok)
     {
-        tm1637_init(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
-        tm1637_set_brightness(config.thermostat_display_brightness); 
-        tm1637_display_word("BOOT", false);   
+        if (!tm1637_set_display_size(config.thermostat_display_num_digits))
+        {
+            tm1637_init(config.thermostat_seven_segment_display_clock_gpio, config.thermostat_seven_segment_display_data_gpio);
+            tm1637_set_brightness(config.thermostat_display_brightness); 
+            tm1637_display_word("BOOT", false); 
+            
+            err = 0;
+        }
+        else
+        {
+            err = 1;
+        }
     }
-    return(0);
+
+    return(err);
 }
 
 int display_gpio_enable(bool enable)

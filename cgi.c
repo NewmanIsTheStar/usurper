@@ -3198,7 +3198,13 @@ const char * cgi_advanced_settings(int iIndex, int iNumParams, char *pcParam[], 
                 sscanf(value, "%d", &setting);
                 CLIP(setting, 0, 7);
                 config.thermostat_display_brightness = setting; 
-            }            
+            }  
+            if (strcasecmp("disdig", param) == 0)
+            {
+                sscanf(value, "%d", &setting);
+                CLIP(setting, 0, 6);
+                config.thermostat_display_num_digits = setting; 
+            }                       
         }
 
         i++;
