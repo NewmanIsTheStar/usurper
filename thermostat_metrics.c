@@ -40,6 +40,7 @@
 #include "message.h"
 #include "altcp_tls_mbedtls_structs.h"
 #include "powerwall.h"
+#include "config.h"
 #include "pluto.h"
 #include "tm1637.h"
 
@@ -120,6 +121,7 @@ int update_trend_buffer(CLIMATE_DATAPOINT_T *sample, CLIMATE_DATAPOINT_T *previo
 // external variables
 extern uint32_t unix_time;
 extern WEB_VARIABLES_T web;
+extern NON_VOL_VARIABLES_T config;
 
 // gobal variables
 CLIMATE_HISTORY_T climate_history;
@@ -181,26 +183,29 @@ int initialize_climate_metrics(void)
     ;
 int accumlate_metrics(uint32_t unix_time, long int temperaturex10, long int humidityx10)
 {
-    // int i;
-    // int gradient = 0;
-    // long int previous_temperaturex10 = 0;
-    // long int previous_humidityx10 = 0;
-    CLIMATE_DATAPOINT_T new_sample;    
-    CLIMATE_DATAPOINT_T previous_sample;
+    static CLIMATE_DATAPOINT_T previous_sample = {0,0,0};
+    CLIMATE_DATAPOINT_T new_sample; 
 
     // create sample
     new_sample.unix_time = unix_time;
     new_sample.temperaturex10 = temperaturex10;
     new_sample.humidityx10 = humidityx10;
 
-    // remember previous sample *before* updating history buffer
-    previous_sample = climate_history.buffer[(climate_history.buffer_index + NUM_ROWS(climate_history.buffer) - 1)%NUM_ROWS(climate_history.buffer)];
+    // add new temperature and humidity to trend buffer
+    update_trend_buffer(&new_sample, &previous_sample);
+
+    // remember the sample for next time
+    previous_sample = new_sample;
+
+    // smooth the temperature placed into history buffer
+    new_sample.temperaturex10 = filter_temperature_noise(new_sample.temperaturex10);
 
     // add new temperature and humidity to history buffer
     update_history_buffer(&new_sample);
 
-    // add new temperature and humidity to trend buffer
-    update_trend_buffer(&new_sample, &previous_sample);
+    // HOW IT USED TO WORK B4 previous_sample made static
+    // remember previous sample *before* updating history buffer
+    //previous_sample = climate_history.buffer[(climate_history.buffer_index + NUM_ROWS(climate_history.buffer) - 1)%NUM_ROWS(climate_history.buffer)];
 
     return(0);
 }
@@ -262,6 +267,8 @@ int update_trend_buffer(CLIMATE_DATAPOINT_T *sample, CLIMATE_DATAPOINT_T *previo
     }
     climate_trend.moving_average.temperaturex10 = climate_trend.moving_average.temperaturex10/climate_trend.buffer_population;
     climate_trend.gradient = gradient*100/climate_trend.buffer_population;
+
+    printf("Trend[%d]::moving average = %c%ld.%ld degrees\n", climate_trend.buffer_index, climate_trend.moving_average.temperaturex10<0?'-':' ', abs(climate_trend.moving_average.temperaturex10)/10, abs(climate_trend.moving_average.temperaturex10%10));
 
     // update web interface
     web.thermostat_temperature_moving_average = climate_trend.moving_average.temperaturex10;
@@ -515,3 +522,30 @@ int print_temperature_history(char *buffer, int length, int start_position, int 
     return(total_printed_characters);
 }
         
+/*!
+ * \brief Filter out noise in temperature readings
+ * 
+ * \return smoothed temperature reading
+ */
+int filter_temperature_noise(long int temperaturex10)
+{
+    long int noise_threshold = 0;
+
+    if (config.use_archaic_units)
+    {
+        noise_threshold = 2;
+    }
+    else
+    {
+        noise_threshold = 1;
+    }
+
+    if (abs(temperaturex10 - climate_trend.moving_average.temperaturex10) <= noise_threshold)
+    {
+        temperaturex10 = climate_trend.moving_average.temperaturex10;
+    }
+
+    // TODO filter out unrealistic step changes in temperature
+
+    return(temperaturex10);
+}

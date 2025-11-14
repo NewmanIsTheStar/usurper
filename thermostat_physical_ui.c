@@ -82,7 +82,7 @@ bool handle_button_press_with_timeout(TickType_t timeout)
     {
         do
         {
-            if (xQueueReceive(irq_queue, &passed_value, 1000) == pdPASS)
+            if (xQueueReceive(irq_queue, &passed_value, timeout) == pdPASS)
             {
                 if ((passed_value == config.thermostat_increase_button_gpio) ||
                     (passed_value == config.thermostat_decrease_button_gpio) ||
@@ -128,7 +128,7 @@ bool handle_button_press_with_timeout(TickType_t timeout)
 
             // update display
             hvac_update_display(web.thermostat_temperature, front_panel_mode, setpointtemperaturex10 + temporary_set_point_offsetx10);
-            printf("TEMP = %d SETPOINT = %d (%d + %d) MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, setpointtemperaturex10, temporary_set_point_offsetx10, front_panel_mode);
+            //printf("TEMP = %d SETPOINT = %d (%d + %d) MODE = %d\n", web.thermostat_temperature, setpointtemperaturex10 + temporary_set_point_offsetx10, setpointtemperaturex10, temporary_set_point_offsetx10, front_panel_mode);
 
             // deal with continual spurious interrupts or stuck button holding us in this loop forever
             if (--max_iterations <=0) break;

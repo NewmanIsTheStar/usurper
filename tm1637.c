@@ -40,7 +40,7 @@ PIO pio;
 uint clkPin, dioPin, sm, brightness = 0;
 bool colon = true;
 pio_sm_config smConfig;
-bool use_six_digit_display = false;
+bool use_four_digit_display = true;
 
 static const uint8_t digitToSegment[] = {
   0b00111111,    // 0
@@ -260,7 +260,7 @@ void tm1637_display(int number, bool leadingZeros) {
   }
   
   // Display number
-  if (use_six_digit_display)
+  if (use_four_digit_display)
   {
     tm1637_put_4_bytes(startPos, hex); 
   }
@@ -303,7 +303,7 @@ void tm1637_display_word(char *word, bool leftAlign) {
   if (col >= 0) {
     bin |= (0x80 << col*8);
   }
-  if (use_six_digit_display)
+  if (use_four_digit_display)
   {
     tm1637_put_4_bytes(startIndex, bin);
   }
@@ -407,10 +407,10 @@ int tm1637_set_display_size(int num_digits) {
   switch(num_digits)
   {
   case 4:
-    use_six_digit_display = false;
+    use_four_digit_display = true;
     break;
   case 6:
-    use_six_digit_display = true;       // note that only 4 digits are actually used at present
+    use_four_digit_display = false;       // note that only 4 digits are used at present (32-bit int used to pass display value)
     break;
   default:
     err = 1;

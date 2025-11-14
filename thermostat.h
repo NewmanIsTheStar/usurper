@@ -76,6 +76,7 @@ void set_hvac_lag(CLIMATE_LAG_T lag_type);
 void log_climate_change(int temperaturex10, int humidityx10);
 int print_temperature_history(char *buffer, int length, int start_position, int num_data_points);
 int predicted_time_to_temperature(long int target_temperature);
+int filter_temperature_noise(long int temperaturex10);
 
 // thermostat_aht10.c
 int aht10_initialize(int clock_gpio, int data_gpio);

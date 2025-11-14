@@ -44,7 +44,7 @@
 #include "tm1637.h"
 
 // defines
-#define THERMOSTAT_TASK_LOOP_DELAY (1000)
+#define THERMOSTAT_TASK_LOOP_DELAY (10000)
 
 // typdedefs
 typedef struct
@@ -94,7 +94,7 @@ void thermostat_task(void *params)
     int i2c_bytes_read = 0;
     long int temperaturex10 = 0;
     long int humidityx10 = 0;
-    CLIMATE_DATAPOINT_T sample;
+    long int moving_avaerage_temperaturex10;
     int retry = 0;
     int oneshot = false;
     int i;
@@ -146,7 +146,7 @@ void thermostat_task(void *params)
                 track_hvac_extrema(HEATING_LAG, temperaturex10);                 
 
                 // update web ui
-                web.thermostat_temperature = temperaturex10;
+                web.thermostat_temperature = filter_temperature_noise(temperaturex10);
             }
             
             // check powerwall status
