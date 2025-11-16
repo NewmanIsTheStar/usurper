@@ -49,26 +49,32 @@ body {
 
 
 
-<body onload="toggleColumn(3)">
+<body onload="toggleColumn()">
 <script>
-  function toggleColumn(columnIndex) {
+  function toggleColumn() {
     const table = document.getElementById('climate_edit');
     if (!table) return;
     const rows = table.rows;
-    for (let i = 0; i < rows.length; i++) {
-        const cells = rows[i].cells;
-        if (cells.length > columnIndex) {
-            const cell = cells[columnIndex];
-            const mode_selected = document.getElementById('tpsm');
-            const selectedValue = mode_selected.value;
-            if (selectedValue === '1') {
-               cell.style.display = 'none';  
-            } else {
-               cell.style.display = '';
-            }
-        }
+    for (let columnIndex = 3; columnIndex < 6; columnIndex++) {
+      for (let i = 0; i < rows.length; i++) {
+          const cells = rows[i].cells;
+          if (cells.length > columnIndex) {
+              const cell = cells[columnIndex];
+              const mode_selected = document.getElementById('tpsm');
+              const selectedValue = mode_selected.value;
+              if ((selectedValue === '1') || (selectedValue === '4')) {
+                cell.style.display = 'none';  
+              } else if ((selectedValue === '5') && (columnIndex == 3)) {
+                cell.style.display = 'none';  
+              } else if ((selectedValue !== '5') && (columnIndex > 3)) {
+                cell.style.display = 'none';  
+              } else {
+                cell.style.display = '';
+              }
+          }
+      }
     }
-}
+  }
 </script>
 
 <div class="sidenav">
@@ -92,6 +98,8 @@ body {
         <td><b>Time</b></td>
         <td><b>Mode</b></td>
         <td><b>Temperature</b></td>
+        <td><b>Heating Temp</b></td>
+        <td><b>Cooling Temp</b></td>                
         <td>&nbsp;</td>
       </tr>
       <tr> 
@@ -102,17 +110,24 @@ body {
           <input name="tpst" id="tspst" <!--#tpst--> value="<!--#tpst-->"/>  
         </td>  
         <td>
-          <select id="tpsm" name="tpsm" onchange="toggleColumn(3);" onfocus="this.selectedIndex = -1;">
+          <select id="tpsm" name="tpsm" onchange="toggleColumn();" onfocus="this.selectedIndex = -1;">
             <option value="0" <!--#tpsm1-->>Auto</option>
             <option value="1" <!--#tpsm2-->>Off</option>            
             <option value="2" <!--#tpsm3-->>Heat Only</option>
             <option value="3" <!--#tpsm4-->>Cool Only</option>
-            <option value="4" <!--#tpsm5-->>Fan Only</option>            
+            <option value="4" <!--#tpsm5-->>Fan Only</option>     
+            <option value="5" <!--#tpsm6-->>Heat & Cool</option>                      
         </select>
         </td>   
         <td>
           <input name="tptmp" id="tptmp" <!--#tptmp--> value="<!--#tptmp-->"/> 
         </td>
+        <td>
+          <input name="tphtmp" id="tphtmp" <!--#tphtmp--> value="<!--#tphtmp-->"/> 
+        </td>
+        <td>
+          <input name="tpctmp" id="tpctmp" <!--#tpctmp--> value="<!--#tpctmp-->"/> 
+        </td>                
         <td>
           <a href="/t_schedule.shtml">   <button type=button>Cancel</button></a> 
         </td>  

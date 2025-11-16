@@ -90,7 +90,24 @@ int make_schedule_grid(void)
     for(i=0; i<NUM_ROWS(config.setpoint_start_mow); i++)
     {
         mow[i] = config.setpoint_start_mow[i];
-        temp[i] = config.setpoint_temperaturex10[i];
+
+        if (config.setpoint_mode[i] != HVAC_HEAT_AND_COOL)
+        {
+            temp[i] = config.setpoint_temperaturex10[i];
+        }
+        else
+        {
+            // scheduled setpoint is dynamic based on current temperature
+            if (web.thermostat_temperature < (config.setpoint_cooling_temperaturex10[i] - config.thermostat_hysteresis))
+            {
+                temp[i] = config.setpoint_heating_temperaturex10[i];
+            }
+            else
+            {
+                temp[i] = config.setpoint_cooling_temperaturex10[i];
+            }
+
+        }
     }
 
     // sort the schedule into ascending order by time of day (tod)
@@ -197,6 +214,8 @@ int copy_schedule(int source_day, int destination_day)
             // mark unused    
             config.setpoint_start_mow[i] = -1;
             config.setpoint_temperaturex10[i] = SETPOINT_TEMP_UNDEFINED;
+            config.setpoint_heating_temperaturex10[i] = SETPOINT_TEMP_UNDEFINED;
+            config.setpoint_cooling_temperaturex10[i] = SETPOINT_TEMP_UNDEFINED;
             config.setpoint_mode[i] = HVAC_OFF; 
         }
     }
@@ -223,6 +242,8 @@ int copy_schedule(int source_day, int destination_day)
                         // copy schedule
                         config.setpoint_start_mow[k] = day*(60*24) + mod;
                         config.setpoint_temperaturex10[k] = config.setpoint_temperaturex10[i];
+                        config.setpoint_heating_temperaturex10[k] = config.setpoint_heating_temperaturex10[i];
+                        config.setpoint_cooling_temperaturex10[k] = config.setpoint_cooling_temperaturex10[i];
                         config.setpoint_mode[k] = config.setpoint_mode[i];
 
                         if (config.setpoint_mode[k] < 0)
@@ -414,28 +435,58 @@ void sanatize_schedule_temperatures(void)
  * 
  * \return nothing
  */
-bool schedule_setpoint_valid(int temperaturex10, int mow, THERMOSTAT_MODE_T mode)
+bool schedule_setpoint_valid(long int temperaturex10, long int heating_temperaturex10, long int cooling_temperaturex10, int mow, THERMOSTAT_MODE_T mode)
 {
     bool valid = false;
 
 
     if (schedule_mow_valid(mow) && schedule_mode_valid(mode))
     {
-        if (config.use_archaic_units)
+        switch(mode)
         {
-            if ((temperaturex10 > SETPOINT_MIN_FAHRENHEIT_X_10) && (temperaturex10 < SETPOINT_MAX_FAHRENHEIT_X_10))
+        case HVAC_OFF:
+        case HVAC_FAN_ONLY:
+            valid = true; 
+            break;
+        default:
+        case HVAC_AUTO:
+        case HVAC_HEATING_ONLY:
+        case HVAC_COOLING_ONLY:
+            if (config.use_archaic_units)
             {
-                valid = true;
+                if ((temperaturex10 > SETPOINT_MIN_FAHRENHEIT_X_10) && (temperaturex10 < SETPOINT_MAX_FAHRENHEIT_X_10))
+                {
+                    valid = true;
+                }
             }
-        }
-        else
-        {
-            if ((temperaturex10 > SETPOINT_MIN_CELSIUS_X_10) && (temperaturex10 < SETPOINT_MAX_CELSIUS_X_10))
+            else
             {
-                valid = true;
+                if ((temperaturex10 > SETPOINT_MIN_CELSIUS_X_10) && (temperaturex10 < SETPOINT_MAX_CELSIUS_X_10))
+                {
+                    valid = true;
+                }
             }
-        }
+            break;
+        case HVAC_HEAT_AND_COOL:
+            if (config.use_archaic_units)
+            {
+                if (((heating_temperaturex10 > SETPOINT_MIN_FAHRENHEIT_X_10) && (heating_temperaturex10 < SETPOINT_MAX_FAHRENHEIT_X_10)) &&
+                    ((cooling_temperaturex10 > SETPOINT_MIN_FAHRENHEIT_X_10) && (cooling_temperaturex10 < SETPOINT_MAX_FAHRENHEIT_X_10)))
+                {
+                    valid = true;
+                }
+            }
+            else
+            {
+                if (((heating_temperaturex10 > SETPOINT_MIN_CELSIUS_X_10) && (heating_temperaturex10 < SETPOINT_MAX_CELSIUS_X_10)) &&
+                    ((cooling_temperaturex10 > SETPOINT_MIN_CELSIUS_X_10) && (cooling_temperaturex10 < SETPOINT_MAX_CELSIUS_X_10)))
+                {
+                    valid = true;
+                }
+            }
+            break;
 
+        }
     }
 
     return(valid);
@@ -474,6 +525,7 @@ bool schedule_mode_valid(int mode)
     case HVAC_HEATING_ONLY:
     case HVAC_COOLING_ONLY:
     case HVAC_FAN_ONLY:
+    case HVAC_HEAT_AND_COOL:
     case NUM_HVAC_MODES:
         valid = true;
         break;

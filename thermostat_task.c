@@ -164,6 +164,9 @@ void thermostat_task(void *params)
             {
                 SLEEP_MS(THERMOSTAT_TASK_LOOP_DELAY); 
             }
+
+            // update web schedule
+            make_schedule_grid();
         }
         else
         {

@@ -424,6 +424,8 @@ extern NON_VOL_VARIABLES_T config;
     x(tday)      \
     x(tpst)      \
     x(tptmp)     \
+    x(tphtmp)     \
+    x(tpctmp)     \
     x(tsaddvz)   \
     x(tg0_0) \
     x(tg0_1) \
@@ -528,6 +530,7 @@ extern NON_VOL_VARIABLES_T config;
     x(tpsm3) \
     x(tpsm4) \
     x(tpsm5) \
+    x(tpsm6) \
     x(sp1mde) \
     x(sp2mde) \
     x(sp3mde) \
@@ -1747,10 +1750,12 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                     // }
                     break;                                    
                 }
-
                 break;
             case HVAC_FAN_ONLY:
                 printed = snprintf(pcInsert, iInsertLen, "-");
+                break;                
+            case HVAC_HEAT_AND_COOL:
+                printed = snprintf(pcInsert, iInsertLen, "%d / %d &deg;%c", config.setpoint_heating_temperaturex10[iIndex-SSI_sp1tmp]/10, config.setpoint_cooling_temperaturex10[iIndex-SSI_sp1tmp]/10, config.use_archaic_units?'F':'C'); 
                 break;
             default:
             case HVAC_OFF:
@@ -1843,6 +1848,9 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             case HVAC_FAN_ONLY:
                 printed = snprintf(pcInsert, iInsertLen, "Fan Only");
                 break;
+            case HVAC_HEAT_AND_COOL:
+                printed = snprintf(pcInsert, iInsertLen, "Heat & Cool");
+                break;                
             default:
                 printed = snprintf(pcInsert, iInsertLen, "Default (%d)", config.setpoint_mode[iIndex-SSI_sp1mde]);            
                 break;              
@@ -2015,11 +2023,40 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
             }
         }
         break;  
+        case SSI_tphtmp:
+        {
+            CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_heating_temperaturex10));
+
+            if (config.setpoint_heating_temperaturex10[web.thermostat_period_row] > SETPOINT_TEMP_UNDEFINED)
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.setpoint_heating_temperaturex10[web.thermostat_period_row]/10); 
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "");
+            }
+        }
+        break;  
+        case SSI_tpctmp:
+        {
+            CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_cooling_temperaturex10));
+
+            if (config.setpoint_cooling_temperaturex10[web.thermostat_period_row] > SETPOINT_TEMP_UNDEFINED)
+            {
+                printed = snprintf(pcInsert, iInsertLen, "%d", config.setpoint_cooling_temperaturex10[web.thermostat_period_row]/10); 
+            }
+            else
+            {
+                printed = snprintf(pcInsert, iInsertLen, "");
+            }
+        }
+        break;          
         case SSI_tpsm1:
         case SSI_tpsm2:
         case SSI_tpsm3:
         case SSI_tpsm4:
         case SSI_tpsm5:
+        case SSI_tpsm6:        
         {
             CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_mode));
 

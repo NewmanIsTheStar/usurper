@@ -35,6 +35,7 @@ void config_v6_to_v7(void);
 void config_v7_to_v8(void);
 void config_v8_to_v9(void);
 void config_v9_to_v10(void);
+void config_v10_to_v11(void);
 
 NON_VOL_VARIABLES_T config;
 static int config_dirty_flag = 0;
@@ -49,7 +50,8 @@ static NON_VOL_CONVERSION_T config_info[] =
     {7,      offsetof(NON_VOL_VARIABLES_T_VERSION_7, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_7, crc),   &config_v6_to_v7},   
     {8,      offsetof(NON_VOL_VARIABLES_T_VERSION_8, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_8, crc),   &config_v7_to_v8},  
     {9,      offsetof(NON_VOL_VARIABLES_T_VERSION_9, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_9, crc),   &config_v8_to_v9},    
-    {10,     offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v9_to_v10},                       
+    {10,     offsetof(NON_VOL_VARIABLES_T_VERSION_10, version),  offsetof(NON_VOL_VARIABLES_T_VERSION_10, crc),  &config_v9_to_v10},   
+    {11,     offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v10_to_v11},                         
 };
 
 
@@ -312,7 +314,7 @@ void config_v5_to_v6(void)
     for(i=0; i<NUM_ROWS(config.setpoint_temperaturex10); i++)
     {
         config.setpoint_start_mow[i] = -1;
-        config.setpoint_temperaturex10[i] = 21;
+        config.setpoint_temperaturex10[i] = 210;
     }
 
     config.powerwall_ip[0] = 0;
@@ -407,6 +409,29 @@ void config_v9_to_v10(void)
 
     config.thermostat_display_num_digits = 4;  
 }
+
+ /*!
+ * \brief Convert configuration from v10 to v11 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v10_to_v11(void)
+{
+    int i;
+
+    printf("Converting configuration from version 10 to version 11\n"); 
+    config.version = 11;     
+
+    for(i=0; i<NUM_ROWS(config.setpoint_heating_temperaturex10); i++)
+    {
+        config.setpoint_heating_temperaturex10[i] = 210;
+        config.setpoint_cooling_temperaturex10[i] = 210;        
+    }
+}
+
+
+// ************************************************************************************************************************
+// ************************************************************************************************************************
 
 /*!
  * \brief Record that configuration copy in RAM was altered and may now differ from the flash copy

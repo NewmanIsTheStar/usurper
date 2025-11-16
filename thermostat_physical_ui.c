@@ -51,7 +51,8 @@ typedef enum
     DISPLAY_HVAC_COOL   = 3,
     DISPLAY_HVAC_FAN    = 4,
     DISPLAY_HVAC_AUTO   = 5,
-    DISPLAY_SETPOINT    = 6
+    DISPLAY_HVAC_HEAT_AND_COOL = 6,    
+    DISPLAY_SETPOINT    = 7
 } DISPLAY_STATE_T;
 
 // external variables
@@ -185,6 +186,9 @@ void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hv
             case HVAC_AUTO:
                 display_state = DISPLAY_HVAC_AUTO;
                 break;
+            case HVAC_HEAT_AND_COOL:
+                display_state = DISPLAY_HVAC_HEAT_AND_COOL;
+                break;                
             }
 
             last_hvac_mode = hvac_mode;
@@ -231,7 +235,10 @@ void hvac_update_display(int temperaturex10, THERMOSTAT_MODE_T hvac_mode, int hv
                 break;             
             case DISPLAY_HVAC_AUTO:
                 tm1637_display_word("AUTO", false);    
-                break;                                                 
+                break;   
+            case DISPLAY_HVAC_HEAT_AND_COOL:
+                tm1637_display_word("H-C", false);    
+                break;                                                               
             case DISPLAY_SETPOINT:
                 tm1637_display(hvac_setpointx10/10, false); 
                 break;

@@ -70,6 +70,7 @@ int hvac_timer_stop(CLIMATE_TIMER_INDEX_T timer_index);
 bool hvac_timer_expired(CLIMATE_TIMER_INDEX_T timer_index);
 void vTimerCallback(TimerHandle_t xTimer);
 int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperaturex10);
+long int sanitize_setpoint(long int setpoint);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -150,7 +151,8 @@ THERMOSTAT_STATE_T control_thermostat_relays(long int temperaturex10)
             heating_allowed = false;
             fan_allowed = true;
             break;        
-        case HVAC_AUTO:       
+        case HVAC_AUTO: 
+        case HVAC_HEAT_AND_COOL:      
             cooling_allowed = true;
             heating_allowed = true;
             fan_allowed = true;
@@ -571,7 +573,9 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
     int i;
     int mow;
     int candidate_start_mow = 0;
-    int candidate_temperature = 0;
+    long int candidate_temperature = 0;
+    long int candidate_heating_temperature = 0;
+    long int candidate_cooling_temperature = 0;
     THERMOSTAT_MODE_T candidate_mode = HVAC_AUTO;
     int candidate_delta = 0;
     static bool cooling_disabled = false;
@@ -585,7 +589,7 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
         for(i=0; i < NUM_ROWS(config.setpoint_temperaturex10); i++)
         {
             
-            if (schedule_setpoint_valid(config.setpoint_temperaturex10[i], config.setpoint_start_mow[i], config.setpoint_mode[i]))
+            if (schedule_setpoint_valid(config.setpoint_temperaturex10[i], config.setpoint_heating_temperaturex10[i], config.setpoint_cooling_temperaturex10[i], config.setpoint_start_mow[i], config.setpoint_mode[i]))
             {
 
                 candidate_delta = mow_future_delta(config.setpoint_start_mow[i], mow);
@@ -595,6 +599,8 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
                     delta = candidate_delta;
 
                     candidate_temperature = config.setpoint_temperaturex10[i];
+                    candidate_heating_temperature = config.setpoint_heating_temperaturex10[i];
+                    candidate_cooling_temperature = config.setpoint_cooling_temperaturex10[i];
                     candidate_start_mow = config.setpoint_start_mow[i];
                     candidate_mode = config.setpoint_mode[i];
                 }
@@ -614,61 +620,66 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
         temporary_set_point_offsetx10 = 0;
     }  
 
-    // sanitize setpoint
-    if (config.use_archaic_units)
+    // sanitize setpoints
+    setpointtemperaturex10 = sanitize_setpoint(setpointtemperaturex10);
+    candidate_heating_temperature = sanitize_setpoint(candidate_heating_temperature);
+    candidate_cooling_temperature = sanitize_setpoint(candidate_cooling_temperature);
+
+    if (scheduled_mode != HVAC_HEAT_AND_COOL)
     {
-        // fahrenheit between 60 and 90
-        if ((setpointtemperaturex10 > SETPOINT_MAX_FAHRENHEIT_X_10) || (setpointtemperaturex10 < SETPOINT_MIN_FAHRENHEIT_X_10))
+        // initial set points are identical
+        web.thermostat_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;
+        web.thermostat_heating_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;
+        web.thermostat_cooling_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;
+
+        // adjust setpoint bias based on last heating or cooling cycle run
+        switch(last_active)
         {
-            setpointtemperaturex10 = SETPOINT_DEFAULT_FAHRENHEIT_X_10;
+        case HEATING_IN_PROGRESS:
+            setpoint_bias = SETPOINT_BIAS_HEATING;
+            break;
+        case COOLING_IN_PROGRESS:
+            setpoint_bias = SETPOINT_BIAS_COOLING;
+            break; 
+        default:
+            break;       
+        }
+        
+        // bias set points to avoid overlapping heating and cooling targets     
+        switch(setpoint_bias)
+        {
+        case SETPOINT_BIAS_HEATING:
+            web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
+            break;
+        case SETPOINT_BIAS_COOLING:
+            web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis); 
+            break;
+        default:
+        case SETPOINT_BIAS_UNDEFINED:
+            if (temperaturex10 < web.thermostat_set_point)
+            {
+                web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
+            }
+            else
+            {
+                web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis);         
+            }
+            break;    
         }
     }
     else
     {
-        // celsius between 15 and 32
-        if ((setpointtemperaturex10 > SETPOINT_MAX_CELSIUS_X_10) || (setpointtemperaturex10 < SETPOINT_MIN_CELSIUS_X_10))
+        web.thermostat_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;  // TODO:  not used -- what should this be?
+        
+        // force minimum hsyteresis
+        if ((candidate_heating_temperature >= candidate_cooling_temperature) ||
+            (abs(candidate_cooling_temperature - candidate_heating_temperature) < (3*config.thermostat_hysteresis)))
         {
-            setpointtemperaturex10 = SETPOINT_DEFAULT_CELSIUS_X_10;
+            candidate_heating_temperature = candidate_cooling_temperature - 3*config.thermostat_hysteresis;
         }
-    }    
-
-    // initial set points are identical
-    web.thermostat_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;
-    web.thermostat_heating_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;;
-    web.thermostat_cooling_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;;
-
-    // adjust setpoint bias based on last heating or cooling cycle run
-    switch(last_active)
-    {
-    case HEATING_IN_PROGRESS:
-        setpoint_bias = SETPOINT_BIAS_HEATING;
-        break;
-    case COOLING_IN_PROGRESS:
-        setpoint_bias = SETPOINT_BIAS_COOLING;
-        break; 
-    default:
-        break;       
-    }
-    
-    // bias set points to avoid overlapping heating and cooling targets     
-    switch(setpoint_bias)
-    {
-    case SETPOINT_BIAS_HEATING:
-        web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
-        break;
-    case SETPOINT_BIAS_COOLING:
-         web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis); 
-         break;
-    case SETPOINT_BIAS_UNDEFINED:
-        if (temperaturex10 < web.thermostat_set_point)
-        {
-            web.thermostat_cooling_set_point += (3*config.thermostat_hysteresis);
-        }
-        else
-        {
-            web.thermostat_heating_set_point -= (3*config.thermostat_hysteresis);         
-        }
-        break;    
+        
+        web.thermostat_heating_set_point = candidate_heating_temperature + temporary_set_point_offsetx10;
+        web.thermostat_cooling_set_point = candidate_cooling_temperature + temporary_set_point_offsetx10;        
     }
 
     // adjust setpoint according to powerwall status
@@ -738,4 +749,27 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
 int relay_gpio_enable(bool enable)
 {
     relay_gpio_ok = enable;
+}
+
+long int sanitize_setpoint(long int setpoint)
+{
+    // sanitize setpoint
+    if (config.use_archaic_units)
+    {
+        // fahrenheit between 60 and 90
+        if ((setpoint > SETPOINT_MAX_FAHRENHEIT_X_10) || (setpoint < SETPOINT_MIN_FAHRENHEIT_X_10))
+        {
+            setpoint = SETPOINT_DEFAULT_FAHRENHEIT_X_10;
+        }
+    }
+    else
+    {
+        // celsius between 15 and 32
+        if ((setpoint > SETPOINT_MAX_CELSIUS_X_10) || (setpoint < SETPOINT_MIN_CELSIUS_X_10))
+        {
+            setpoint = SETPOINT_DEFAULT_CELSIUS_X_10;
+        }
+    }        
+
+    return(setpoint);
 }

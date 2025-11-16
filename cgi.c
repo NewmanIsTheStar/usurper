@@ -2176,6 +2176,8 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
     int j = 0;
     int key_mow = 0;
     int key_temp = 0;
+    int key_heat_temp = 0;
+    int key_cool_temp = 0;
     THERMOSTAT_MODE_T key_mode = HVAC_AUTO;
     char *param = NULL;
     char *value = NULL;
@@ -2239,11 +2241,56 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
             }   
 
             len = strlen(param);
+            if ((len >= 5) && (param[0] == 't') && (param[1] == 'p') && (param[2] == 'h') && (param[3] == 't') && (param[4] == 'm') && (param[5] == 'p'))
+            {
+                CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_start_mow)); 
+
+                if(isdigit(value[0]))
+                {
+                    sscanf(value, "%d", &(config.setpoint_heating_temperaturex10[web.thermostat_period_row]));
+                    config.setpoint_heating_temperaturex10[web.thermostat_period_row] *= 10; 
+                }
+
+                if (config.setpoint_mode[web.thermostat_period_row] == HVAC_OFF)
+                {
+                    config.setpoint_heating_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_INVALID_OFF; 
+                }
+
+                if (config.setpoint_mode[web.thermostat_period_row] == HVAC_FAN_ONLY)
+                {
+                    config.setpoint_heating_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_INVALID_FAN; 
+                }
+
+            }  
+            
+            len = strlen(param);
+            if ((len >= 5) && (param[0] == 't') && (param[1] == 'p') && (param[2] == 'c') && (param[3] == 't') && (param[4] == 'm') && (param[5] == 'p'))
+            {
+                CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_start_mow)); 
+
+                if(isdigit(value[0]))
+                {
+                    sscanf(value, "%d", &(config.setpoint_cooling_temperaturex10[web.thermostat_period_row]));
+                    config.setpoint_cooling_temperaturex10[web.thermostat_period_row] *= 10; 
+                }
+
+                if (config.setpoint_mode[web.thermostat_period_row] == HVAC_OFF)
+                {
+                    config.setpoint_cooling_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_INVALID_OFF; 
+                }
+
+                if (config.setpoint_mode[web.thermostat_period_row] == HVAC_FAN_ONLY)
+                {
+                    config.setpoint_cooling_temperaturex10[web.thermostat_period_row] = SETPOINT_TEMP_INVALID_FAN; 
+                }
+            }              
+
+            len = strlen(param);
             if ((len >= 4) && (param[0] == 't') && (param[1] == 'p') && (param[2] == 's') && (param[3] == 'm'))
             {
                 CLIP(web.thermostat_period_row, 0, NUM_ROWS(config.setpoint_mode)); 
                 sscanf(value, "%d", &(config.setpoint_mode[web.thermostat_period_row]));
-                CLIP(config.setpoint_mode[web.thermostat_period_row], 0, 4);
+                CLIP(config.setpoint_mode[web.thermostat_period_row], 0, NUM_HVAC_MODES-1);
 
                 if (config.setpoint_mode[web.thermostat_period_row] == HVAC_OFF)
                 {
@@ -2284,8 +2331,6 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
                         break;
                     }
                 }
-
-
             }  
 
             len = strlen(param);
@@ -2358,7 +2403,9 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
     for(i=1; i<NUM_ROWS(config.setpoint_start_mow); i++)
     {
         key_mow = config.setpoint_start_mow[i];
-        key_temp = config.setpoint_temperaturex10[i];   
+        key_temp = config.setpoint_temperaturex10[i];  
+        key_heat_temp = config.setpoint_heating_temperaturex10[i]; 
+        key_cool_temp = config.setpoint_cooling_temperaturex10[i];                  
         key_mode = config.setpoint_mode[i];
 
         j = i - 1;
@@ -2367,12 +2414,16 @@ const char * cgi_thermostat_schedule_change_handler(int iIndex, int iNumParams, 
         {
             config.setpoint_start_mow[j+1] = config.setpoint_start_mow[j];
             config.setpoint_temperaturex10[j+1] = config.setpoint_temperaturex10[j]; 
+            config.setpoint_heating_temperaturex10[j+1] = config.setpoint_heating_temperaturex10[j]; 
+            config.setpoint_cooling_temperaturex10[j+1] = config.setpoint_cooling_temperaturex10[j];                         
             config.setpoint_mode[j+1] = config.setpoint_mode[j];            
             j = j - 1;
         }
 
         config.setpoint_start_mow[j+1] = key_mow;
         config.setpoint_temperaturex10[j+1] = key_temp; 
+        config.setpoint_heating_temperaturex10[j+1] = key_heat_temp; 
+        config.setpoint_cooling_temperaturex10[j+1] = key_cool_temp;                 
         config.setpoint_mode[j+1] = key_mode;             
     }
 
@@ -2493,10 +2544,14 @@ const char * cgi_thermostat_period_add_handler(int iIndex, int iNumParams, char 
             if (config.use_archaic_units)
             {
                 config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;
+                config.setpoint_heating_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;
+                config.setpoint_cooling_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;                                
             }
             else
             {
                 config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;
+                config.setpoint_heating_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;
+                config.setpoint_cooling_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;                                
             }
             config.setpoint_mode[i] = HVAC_AUTO;
             next_page = "/tp_edit.shtml";
