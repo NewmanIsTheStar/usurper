@@ -667,9 +667,17 @@ int update_current_setpoints(THERMOSTAT_STATE_T last_active, long int temperatur
             break;    
         }
     }
-    else
+    else  // HVAC_HEAT_AND_COOL
     {
-        web.thermostat_set_point = setpointtemperaturex10 + temporary_set_point_offsetx10;  // TODO:  not used -- what should this be?
+        // select default setpoint based on current temperature (non-functional in this mode but appears on status web page)
+        if (web.thermostat_temperature < (candidate_cooling_temperature - config.thermostat_hysteresis))
+        {
+            web.thermostat_set_point = candidate_heating_temperature;           
+        }
+        else
+        {
+            web.thermostat_set_point = candidate_cooling_temperature;
+        }
         
         // force minimum hsyteresis
         if ((candidate_heating_temperature >= candidate_cooling_temperature) ||
