@@ -257,16 +257,16 @@ void boss_task(__unused void *params)
         config_write();
 
         // check stack high water mark for each worker task
-        monitor_stacks();
-
-        // report watchdog reboot to syslog server
-        check_watchdog_reboot();        
+        monitor_stacks();     
 
         #ifdef FAKE_RTC
         // maintain fake rtc
         rtc_update();
         #endif
 
+        // report watchdog reboot to syslog server
+        check_watchdog_reboot();   
+                
         SLEEP_MS(1000);
 
         // if (rtc_get_datetime(&date))

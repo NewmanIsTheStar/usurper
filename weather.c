@@ -1043,130 +1043,133 @@ bool terminate_irrigation_due_to_weather (void)
     char reason[100];
     int reason_index = 0;
 
-    //TODO -- ignore missing measurements (e.g set to threshold is value unknown)
+    //TODO -- ignore missing measurements (e.g set to threshold if value unknown)
 
-    // convert current measurements to archaic units if necessary
-    switch(config.use_archaic_units)
+    if (config.weather_station_enable)
     {
-    case true:
-        wind_speed = (web.wind_speed*3281 + 500)/1000;                 // feet per second
-        rain_week = (10*web.trailing_seven_days_rain + 127)/254;       // inches
-        rain_day = (10*web.daily_rain + 127)/254;                      // inches
-        soil_moisture = web.soil_moisture[0];                          // percentage    
-        outside_temperature = ((web.outside_temperature - 320)*5)/9;   // Fahrenheit 
-        printf("TERMINATE condition using temperature = %d\n", outside_temperature);   // TODO:  check scaling / Is it already in F?
-        break;
-        
-    default:
-    case false:
-        wind_speed = web.wind_speed;                      // m/s
-        rain_week = web.trailing_seven_days_rain;         // mm   
-        rain_day = web.daily_rain;                        // mm      
-        soil_moisture = web.soil_moisture[0];             // percentage
-        outside_temperature = web.outside_temperature;    // Celsius
-        break;
-    } 
-
-    // check if we should terminate irrigation due to weather
-    if ((wind_speed > config.wind_threshold)                ||
-        (rain_day > config.rain_day_threshold)              ||
-        (rain_week  > config.rain_week_threshold)           ||     
-        (soil_moisture > config.soil_moisture_threshold[0]) ||
-        (outside_temperature > config.outside_temperature_threshold))                   
-    {
-        terminate_irrigation = true;
-
+        // convert current measurements to archaic units if necessary
         switch(config.use_archaic_units)
         {
         case true:
-            temp = (web.outside_temperature*9)/5 + 320;
-            //send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d ft/s Daily rain = %d.%d inches 7-day rain = %d.%d inches Soil Moisture = %d%% Temperature = %c%ld.%ld",
-            //    wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], temp<0?'-':' ', abs(temp)/10, abs(temp%10));
-
-            reason[0] = 0;
-            reason_index = 0;
-
-            snprintf(reason+reason_index, sizeof(reason) - reason_index, "Irrigation terminated because: ");
-            reason_index = strlen(reason);
-
-            if (wind_speed > config.wind_threshold)
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Wind speed = %d.%d ft/s", wind_speed/10, wind_speed%10);
-                reason_index = strlen(reason);
-            } 
+            wind_speed = (web.wind_speed*3281 + 500)/1000;                 // feet per second
+            rain_week = (10*web.trailing_seven_days_rain + 127)/254;       // inches
+            rain_day = (10*web.daily_rain + 127)/254;                      // inches
+            soil_moisture = web.soil_moisture[0];                          // percentage    
+            outside_temperature = ((web.outside_temperature - 320)*5)/9;   // Fahrenheit 
+            printf("TERMINATE condition using temperature = %d\n", outside_temperature);   // TODO:  check scaling / Is it already in F?
+            break;
             
-            if (rain_day > config.rain_day_threshold)
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Daily rain = %d.%d inches", rain_day/10, rain_day%10);
-                reason_index = strlen(reason);
-            }
-
-            if (rain_week  > config.rain_week_threshold) 
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "7-day rain = %d.%d inches", rain_week/10, rain_week%10);
-                reason_index = strlen(reason);
-            }
-
-            if (soil_moisture > config.soil_moisture_threshold[0])
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Soil Moisture = %d%%", web.soil_moisture[0]);
-                reason_index = strlen(reason);
-            }
-
-            if (outside_temperature > config.outside_temperature_threshold)
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Temperature = %c%ld.%ld F", temp<0?'-':' ', abs(temp)/10, abs(temp%10)); 
-                reason_index = strlen(reason);
-            }
-
-            send_syslog_message("usurper", "%s",reason);
-
-            break;            
         default:
         case false:
-            // send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d m/s Daily rain = %d.%d mm 7-day rain = %d.%d mm Soil Moisture = %d%% Temperature = %c%d.%d",
-            //     wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], web.outside_temperature<0?'-':' ', abs(web.outside_temperature/10), abs(web.outside_temperature%10));
-
-            reason[0] = 0;
-            reason_index = 0;
-
-            snprintf(reason+reason_index, sizeof(reason) - reason_index, "Irrigation terminated because: ");
-            reason_index = strlen(reason);
-
-            if (wind_speed > config.wind_threshold)
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Wind speed = %d.%d m/s", wind_speed/10, wind_speed%10);
-                reason_index = strlen(reason);
-            } 
-            
-            if (rain_day > config.rain_day_threshold)
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Daily rain = %d.%d mm", rain_day/10, rain_day%10);
-                reason_index = strlen(reason);
-            }
-
-            if (rain_week  > config.rain_week_threshold) 
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "7-day rain = %d.%d mm", rain_week/10, rain_week%10);
-                reason_index = strlen(reason);
-            }
-
-            if (soil_moisture > config.soil_moisture_threshold[0])
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Soil Moisture = %d%%", web.soil_moisture[0]);
-                reason_index = strlen(reason);
-            }
-
-            if (outside_temperature > config.outside_temperature_threshold)
-            {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Temperature = %c%ld.%ld C", temp<0?'-':' ', abs(temp)/10, abs(temp%10)); 
-                reason_index = strlen(reason);
-            }
-
-            send_syslog_message("usurper", "%s",reason);                
+            wind_speed = web.wind_speed;                      // m/s
+            rain_week = web.trailing_seven_days_rain;         // mm   
+            rain_day = web.daily_rain;                        // mm      
+            soil_moisture = web.soil_moisture[0];             // percentage
+            outside_temperature = web.outside_temperature;    // Celsius
             break;
-        }         
-        get_timestamp(web.last_usurped_timestring, sizeof(web.last_usurped_timestring), 0);                 
+        } 
+
+        // check if we should terminate irrigation due to weather
+        if ((wind_speed > config.wind_threshold)                ||
+            (rain_day > config.rain_day_threshold)              ||
+            (rain_week  > config.rain_week_threshold)           ||     
+            (soil_moisture > config.soil_moisture_threshold[0]) ||
+            (outside_temperature > config.outside_temperature_threshold))                   
+        {
+            terminate_irrigation = true;
+
+            switch(config.use_archaic_units)
+            {
+            case true:
+                temp = (web.outside_temperature*9)/5 + 320;
+                //send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d ft/s Daily rain = %d.%d inches 7-day rain = %d.%d inches Soil Moisture = %d%% Temperature = %c%ld.%ld",
+                //    wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], temp<0?'-':' ', abs(temp)/10, abs(temp%10));
+
+                reason[0] = 0;
+                reason_index = 0;
+
+                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Irrigation terminated because: ");
+                reason_index = strlen(reason);
+
+                if (wind_speed > config.wind_threshold)
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "Wind speed = %d.%d ft/s", wind_speed/10, wind_speed%10);
+                    reason_index = strlen(reason);
+                } 
+                
+                if (rain_day > config.rain_day_threshold)
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "Daily rain = %d.%d inches", rain_day/10, rain_day%10);
+                    reason_index = strlen(reason);
+                }
+
+                if (rain_week  > config.rain_week_threshold) 
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "7-day rain = %d.%d inches", rain_week/10, rain_week%10);
+                    reason_index = strlen(reason);
+                }
+
+                if (soil_moisture > config.soil_moisture_threshold[0])
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "Soil Moisture = %d%%", web.soil_moisture[0]);
+                    reason_index = strlen(reason);
+                }
+
+                if (outside_temperature > config.outside_temperature_threshold)
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "Temperature = %c%ld.%ld F", temp<0?'-':' ', abs(temp)/10, abs(temp%10)); 
+                    reason_index = strlen(reason);
+                }
+
+                send_syslog_message("usurper", "%s",reason);
+
+                break;            
+            default:
+            case false:
+                // send_syslog_message("usurper", "Irrigation terminated due to weather.  Wind speed = %d.%d m/s Daily rain = %d.%d mm 7-day rain = %d.%d mm Soil Moisture = %d%% Temperature = %c%d.%d",
+                //     wind_speed/10, wind_speed%10, rain_day/10, rain_day%10, rain_week/10, rain_week%10, web.soil_moisture[0], web.outside_temperature<0?'-':' ', abs(web.outside_temperature/10), abs(web.outside_temperature%10));
+
+                reason[0] = 0;
+                reason_index = 0;
+
+                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Irrigation terminated because: ");
+                reason_index = strlen(reason);
+
+                if (wind_speed > config.wind_threshold)
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "Wind speed = %d.%d m/s", wind_speed/10, wind_speed%10);
+                    reason_index = strlen(reason);
+                } 
+                
+                if (rain_day > config.rain_day_threshold)
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "Daily rain = %d.%d mm", rain_day/10, rain_day%10);
+                    reason_index = strlen(reason);
+                }
+
+                if (rain_week  > config.rain_week_threshold) 
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "7-day rain = %d.%d mm", rain_week/10, rain_week%10);
+                    reason_index = strlen(reason);
+                }
+
+                if (soil_moisture > config.soil_moisture_threshold[0])
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "Soil Moisture = %d%%", web.soil_moisture[0]);
+                    reason_index = strlen(reason);
+                }
+
+                if (outside_temperature > config.outside_temperature_threshold)
+                {
+                    snprintf(reason+reason_index, sizeof(reason) - reason_index, "Temperature = %c%ld.%ld C", temp<0?'-':' ', abs(temp)/10, abs(temp%10)); 
+                    reason_index = strlen(reason);
+                }
+
+                send_syslog_message("usurper", "%s",reason);                
+                break;
+            }         
+            get_timestamp(web.last_usurped_timestring, sizeof(web.last_usurped_timestring), 0);                 
+        }
     }
 
     return(terminate_irrigation);
