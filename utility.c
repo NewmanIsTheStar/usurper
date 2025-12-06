@@ -206,7 +206,7 @@ int send_syslog_message(char *log_name, const char *format, ...)
 
         if (syslog_socket >= 0)
         {
-            if (!get_timestamp(timestamp, sizeof(timestamp), true))
+            if (!get_timestamp(timestamp, sizeof(timestamp), true, true))
             {   
                 message_chars_remaining = sizeof(syslog_message);
                 snprintf(syslog_message, message_chars_remaining, "<165>1 %s %s %s 1 - - %%%% ", timestamp, ip_address_string, log_name);
@@ -256,11 +256,11 @@ int check_watchdog_reboot(void)
         // cache watchdog reset status
         watchdog_reset = watchdog_caused_reboot();
     }
-
+    
     if (watchdog_reset && !web_page_updated)
     {
         // update web page
-        get_timestamp(web.watchdog_timestring, sizeof(web.watchdog_timestring), false); 
+        get_timestamp(web.watchdog_timestring, sizeof(web.watchdog_timestring), false, true); 
         web_page_updated = true;  
     }
 

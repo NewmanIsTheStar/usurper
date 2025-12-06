@@ -28,8 +28,10 @@
 #include <config.h>
 #include <watchdog.h>
 #include <pluto.h>
+#ifdef INCORPORATE_THERMOSTAT  
 #include "powerwall.h"
-#include <shelly.h>
+#endif
+//#include <shelly.h>
 #include "json_parser.h"
 
 

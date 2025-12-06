@@ -22,7 +22,9 @@
 #include "thermostat.h"
 
 #include "pluto.h"
+#ifdef INCORPORATE_THERMOSTAT  
 #include "powerwall.h"
+#endif
 #include "led_strip.h"
 
 #ifdef USE_GIT_HASH_AS_VERSION
@@ -701,7 +703,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;        
         case SSI_time: // time
         {
-            if(!get_timestamp(timestamp, sizeof(timestamp), false)) {
+            if(!get_timestamp(timestamp, sizeof(timestamp), false, false)) {
                 printed = snprintf(pcInsert, iInsertLen, "%s", timestamp);
             }
             else {

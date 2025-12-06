@@ -51,7 +51,9 @@ extern NON_VOL_VARIABLES_T config;
 
 // global variable
 char current_calendar_web_page[50] = "/landscape.shtml";
-uint32_t unix_time;
+uint32_t unix_time = 0;
+uint32_t unix_time_delta_in_ticks = 0;
+long int sntp_update_counter = 0;
 
 static int daylight_saving_start_month;
 static int daylight_saving_start_day;
@@ -421,28 +423,56 @@ int daylight_savings_active(datetime_t date)
  * \param[out]  timestamp   pointer to string to store the timestamp 
  * \param[in]   len         max length of timestamp string  
  * \param[in]   isoformat   use iso format
+ * \param[in]   localtime   use local time
  * 
  * \return 0 on success, non-zero on error
  */
-int get_timestamp(char *timestamp, int len, int isoformat)
+int get_timestamp(char *timestamp, int len, int isoformat, int localtime)
 {
-    int ok = 0;
-    datetime_t t;
+   int ok = 0;
+   datetime_t t;
+   char timezone_offset[12];
 
-    ok = rtc_get_datetime(&t);
+#ifdef FAKE_RTC
+   if (localtime)
+   {
+      ok = get_datetime(&t, localtime);      
+   }
+   else
+#endif
+   {
+      ok = rtc_get_datetime(&t);      
+   }
 
-    if (ok)
-    {
-        if (isoformat)
-        {
-            // iso format needed for syslog
-            snprintf(timestamp, len, "%04d-%02d-%02dT%02d:%02d:%02d.000Z", t.year, t.month, t.day, t.hour, t.min, t.sec);
-        }
-        else
-        {
-            // human readable format
-            snprintf(timestamp, len, "%04d-%02d-%02d %02d:%02d:%02d Z", t.year, t.month, t.day, t.hour, t.min, t.sec);
-        }
+   if (ok)
+   {
+      if ((!localtime || config.timezone_offset == 0)) 
+      {
+         // zulu time
+         if (isoformat)
+         {
+            sprintf(timezone_offset, "Z");
+         }
+         else
+         {
+            sprintf(timezone_offset, "");
+         }
+      }
+      else
+      {
+         sprintf(timezone_offset, "%c%02d:%02d", config.timezone_offset<0?'-':'+', abs(config.timezone_offset/60), abs(config.timezone_offset%60));
+      }
+
+      if (isoformat)
+      {
+         // iso format needed for syslog
+         snprintf(timestamp, len, "%04d-%02d-%02dT%02d:%02d:%02d.000%s", t.year, t.month, t.day, t.hour, t.min, t.sec, timezone_offset);
+      }
+      else
+      {
+        // human readable format
+        snprintf(timestamp, len, "%04d-%02d-%02d %02d:%02d:%02d UTC%s", t.year, t.month, t.day, t.hour, t.min, t.sec, timezone_offset);
+      }
     }
     else
     {
@@ -769,13 +799,12 @@ int8_t get_real_time_clock_seconds(void)
  *
  * This should only be called from one task!
  */
-int8_t rtc_update(void)
+uint32_t rtc_update(void)
 {
    TickType_t current_tick;
    TickType_t increment;
    static TickType_t last_tick = 0;
    static bool initialized = false;   
-
 
    current_tick = xTaskGetTickCount();
 
@@ -784,13 +813,36 @@ int8_t rtc_update(void)
       last_tick = current_tick;
       initialized = true;
    }
+   else
+   {
+      increment = (current_tick - last_tick);
 
-   increment = (current_tick - last_tick)/1000;
+      // check if clock shaving required
+      if (unix_time_delta_in_ticks)
+      {
+         if (increment > 200)
+         {
+            if (unix_time_delta_in_ticks > 100)
+            {
+               // shave 100 ms
+               increment -= 100;  
+               unix_time_delta_in_ticks -= 100;
+            } 
+            else if (unix_time_delta_in_ticks > 0)
+            {
+               // shave remaining ms
+               increment -= unix_time_delta_in_ticks;  
+               unix_time_delta_in_ticks = 0;            
+            }    
+         }
+      }
+           
+      increment /= 1000;
+      last_tick += increment*1000;   // avoid accumulating rounding errors
+      unix_time += increment;        // must be atomic!
+   }
 
-   last_tick += increment*1000;   // avoid accumulating rounding errors
-   unix_time += increment;  // TODO make atomic
-
-   return(0);
+   return(unix_time_delta_in_ticks);
 }
 
 /*!
@@ -830,8 +882,25 @@ int8_t rtc_get_datetime(datetime_t *date)
  */
 int8_t rtc_set_datetime(uint32_t sec)
 {
-    
-   unix_time = sec;
+   // try to prevent time going backwards   
+   if (sec >= unix_time)
+   {
+      unix_time = sec; // must be atomic!
+   }
+   else
+   {
+      // our local time is ahead of ntp so record delta in ticks
+      unix_time_delta_in_ticks = (unix_time - sec) *1000;
+
+      // if delta is huge a step change is necessary
+      if (unix_time_delta_in_ticks > 60000)
+      {
+         unix_time = sec; // time goes backwards!
+         unix_time_delta_in_ticks = 0;
+      }
+   }
+
+   sntp_update_counter++;   // used to monitor sntp connectivity
 
    return(1);
 }
@@ -942,4 +1011,62 @@ int time_string_to_mow(char *string, int length, int day)
    mow = day*24*60 + hour*60 + minute;
 
    return(mow);
+}
+
+/*!
+ * \brief check sntp is receiving updates
+ *
+ */
+bool sntp_alive(void)
+{
+   bool alive = true;
+   static long int poll_counter = 0;
+   static long int last_sntp_update_counter= 0;
+   
+   if (sntp_update_counter != last_sntp_update_counter)
+   {
+      printf("sntp updates: %d @ poll number %d\n", sntp_update_counter, poll_counter);
+      // an sntp update has occured since the last poll so reset counter
+      poll_counter = 0;
+      last_sntp_update_counter = sntp_update_counter;
+   }
+   else if (poll_counter > 60*60*24)
+   {
+      alive = false;
+   }
+
+   return(alive);
+}
+
+/*!
+ * \brief Get current time
+ *  
+ * \return 1
+ */
+int8_t get_datetime(datetime_t *date, int localtime)
+{
+   struct tm * timeinfo;
+   time_t t;
+
+   t = unix_time; // must be atomic
+
+   if (localtime)
+   {
+      // apply timezone offset
+      t += (config.timezone_offset * 60);
+   }
+
+	timeinfo = gmtime(&t);
+
+	memset(date, 0, sizeof(datetime_t));
+	date->sec = timeinfo->tm_sec;
+	date->min = timeinfo->tm_min;
+	date->hour = timeinfo->tm_hour;
+	date->day = timeinfo->tm_mday;
+	date->month = timeinfo->tm_mon + 1;
+	date->year = timeinfo->tm_year + 1900;
+
+   date->dotw = get_day_of_week(date->month, date->day, date->year);
+
+   return(1);
 }

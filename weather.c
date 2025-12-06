@@ -680,7 +680,7 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
         {
         case SCHEDULE_FUTURE:
             send_syslog_message("usurper", "Irrigation ended according to schedule");
-            get_timestamp(web.last_completed_timestring, sizeof(web.last_completed_timestring), 0); 
+            get_timestamp(web.last_completed_timestring, sizeof(web.last_completed_timestring), false, true); 
             snprintf(web.status_message, sizeof(web.status_message), "Next irrigation %s at %02d:%02d", day_name(schedule_start_mow/(24*60)), (schedule_start_mow%(24*60))/60, (schedule_start_mow%(24*60))%60);                                                
             irrigation_state = IRRIGATION_OFF;
             break;
@@ -1168,7 +1168,7 @@ bool terminate_irrigation_due_to_weather (void)
                 send_syslog_message("usurper", "%s",reason);                
                 break;
             }         
-            get_timestamp(web.last_usurped_timestring, sizeof(web.last_usurped_timestring), 0);                 
+            get_timestamp(web.last_usurped_timestring, sizeof(web.last_usurped_timestring), false, true);                 
         }
     }
 

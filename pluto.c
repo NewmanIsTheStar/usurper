@@ -56,7 +56,8 @@
 
 #define BOSS_TASK_PRIORITY              ( 0 + 2UL )
 #define WATCHDOG_TASK_PRIORITY          ( 0 + 1UL )
-#define PAUSE_FOR_INITIAL_SNTP_RESPONSE (1) 
+#define PAUSE_FOR_INITIAL_SNTP_RESPONSE (1)
+//#define LOG_CLOCK_SLEW                  (1) 
 
 
 // external variables
@@ -76,6 +77,7 @@ int ap_mode(void);
 int set_web_ip_network_info(void);
 int set_realtime_clock(void);
 int monitor_stacks(void);
+int monitor_heap(void);
 int test_ap_mode(void);
 void atomic_write_task(__unused void *params);
 void atomic_read_task(__unused void *params);
@@ -168,6 +170,7 @@ void boss_task(__unused void *params)
     ip_addr_t nm = {0};
     ip_addr_t gw = {0};
     BaseType_t task_creation_status = 0;
+    uint32_t clock_ahead_error = 0;
     
     // start watchdog
     xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
@@ -224,9 +227,9 @@ void boss_task(__unused void *params)
     // initialize the ip info used in the web interface
     set_web_ip_network_info();
 
-    printf("Pico W address = %s\n", web.ip_address_string);  
-    printf("Pico W netmask = %s\n", web.network_mask_string);
-    printf("Pico W gateway = %s\n", web.gateway_string);
+    printf("Address = %s\n", web.ip_address_string);  
+    printf("Netmask = %s\n", web.network_mask_string);
+    printf("Gateway = %s\n", web.gateway_string);
 
     // initialize the clock 
     set_realtime_clock(); 
@@ -242,7 +245,12 @@ void boss_task(__unused void *params)
     for(worker=0; worker_tasks[worker].functionptr != NULL; worker++)
     {
         task_creation_status = xTaskCreate(worker_tasks[worker].functionptr, worker_tasks[worker].name, worker_tasks[worker].stack_size, &(worker_tasks[worker].watchdog_alive_indicator), worker_tasks[worker].priority, &(worker_tasks[worker].task_handle));
-        printf("WORKER TASK %d :: xTaskCreate returned %d\n", worker, task_creation_status);
+        
+        if (task_creation_status != pdPASS)
+        {
+            printf("WORKER TASK %d :: xTaskCreate failed -- return value [%d]\n", worker, task_creation_status);
+        }
+
         SLEEP_MS(1000);
     }    
 
@@ -257,38 +265,42 @@ void boss_task(__unused void *params)
         config_write();
 
         // check stack high water mark for each worker task
-        monitor_stacks();     
+        monitor_stacks();    
+        
+        // check free heap size
+        monitor_heap();
 
         #ifdef FAKE_RTC
         // maintain fake rtc
-        rtc_update();
+        clock_ahead_error = rtc_update();
+              
+        #ifdef LOG_CLOCK_SLEW 
+        if (clock_ahead_error)
+        {            
+            send_syslog_message("clock", "Clock shaving in progress.  Local clock ahead of UTC by %lu ms", clock_ahead_error);            
+        }
+        #endif
         #endif
 
         // report watchdog reboot to syslog server
-        check_watchdog_reboot();   
-                
+        check_watchdog_reboot();         
+
         SLEEP_MS(1000);
 
-        // if (rtc_get_datetime(&date))
-        // {
-        //     // set day of week since ntp does not provide this TODO check if this is true and/or should be in sdk_callback.c        
-        //     date.dotw = get_day_of_week(date.month, date.day, date.year);
+        // request reboot if no sntp updates received for 24 hours
+        if (!sntp_alive())
+        {
+            printf("no sntp updates for 24 hours -- requesting reboot\n");
+            restart_requested = true;
+        }
 
-        //     #ifndef FAKE_RTC
-        //     rtc_set_datetime(&date);
-        //     #endif
-        // }
-        // rtc_get_datetime(&date);
-        // datetime_to_str(buffer, sizeof(buffer), &date);
-        //printf("%s Zulu\n", buffer);
-
-
+        // reboot if requested
         if (restart_requested)
         {
             printf("Shutdown commenced\n");
+            restart_requested = false;
 
             // disable wifi
-            restart_requested = false;
             cyw43_arch_disable_sta_mode();
             cyw43_arch_deinit();
             
@@ -299,7 +311,7 @@ void boss_task(__unused void *params)
             watchdog_enable(100, 0);
 
             SLEEP_MS(1000);
-        }        
+        }         
     }
 }
 
@@ -532,7 +544,7 @@ int monitor_stacks(void)
         {
             if (!spam_throttle)
             {
-                send_syslog_message("usurper", "LOW STACK WARNING.  %s stack high water mark = %d", worker_tasks[worker].name, worker_tasks[worker].stack_high_water_mark);
+                send_syslog_message("stack", "LOW STACK WARNING.  %s stack high water mark = %d", worker_tasks[worker].name, worker_tasks[worker].stack_high_water_mark);
                 spam_throttle = 60;
             }
             else
@@ -541,6 +553,29 @@ int monitor_stacks(void)
             }
         }
     } 
+
+    return(0);
+}
+
+/*!
+ * \brief Track the minimum heap size
+ *
+ * \param none
+ *
+ * \return 0
+ */
+int monitor_heap(void)
+{
+    static size_t min_heap_free = UINT_MAX;
+    size_t current_heap_free = 0;
+
+    current_heap_free = xPortGetMinimumEverFreeHeapSize();
+
+    if (current_heap_free < min_heap_free)
+    {
+        min_heap_free = current_heap_free;
+        printf("Minimum heap = %lu\n", min_heap_free);
+    }
 
     return(0);
 }

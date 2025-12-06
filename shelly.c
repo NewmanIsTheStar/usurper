@@ -30,7 +30,9 @@
 #include "utility.h"
 #include "config.h"
 #include "watchdog.h"
+#ifdef INCORPORATE_THERMOSTAT  
 #include "powerwall.h"
+#endif
 #include "shelly.h"
 #include "json_parser.h"
 #include "pluto.h"

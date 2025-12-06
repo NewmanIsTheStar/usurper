@@ -54,7 +54,9 @@
 #include "udp.h"
 #include "message.h"
 #include "message_defs.h"
+#ifdef INCORPORATE_THERMOSTAT  
 #include "powerwall.h"
+#endif
 #include "shelly.h"
 #include "discovery_task.h"
 
