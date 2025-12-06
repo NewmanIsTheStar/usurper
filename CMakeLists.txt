@@ -8,9 +8,9 @@ set(APP_VERSION "01.00.02")
 set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 
-# Set board type
-set(PICO_BOARD pico_w CACHE STRING "Board type")
-#set(PICO_BOARD pico2_w CACHE STRING "Board type")
+# Set board type (uncomment *one* of the following lines)
+#set(PICO_BOARD pico_w CACHE STRING "Board type")
+set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # ====================================================================================
 
 set(CMAKE_C_STANDARD 11)
@@ -163,11 +163,11 @@ set(pluto_link_libraries
 # endif()
 
 # pico_w has insufficent RAM to incorporate HTTPS web client (thus tesla powerwall monitoring is disabled on pico_w)
-if(NOT PICO_BOARD STREQUAL "pico_w")
-        set(pluto_link_libraries ${pluto_link_libraries}        
-                pico_lwip_mbedtls
-                pico_mbedtls)        
-endif()
+# if(NOT PICO_BOARD STREQUAL "pico_w")
+#         set(pluto_link_libraries ${pluto_link_libraries}        
+#                 pico_lwip_mbedtls
+#                 pico_mbedtls)        
+# endif()
 
 
 # ====================================================================================
@@ -194,10 +194,10 @@ execute_process(COMMAND
 
 add_executable(${PROJECT_NAME} ${usurper_source_files})      
 target_compile_definitions(${PROJECT_NAME} PRIVATE APP_NAME="Usurper" HTTPD_FSDATA_FILE="usurper/htmldata.c")
-if(NOT PICO_BOARD STREQUAL "pico_w") 
-#target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_THERMOSTAT)
-target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_HOME_CONTROLLER)
-endif()
+# if(NOT PICO_BOARD STREQUAL "pico_w") 
+# target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_THERMOSTAT)
+# target_compile_definitions(${PROJECT_NAME} PRIVATE INCORPORATE_HOME_CONTROLLER)
+# endif()
 
 pico_generate_pio_header(usurper ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
 

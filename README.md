@@ -24,10 +24,16 @@ cd build
 cmake ..
 make
 ```
-Upon completion of a successful build the file usurper.uf2 should be created.  This may be loaded onto the Pico2 W in the usual manner.  **NB:** The default board target is Pico2_W.  If you wish to build for Pico_W then change the board in CMakeLists.txt before building.
+Upon completion of a successful build the file usurper.uf2 should be created.  This may be loaded onto the Pico2 W in the usual manner.
+
+**NB:** The default board target is Pico2_W.  If you wish to change the board then uncomment one of the following lines in CMakeLists.txt.
+```
+#set(PICO_BOARD pico_w CACHE STRING "Board type")
+set(PICO_BOARD pico2_w CACHE STRING "Board type")
+```
 
 ## Initial Configuration
-- The Pico W will initially create a WiFi network called **pluto**.  Connect to this WiFi network and then point your web browser to http://192.168.4.1
+- The Pico will initially create a WiFi network called **pluto**.  Connect to this WiFi network and then point your web browser to http://192.168.4.1
   - Note that many web browsers automatically change the URL from http:// to https:// so if it is not connecting you might need to reenter the URL.
 - Set the WiFi country, network and password then hit save and reboot.  The Pico will attempt to connect to the WiFi network.  If it fails then it will fall back to AP mode and you can once again connect to the pluto network and correct your mistakes.  
 - Set the personality by navigating to Settings/Foibles/☺
