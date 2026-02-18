@@ -101,6 +101,26 @@ body {
               </td>
           </tr>
       </form>
+      <form action="/anemometer.cgi">
+          <tr>            
+              <td style="text-align: left;font-weight: bold;">
+                  <label>Anemometer</label>
+              </td>
+          </tr>         
+          <tr>
+              <td><label>Use separate anemometer for wind measurements</label></td>
+              <td><input type="checkbox" id="anen" name="anen" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#anen-->></td>
+          </tr>         
+          <tr>
+              <td><label for="ecoip">Anemometer Address</label></td>
+              <td><input type="text" id="anip" name="anip" value="<!--#anip-->"></td>
+          </tr>                                               
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+      </form>              
   </table> 
 </div>
    

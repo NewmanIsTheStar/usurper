@@ -74,6 +74,16 @@ typedef struct LED_REMOTE_STATE_STRUCT
     int confirmed_speed;
 } LED_REMOTE_STATE_T;
 
+typedef struct ANEMOMETER_REMOTE_STATE_STRUCT
+{
+    SOCKADDR_IN resolved_address;
+    TickType_t resolved_at_tick;
+    TickType_t requested_at_tick;
+    u_int32_t latest_transaction;
+    u_int32_t latest_sequence;     
+    int wind_speed;
+} ANEMOMETER_REMOTE_STATE_T;
+
 
 //prototypes
 int receive_led_strip_request(tsLED_STRIP_RQST *psMsg, SOCKADDR_IN sDest);
@@ -82,6 +92,9 @@ int send_led_strip_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction,
 int send_led_strip_request(int strip, int pattern, int speed, SOCKADDR_IN sDest);
 void initialize_remote_led_strips(void);
 void control_remote_led_strips(void);
+int send_wind_speed_request(SOCKADDR_IN sDest);
+void initialize_remote_anemometer(void);
+int send_wind_speed_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction, u_int32_t sequence);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -89,6 +102,7 @@ extern WEB_VARIABLES_T web;
 
 //static variables
 static LED_REMOTE_STATE_T remote_led_strip_state[6];
+static ANEMOMETER_REMOTE_STATE_T remote_anemometer_state;
 static SOCKET message_socket = 0;
 static char message_buffer[128];
 static int message_receive_timeout = 5000000;                             // five seconds
@@ -110,6 +124,7 @@ void message_task(__unused void *params)
     printf("message_task started\n");
 
     initialize_remote_led_strips();
+    initialize_remote_anemometer();
 
     message_socket = upd_establish_socket(6969);
 
@@ -132,7 +147,13 @@ void message_task(__unused void *params)
                         break;
                     case LED_STRIP_CNFM:
                          receive_led_strip_confirm((tsLED_STRIP_CNFM *)&message_buffer, sClientAddress);
-                        break;                        
+                        break;  
+                    case WIND_SPEED_RQST:
+                        receive_led_strip_request((tsLED_STRIP_RQST *)&message_buffer, sClientAddress);
+                        break;
+                    case WIND_SPEED_CNFM:
+                         receive_led_strip_confirm((tsLED_STRIP_CNFM *)&message_buffer, sClientAddress);
+                        break;                                                
                     default:
                         printf("unrecognized Rx message ID (%lu)\n", htonl(((tsMSG_HDR *)&message_buffer)->message));
                         break;
@@ -481,6 +502,32 @@ void initialize_remote_led_strips(void)
     }
 }
 
+/*!
+ * \brief Initialize remote anemometer state variables
+ *
+ * \param none
+ * 
+ * \return nothing
+ */
+void initialize_remote_anemometer(void)
+{
+    TickType_t tick_now;
+
+    tick_now = xTaskGetTickCount();
+    
+
+    memset(&(remote_anemometer_state.resolved_address), 0, sizeof(struct sockaddr_in)); 
+    remote_anemometer_state.resolved_at_tick = tick_now;
+    remote_anemometer_state.requested_at_tick = tick_now;
+    remote_anemometer_state.wind_speed = 0;
+
+    if (config.anemometer_remote_ip[0])
+    {
+        construct_address(config.anemometer_remote_ip, 6969, &(remote_anemometer_state.resolved_address));
+    }
+    
+}
+
 
 /*!
  * \brief Control remote LED strips
@@ -536,3 +583,180 @@ void control_remote_led_strips(void)
     }
 }
 
+/*!
+ * \brief Poll remote anemometer
+ *
+ * \param none
+ * 
+ * \return nothing
+ */
+void poll_remote_anemometer(void)
+{
+    int strip;
+    int pattern;
+    int speed;
+    TickType_t tick_now;
+
+    if (config.anemometer_remote_enable)
+    {
+        pattern = get_double_buf_integer(&remote_pattern, 0);
+        speed = get_double_buf_integer(&remote_speed, 0);
+        tick_now = xTaskGetTickCount();
+            
+        if (config.anemometer_remote_ip[0])
+        {
+            // check time since last resolved the strip address
+            if ((tick_now - remote_anemometer_state.resolved_at_tick) > 60000)
+            {
+                // attempt to resolve ip address
+                if (!construct_address(config.anemometer_remote_ip, 6969, &(remote_anemometer_state.resolved_address)))
+                {
+                    remote_anemometer_state.resolved_at_tick = xTaskGetTickCount();
+                }
+            }
+            // check if pattern and speed already confirmed and one second since last request sent
+            if (((tick_now - remote_anemometer_state.requested_at_tick) > 10000))
+            {
+                //printf("sending led request because: pattern %d vs %d  speed %d vs %d  tick delta = %d\n", remote_led_strip_state[strip].confirmed_pattern, pattern, remote_led_strip_state[strip].confirmed_speed, speed, tick_now - remote_led_strip_state[strip].requested_at_tick);
+                // attmpt to send the message
+                if (!send_wind_speed_request(remote_anemometer_state.resolved_address))
+                {
+                    remote_anemometer_state.requested_at_tick = tick_now;
+                }
+            }
+        }
+
+        
+    }
+}
+
+
+/*!
+ * \brief send request to set led pattern
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of requestor
+ * 
+ * \return 0 on success
+ */
+int send_wind_speed_request(SOCKADDR_IN sDest)
+{
+    tsWIND_SPEED_RQST sRqst;
+    int iNumBytes;
+    int iError = 0;
+    static int sequence = 0;
+    int transaction;
+
+    transaction = get_rand_32();
+
+    sRqst.sHeader.version = htonl(1);
+    sRqst.sHeader.message = htonl(WIND_SPEED_RQST);
+    sRqst.sHeader.transaction = htonl(transaction); 
+    sRqst.sHeader.sequence = htonl(sequence);  
+
+    iNumBytes = udp_transmit (message_socket, (char *)&sRqst, sizeof(tsWIND_SPEED_RQST), sDest);    
+
+    if (iNumBytes < 0)
+    {
+        printf("Failed to send Wind Speed request\n");
+        iError = 1;
+    }
+    else
+    {
+        remote_anemometer_state.latest_transaction = transaction;
+        remote_anemometer_state.latest_sequence = sequence;   
+
+        sequence++;     
+    }
+
+    return (iError);
+}
+
+/*!
+ * \brief set requested led strip pattern and send confirmation message
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of sender
+ * 
+ * \return 0 on success
+ */
+int receive_wind_speed_request(tsWIND_SPEED_RQST *psMsg, SOCKADDR_IN sDest)
+{
+    int iError = 0;
+
+    // compatibility check
+    if (htonl(psMsg->sHeader.version) == 1)
+    {   
+        // send confirmation message
+        send_wind_speed_confirm(iError, sDest, htonl(psMsg->sHeader.transaction), htonl(psMsg->sHeader.sequence));
+    }
+
+    return EXIT_SUCCESS;
+}
+
+/*!
+ * \brief record confirmed remote led strip pattern in local cache
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of sender
+ * 
+ * \return 0 on success
+ */
+int receive_wind_speed_confirm(tsWIND_SPEED_CNFM *psMsg, SOCKADDR_IN sDest)
+{
+    //int iError = 0;
+    int strip;
+
+    // compatibility check
+    if (htonl(psMsg->sHeader.version) == 1)
+    {
+            
+        if (remote_anemometer_state.latest_transaction == htonl(psMsg->sHeader.transaction))  //TODO: this relies on transaction being unique, which is not true!
+        {
+            if (remote_anemometer_state.latest_sequence == htonl(psMsg->sHeader.sequence))
+            {
+                //printf("Got timely LED confirm from strip %d\n", strip);
+            }
+            else
+            {
+                printf("Got late / out of order LED confirm from strip %d\n", strip);
+            }
+
+            //TODO: consider checking IP here
+            remote_anemometer_state.wind_speed = psMsg->wind_speed;
+            //CLIP(remote_anemometer_state.wind_speed, 0, 320);  //TODO archaic units
+            web.anemometer_wind_speed = remote_anemometer_state.wind_speed;
+        }              
+
+        
+}
+
+    return EXIT_SUCCESS;
+}
+
+
+/*!
+ * \brief send confirmed message with current wind speed
+ *
+ * \param[in]  psMsg   pointer message
+ * \param[in]  sDest   address of requestor
+ * 
+ * \return number of bytes sent
+ */
+int send_wind_speed_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction, u_int32_t sequence)
+{
+    tsWIND_SPEED_CNFM sCnfm;
+    int iNumBytes;
+
+    sCnfm.sHeader.version = htonl(1);
+    sCnfm.sHeader.message = htonl(LED_STRIP_CNFM);
+    sCnfm.sHeader.transaction = htonl(transaction);
+    sCnfm.sHeader.sequence = htonl(sequence);
+
+    sCnfm.iError = htonl(0);
+    sCnfm.wind_speed = htonl(web.anemometer_wind_speed);
+
+    iNumBytes = udp_transmit (message_socket, (char *)&sCnfm, sizeof(tsWIND_SPEED_CNFM), sDest);
+
+    return(iNumBytes);
+}

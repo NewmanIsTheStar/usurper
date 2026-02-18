@@ -36,6 +36,7 @@ void config_v7_to_v8(void);
 void config_v8_to_v9(void);
 void config_v9_to_v10(void);
 void config_v10_to_v11(void);
+void config_v11_to_v12(void);
 
 NON_VOL_VARIABLES_T config;
 static int config_dirty_flag = 0;
@@ -51,7 +52,8 @@ static NON_VOL_CONVERSION_T config_info[] =
     {8,      offsetof(NON_VOL_VARIABLES_T_VERSION_8, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_8, crc),   &config_v7_to_v8},  
     {9,      offsetof(NON_VOL_VARIABLES_T_VERSION_9, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_9, crc),   &config_v8_to_v9},    
     {10,     offsetof(NON_VOL_VARIABLES_T_VERSION_10, version),  offsetof(NON_VOL_VARIABLES_T_VERSION_10, crc),  &config_v9_to_v10},   
-    {11,     offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v10_to_v11},                         
+    {11,     offsetof(NON_VOL_VARIABLES_T_VERSION_11, version),  offsetof(NON_VOL_VARIABLES_T_VERSION_11, crc),  &config_v10_to_v11}, 
+    {12,     offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v11_to_v12},                             
 };
 
 
@@ -236,49 +238,6 @@ void config_v4_to_v5(void)
 
     // v5 is now defunct -- all new parameters will be initialized on upgrade to v6
 
-
-    // config.thermostat_enable = 0;
-    // config.heating_gpio = -1;
-    // config.cooling_gpio = -1;
-    // config.fan_gpio = -1;
-    // config.heating_to_cooling_lockout_mins = 1;
-    // config.minimum_heating_on_mins = 1;
-    // config.minimum_cooling_on_mins = 1;
-    // config.minimum_heating_off_mins = 1;
-    // config.minimum_cooling_off_mins = 1;
-
-    // for(i=0; i<NUM_ROWS(config.thermostat_period_end_mow); i++)
-    // {
-    //     config.setpoint_start_mow[i] = -1;
-    //     config.thermostat_period_end_mow[i] = 0;
-    //     config.thermostat_period_setpoint_index[i] = 0;
-    //     config.thermostat_period_number = i;
-    // }
-
-    // for(i=0; i<NUM_ROWS(config.setpoint_name); i++)
-    // {
-    //     config.setpoint_name[i][0] = 0;
-    //     config.setpoint_temperaturex10[i] = 21;
-    //     config.setpoint_number = i;
-
-    //     sprintf(config.setpoint_name[i], "Setpoint%d", i);
-    // }
-
-    // config.powerwall_ip[0] = 0;
-    // STRNCPY(config.powerwall_hostname, "powerwall", sizeof(config.powerwall_hostname));
-    // config.powerwall_password[0] = 0;
-
-    // config.grid_down_heating_setpoint_decrease = 10;
-    // config.grid_down_cooling_setpoint_increase = 10;
-    // config.grid_down_heating_disable_battery_level = 40;
-    // config.grid_down_heating_enable_battery_level = 60;
-    // config.grid_down_cooling_disable_battery_level = 70;
-    // config.grid_down_cooling_enable_battery_level = 90;
-
-    // for(i=0; i<NUM_ROWS(config.gpio_default); i++)
-    // {
-    //     config.gpio_default[i] = GP_UNINITIALIZED;
-    // }
 }
 
 /*!
@@ -427,8 +386,25 @@ void config_v10_to_v11(void)
         config.setpoint_heating_temperaturex10[i] = 210;
         config.setpoint_cooling_temperaturex10[i] = 210;        
     }
+
+    config.thermostat_hysteresis = 10;
 }
 
+ /*!
+ * \brief Convert configuration from v11 to v12 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v11_to_v12(void)
+{
+    int i;
+
+    printf("Converting configuration from version 11 to version 12\n"); 
+    config.version = 12;     
+
+    config.anemometer_remote_enable = 0;
+    config.anemometer_remote_ip[0] = 0;
+}
 
 // ************************************************************************************************************************
 // ************************************************************************************************************************

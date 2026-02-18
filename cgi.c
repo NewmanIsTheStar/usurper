@@ -846,17 +846,10 @@ const char * cgi_led_handler(int iIndex, int iNumParams, char *pcParam[], char *
  */
 const char * cgi_reboot_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-    //int i = 0;
-    //int whole_part = 0;
-    //int tenths_part = 0;
-    //char *param = NULL;
-    //char *value = NULL;
-    //int new_value = 0;
-       
     printf("REBOOT requested\n");
     
     //request reboot
-    application_restart();
+    application_restart(REBOOT_USER_REQUEST);
 
     return "/index.shtml";    
 }
@@ -3269,7 +3262,63 @@ const char * cgi_advanced_settings(int iIndex, int iNumParams, char *pcParam[], 
     config_changed();
     return "/t_advanced.shtml";
 }
- 
+
+/*!
+ * \brief cgi handler
+ *
+ * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+ * \param[in]  iNumParams   number of parameters
+ * \param[in]  pcParam      parameter name
+ * \param[in]  pcValue      parameter value 
+ * 
+ * \return nothing
+ */
+const char * cgi_anemometer_settings(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    int i = 0;
+    char *param = NULL;
+    char *value = NULL;
+       
+    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+
+    // set off by default
+    config.anemometer_remote_enable  = 0; 
+
+    i = 0;
+    while (i < iNumParams)
+    {
+        param = pcParam[i];
+        value = pcValue[i];
+
+        if (param && value)
+        {
+            //printf("Parameter: %s has Value: %s\n", param, value);
+
+            if (strcasecmp("anip", param) == 0)
+            {
+                STRNCPY(config.anemometer_remote_ip, value, sizeof(config.anemometer_remote_ip));
+            }
+            
+            if (strcasecmp("anen", param) == 0)
+            {
+                if (value[0])
+                {
+                    config.anemometer_remote_enable = 1;
+                } 
+                else
+                {
+                    config.anemometer_remote_enable = 0;  // this should never happen, since the parameter is only passed if "on"
+                }   
+            } 
+        }
+
+        i++;
+    }
+
+    // Send the next page back to the user
+    config_changed();
+    return "/weather.shtml";
+}
 
 // CGI requests and their respective handlers  --Add new entires at bottom--
 static const tCGI cgi_handlers[] = {
@@ -3319,7 +3368,8 @@ static const tCGI cgi_handlers[] = {
     {"/t_gpio.cgi",                     cgi_thermostat_gpio_handler},   
     {"/gpio_default.cgi",               cgi_gpio_default_handler},  
     {"/t_sensors.cgi",                  cgi_temperature_sensors},
-    {"/t_advanced.cgi",                 cgi_advanced_settings},       
+    {"/t_advanced.cgi",                 cgi_advanced_settings},    
+    {"/t_anemometer.cgi",               cgi_anemometer_settings},     
      
 };
 

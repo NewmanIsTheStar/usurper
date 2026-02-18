@@ -78,7 +78,16 @@ body {
     <input type="text" id="wndt" name="wndt" value="<!--#wndt-->"><br><br>                
     <br>
     <input type="submit" value="Save" style="font-size: 25px;">
-  </form>    
+  </form> 
+  <h2>Anemometer Settings</h2>      
+  <form action="/anemometer.cgi">
+    <label for="anem">Use dedicated anemometer rather than weather station for wind measurements</label>
+    <input type="checkbox" id="anen" name="anen" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#anen-->><br><br>    
+    <label for="anip">Anemometer Address</label>
+    <input type="text" id="anip" name="anip" value="<!--#anip-->"><br><br>                
+    <br>
+    <input type="submit" value="Save" style="font-size: 25px;">
+  </form>       
 </div>
    
 </body>

@@ -137,6 +137,7 @@ extern NON_VOL_VARIABLES_T config;
     x(mweek)     \
     x(colour)    \
     x(calpge)    \
+    x(porpge)    \
     x(swlhst)    \
     x(swlurl)    \
     x(swlfle)    \
@@ -586,6 +587,86 @@ extern NON_VOL_VARIABLES_T config;
     x(this18) \
     x(this19) \
     x(this20) \
+    x(this21) \
+    x(this22) \
+    x(this23) \
+    x(this24) \
+    x(this25) \
+    x(this26) \
+    x(this27) \
+    x(this28) \
+    x(this29) \
+    x(this30) \
+    x(this31) \
+    x(this32) \
+    x(this33) \
+    x(this34) \
+    x(this35) \
+    x(this36) \
+    x(this37) \
+    x(this38) \
+    x(this39) \
+    x(this40) \
+    x(this41) \
+    x(this42) \
+    x(this43) \
+    x(this44) \
+    x(this45) \
+    x(this46) \
+    x(this47) \
+    x(this48) \
+    x(this49) \
+    x(this50) \
+    x(this51) \
+    x(this52) \
+    x(this53) \
+    x(this54) \
+    x(this55) \
+    x(this56) \
+    x(this57) \
+    x(this58) \
+    x(this59) \
+    x(this60) \
+    x(this61) \
+    x(this62) \
+    x(this63) \
+    x(this64) \
+    x(this65) \
+    x(this66) \
+    x(this67) \
+    x(this68) \
+    x(this69) \
+    x(this70) \
+    x(this71) \
+    x(this72) \
+    x(this73) \
+    x(this74) \
+    x(this75) \
+    x(this76) \
+    x(this77) \
+    x(this78) \
+    x(this79) \
+    x(this80) \
+    x(this81) \
+    x(this82) \
+    x(this83) \
+    x(this84) \
+    x(this85) \
+    x(this86) \
+    x(this87) \
+    x(this88) \
+    x(this89) \
+    x(this90) \
+    x(this91) \
+    x(this92) \
+    x(this93) \
+    x(this94) \
+    x(this95) \
+    x(this96) \
+    x(this97) \
+    x(this98) \
+    x(this99) \
+    x(this100) \
     x(cmplte)   \
     x(c1d1d)     \
     x(c1d2d)     \
@@ -655,7 +736,9 @@ extern NON_VOL_VARIABLES_T config;
     x(ttma)      \
     x(ttgrd)     \
     x(ttpred)    \
-    x(disdig)
+    x(disdig)    \
+    x(anip)      \
+    x(anen)
 
   
 //enum used to index array of pointers to SSI string constants  e.g. index 0 is SSI_usurped
@@ -725,14 +808,23 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         }
         break;
         case SSI_wind: // wind
-        {         
+        {
+            if (config.anemometer_remote_enable)
+            {
+                i = web.anemometer_wind_speed;
+            }         
+            else
+            {
+                i = web.wind_speed;
+            }
+
             if (!config.use_archaic_units)
             {
-                printed = snprintf(pcInsert, iInsertLen, "%d.%d", web.wind_speed/10, web.wind_speed%10); 
+                printed = snprintf(pcInsert, iInsertLen, "%d.%d", i/10, i%10); 
             }
             else
             {
-                temp = (web.wind_speed*3281 + 500)/1000;
+                temp = (i*3281 + 500)/1000;
                 printed = snprintf(pcInsert, iInsertLen, "%ld.%ld", temp/10, temp%10);
             }              
         } 
@@ -1224,55 +1316,113 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break; 
         case SSI_calpge: //calpge
         {
-            switch(config.personality)
+            if (web.access_point_mode)
             {
-            default:
-            case NO_PERSONALITY:
-                //printf("redirecting to personality.shtml (%d)\n", config.personality);
-                printed = snprintf(pcInsert, iInsertLen, "/personality.shtml");
-                break;
-            case SPRINKLER_USURPER:
-                if (config.use_monday_as_week_start)
+                printed = snprintf(pcInsert, iInsertLen, "/network.shtml");
+            }
+            else
+            {
+                switch(config.personality)
                 {
-                    //printf("redirecting to landscape_monday.shtml\n");
-                    printed = snprintf(pcInsert, iInsertLen, "/landscape_monday.shtml");
+                default:
+                case NO_PERSONALITY:
+                    //printf("redirecting to personality.shtml (%d)\n", config.personality);
+                    printed = snprintf(pcInsert, iInsertLen, "/personality.shtml");
+                    break;
+                case SPRINKLER_USURPER:
+                    if (config.use_monday_as_week_start)
+                    {
+                        //printf("redirecting to landscape_monday.shtml\n");
+                        printed = snprintf(pcInsert, iInsertLen, "/landscape_monday.shtml");
+                    }
+                    else
+                    {
+                        //printf("redirecting to landscape.shtml\n");
+                        printed = snprintf(pcInsert, iInsertLen, "/landscape.shtml");
+                    }
+                    break;
+                case SPRINKLER_CONTROLLER:
+                    if (config.use_monday_as_week_start)
+                    {
+                        //printf("redirecting to landscape_monday.shtml\n");
+                        printed = snprintf(pcInsert, iInsertLen, "/zm_landscape.shtml");
+                    }
+                    else
+                    {
+                        //printf("redirecting to landscape.shtml\n");
+                        printed = snprintf(pcInsert, iInsertLen, "/zs_landscape.shtml");
+                    }
+                    break;                
+                case LED_STRIP_CONTROLLER:
+                    printed = snprintf(pcInsert, iInsertLen, "/led_controller.shtml");
+                    break;
+                case HVAC_THERMOSTAT:
+                    if (config.use_monday_as_week_start)
+                    {
+                        //printf("redirecting to landscape_monday.shtml\n");
+                        printed = snprintf(pcInsert, iInsertLen, "/tm_thermostat.shtml");
+                    }
+                    else
+                    {
+                        //printf("redirecting to landscape.shtml\n");
+                        printed = snprintf(pcInsert, iInsertLen, "/ts_thermostat.shtml");
+                    }            
+                    break;                
                 }
-                else
-                {
-                    //printf("redirecting to landscape.shtml\n");
-                    printed = snprintf(pcInsert, iInsertLen, "/landscape.shtml");
-                }
-                break;
-            case SPRINKLER_CONTROLLER:
-                if (config.use_monday_as_week_start)
-                {
-                    //printf("redirecting to landscape_monday.shtml\n");
-                    printed = snprintf(pcInsert, iInsertLen, "/zm_landscape.shtml");
-                }
-                else
-                {
-                    //printf("redirecting to landscape.shtml\n");
-                    printed = snprintf(pcInsert, iInsertLen, "/zs_landscape.shtml");
-                }
-                break;                
-            case LED_STRIP_CONTROLLER:
-                printed = snprintf(pcInsert, iInsertLen, "/led_controller.shtml");
-                break;
-            case HVAC_THERMOSTAT:
-                if (config.use_monday_as_week_start)
-                {
-                    //printf("redirecting to landscape_monday.shtml\n");
-                    printed = snprintf(pcInsert, iInsertLen, "/tm_thermostat.shtml");
-                }
-                else
-                {
-                    //printf("redirecting to landscape.shtml\n");
-                    printed = snprintf(pcInsert, iInsertLen, "/ts_thermostat.shtml");
-                }            
-                break;                
             }
         }                                                                                                                                                   
         break; 
+        case SSI_porpge: //porpge
+        {
+            if (web.access_point_mode)
+            {
+                printed = snprintf(pcInsert, iInsertLen, "/network.shtml");
+            }
+            else
+            {            
+                switch(config.personality)
+                {
+                default:
+                case NO_PERSONALITY:
+                    printed = snprintf(pcInsert, iInsertLen, "/personality.shtml");
+                    break;
+                case SPRINKLER_USURPER:
+                    if (config.use_monday_as_week_start)
+                    {
+                        printed = snprintf(pcInsert, iInsertLen, "/monday.shtml");
+                    }
+                    else
+                    {
+                        printed = snprintf(pcInsert, iInsertLen, "/sunday.shtml");
+                    }
+                    break;
+                case SPRINKLER_CONTROLLER:
+                    if (config.use_monday_as_week_start)
+                    {
+                        printed = snprintf(pcInsert, iInsertLen, "/monday.shtml");
+                    }
+                    else
+                    {
+                        printed = snprintf(pcInsert, iInsertLen, "/sunday.shtml");
+                    }
+                    break;                
+                case LED_STRIP_CONTROLLER:
+                    printed = snprintf(pcInsert, iInsertLen, "/led_controller.shtml");
+                    break;
+                case HVAC_THERMOSTAT:
+                    if (config.use_monday_as_week_start)
+                    {
+                        printed = snprintf(pcInsert, iInsertLen, "/t_schedule.cgi?day=1");
+                    }
+                    else
+                    {
+                        printed = snprintf(pcInsert, iInsertLen, "/t_schedule.cgi?day=0");
+                    }            
+                    break;                
+                }
+            }
+        }                                                                                                                                                   
+        break;        
         case SSI_swlhst: //swlhst
         {
             printed = snprintf(pcInsert, iInsertLen, "%s", web.software_server);
@@ -1636,7 +1786,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
                 printed = snprintf(pcInsert, iInsertLen, "LED Controller");
                 break;
             case HVAC_THERMOSTAT:
-                printed = snprintf(pcInsert, iInsertLen, "HVAC Controller");
+                printed = snprintf(pcInsert, iInsertLen, "HVAC Thermostat");
                 break;     
             case HOME_CONTROLLER:
                 printed = snprintf(pcInsert, iInsertLen, "Home Controller");
@@ -2315,18 +2465,44 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         break;            
         case SSI_tchs:  // thermostat current heating thresholds
         {
-            lower = web.thermostat_heating_set_point - config.thermostat_hysteresis;
-            upper = web.thermostat_heating_set_point + config.thermostat_hysteresis;
+            switch (web.thermostat_effective_mode)
+            {
+            case HVAC_AUTO:
+            case HVAC_HEATING_ONLY:
+            case HVAC_HEAT_AND_COOL:
+                lower = web.thermostat_heating_set_point - config.thermostat_hysteresis;
+                upper = web.thermostat_heating_set_point + config.thermostat_hysteresis;
 
-            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld", lower<0?'-':' ', abs(lower)/10, abs(lower%10), upper<0?'-':' ', abs(upper)/10, abs(upper%10));
+                printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld %s%s", lower<0?'-':' ', abs(lower)/10, abs(lower%10), upper<0?'-':' ', abs(upper)/10, abs(upper%10), "&deg;", config.use_archaic_units?"F":"C");
+                break;
+            default:
+            case HVAC_OFF:
+            case HVAC_COOLING_ONLY:
+            case HVAC_FAN_ONLY:
+                printed = snprintf(pcInsert, iInsertLen, "undefined");
+                break;                
+            }
         }
         break;
         case SSI_tccs:  // thermostat current cooling thresholds
         {
-            lower = web.thermostat_cooling_set_point - config.thermostat_hysteresis;
-            upper = web.thermostat_cooling_set_point + config.thermostat_hysteresis;
+            switch (web.thermostat_effective_mode)
+            {
+            case HVAC_AUTO:
+            case HVAC_COOLING_ONLY:
+            case HVAC_HEAT_AND_COOL:
+                lower = web.thermostat_cooling_set_point - config.thermostat_hysteresis;
+                upper = web.thermostat_cooling_set_point + config.thermostat_hysteresis;
 
-            printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld", lower<0?'-':' ', abs(lower)/10, abs(lower%10), upper<0?'-':' ', abs(upper)/10, abs(upper%10));
+                printed = snprintf(pcInsert, iInsertLen, "%c%ld.%ld to %c%ld.%ld %s%s", lower<0?'-':' ', abs(lower)/10, abs(lower%10), upper<0?'-':' ', abs(upper)/10, abs(upper%10), "&deg;", config.use_archaic_units?"F":"C");
+                break;
+            default:
+            case HVAC_OFF:            
+            case HVAC_HEATING_ONLY:
+            case HVAC_FAN_ONLY:
+                printed = snprintf(pcInsert, iInsertLen, "undefined");
+                break;                
+            }            
         }
         break;   
         case SSI_grids:  // grid status
@@ -2486,7 +2662,87 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_this17:
         case SSI_this18:
         case SSI_this19:
-        case SSI_this20:                
+        case SSI_this20: 
+        case SSI_this21:
+        case SSI_this22:
+        case SSI_this23:
+        case SSI_this24:
+        case SSI_this25:
+        case SSI_this26:
+        case SSI_this27:
+        case SSI_this28:
+        case SSI_this29:
+        case SSI_this30:
+        case SSI_this31:
+        case SSI_this32:
+        case SSI_this33:
+        case SSI_this34:
+        case SSI_this35:
+        case SSI_this36:
+        case SSI_this37:
+        case SSI_this38:
+        case SSI_this39:
+        case SSI_this40:
+        case SSI_this41:
+        case SSI_this42:
+        case SSI_this43:
+        case SSI_this44:
+        case SSI_this45:
+        case SSI_this46:
+        case SSI_this47:
+        case SSI_this48:
+        case SSI_this49:
+        case SSI_this50:
+        case SSI_this51:
+        case SSI_this52:
+        case SSI_this53:
+        case SSI_this54:
+        case SSI_this55:
+        case SSI_this56:
+        case SSI_this57:
+        case SSI_this58:
+        case SSI_this59:
+        case SSI_this60:
+        case SSI_this61:
+        case SSI_this62:
+        case SSI_this63:
+        case SSI_this64:
+        case SSI_this65:
+        case SSI_this66:
+        case SSI_this67:
+        case SSI_this68:
+        case SSI_this69:
+        case SSI_this70:
+        case SSI_this71:
+        case SSI_this72:
+        case SSI_this73:
+        case SSI_this74:
+        case SSI_this75:
+        case SSI_this76:
+        case SSI_this77:
+        case SSI_this78:
+        case SSI_this79:
+        case SSI_this80:
+        case SSI_this81:
+        case SSI_this82:
+        case SSI_this83:
+        case SSI_this84:
+        case SSI_this85:
+        case SSI_this86:
+        case SSI_this87:
+        case SSI_this88:
+        case SSI_this89:
+        case SSI_this90:
+        case SSI_this91:
+        case SSI_this92:
+        case SSI_this93:
+        case SSI_this94:
+        case SSI_this95:
+        case SSI_this96:
+        case SSI_this97:
+        case SSI_this98:
+        case SSI_this99:
+        case SSI_this100:                                       
         // temperature history
         {
             printed = print_temperature_history(pcInsert, iInsertLen, (iIndex-SSI_this1)*4, 4);                                   
@@ -2518,7 +2774,17 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         }
         break;           
         
-#endif                                        
+#endif
+        case SSI_anip: // anemometer ip address           
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.anemometer_remote_ip); 
+        }       
+        case SSI_anen: // anemometer enable
+        {
+            printed = snprintf(pcInsert, iInsertLen, "%s", config.anemometer_remote_enable?"checked":""); 
+        }
+        break;   
+                                         
         default:
         {
             printed = snprintf(pcInsert, iInsertLen, "Unhandled SSI tag");    

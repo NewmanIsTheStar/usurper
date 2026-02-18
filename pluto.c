@@ -59,6 +59,8 @@
 #define PAUSE_FOR_INITIAL_SNTP_RESPONSE (1)
 //#define LOG_CLOCK_SLEW                  (1) 
 
+// uninitialized variable
+REBOOT_REASON_T __uninitialized_ram(reboot_reason);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -111,17 +113,36 @@ int pluto(void)
     printf("\n%s version ", APP_NAME);
 
 #ifdef USE_GIT_HASH_AS_VERSION
-    printf("%s\n", GITHASH);
+    printf("%s\n\n", GITHASH);
 #else
-    printf("%s\n", PLUTO_VER);
+    printf("%s\n\n", PLUTO_VER);
 #endif
 
     flash_get_program_size();
-    printf("Compiled: %s %s\n\n",__DATE__,__TIME__);
+    printf("Compiled: %s %s\n",__DATE__,__TIME__);
+    printf("Pico SDK Version: %s\n\n", PICO_SDK_VERSION_STRING);
+
 
     if (watchdog_caused_reboot())
     {
         printf("***Reboot occured***\n");
+
+        switch(reboot_reason)
+        {
+        default:
+        case REBOOT_UNKNOWN:
+            printf("Reboot for Unknown reason\n");
+            break;
+        case REBOOT_SNTP_FAILURE:
+            printf("Reboot due to SNTP failure\n");
+            break;
+        case REBOOT_WEATHER_FAILURE:
+            printf("Reboot due to weather failure\n");
+            break;
+        case REBOOT_USER_REQUEST:
+            printf("Reboot due to user request\n");
+            break;
+        }
     }
     
 #if ( portSUPPORT_SMP == 1 )
@@ -188,7 +209,7 @@ void boss_task(__unused void *params)
          cyw43_arch_deinit();
          SLEEP_MS(1000);       
     } 
-#ifndef TEST_AP_MODE    
+#ifndef TEST_AP_MODE 
     // enable wifi station mode
     cyw43_arch_enable_sta_mode();
 
@@ -291,7 +312,7 @@ void boss_task(__unused void *params)
         if (!sntp_alive())
         {
             printf("no sntp updates for 24 hours -- requesting reboot\n");
-            restart_requested = true;
+            application_restart(REBOOT_SNTP_FAILURE);
         }
 
         // reboot if requested
@@ -304,8 +325,11 @@ void boss_task(__unused void *params)
             cyw43_arch_disable_sta_mode();
             cyw43_arch_deinit();
             
-            // flush recent config changes to flash prior to reboot with one retry
-            if (config_write()) config_write();
+            if (reboot_reason == REBOOT_USER_REQUEST)
+            {
+                // flush recent config changes to flash prior to reboot with one retry
+                if (config_write()) config_write();
+            }
 
             printf("***REBOOT in 100 ms***\n");
             watchdog_enable(100, 0);
@@ -323,9 +347,10 @@ void boss_task(__unused void *params)
  *
  * \return nothing
  */
-int application_restart(void)
+int application_restart(REBOOT_REASON_T reason)
 {
     restart_requested = true;
+    reboot_reason = reason;
 
     return(0);
 }
@@ -346,6 +371,8 @@ int ap_mode(void)
     ip4_addr_t mask;
     dhcp_server_t dhcp_server;
     dns_server_t dns_server;    
+
+    web.access_point_mode = true;
 
     printf("Initializing AP mode\n");
     cyw43_arch_enable_ap_mode("pluto", "",	CYW43_AUTH_OPEN); 
@@ -375,7 +402,7 @@ int ap_mode(void)
         led_on = !led_on;
         
         // tell watchdog task that we are alive
-        //watchdog_pulse();
+        //watchdog_pulse();  // trade off -- allow more time before regular watchdog reboot vs. risk of never rebooting
 
         if (config_dirty(false))
         {
@@ -393,13 +420,13 @@ int ap_mode(void)
         {
             cyw43_arch_disable_ap_mode();
             cyw43_arch_deinit();
-
+            web.access_point_mode = false;
             watchdog_enable(1, 0);
         }
         else
         {
             // pat the watchdog
-            //watchdog_update();
+            //watchdog_update();  // trade off -- allow more time before regular watchdog reboot vs. risk of never rebooting
         }
         
         SLEEP_MS(100);
@@ -412,6 +439,7 @@ int ap_mode(void)
             cyw43_arch_disable_ap_mode();
             cyw43_arch_deinit();
 
+            web.access_point_mode = false;
             SLEEP_MS(100);
             
             watchdog_enable(1, 0);
@@ -889,4 +917,9 @@ void unix_to_iso8601(time_t unix_timestamp, char *iso_string, size_t buffer_size
     // Format the broken-down time into an ISO 8601 string
     // Example format: YYYY-MM-DDTHH:mm:ssZ
     strftime(iso_string, buffer_size, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+}
+
+uint32_t get_reboot_reason(void)
+{
+    return(reboot_reason);
 }

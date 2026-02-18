@@ -6,7 +6,7 @@
 #ifndef WEATHER_H
 #define WEATHER_H
 
-
+#include "thermostat.h"
 
 //prototypes
 void weather_task(__unused void *params);
@@ -179,6 +179,7 @@ typedef enum
 
 typedef struct WEB_VARIABLES
 {
+  int access_point_mode;
   char last_completed_timestring[50];
   char last_usurped_timestring[50];
   int outside_temperature;
@@ -208,9 +209,9 @@ typedef struct WEB_VARIABLES
   int led_current_transition_delay;
   char led_last_request_ip[32];
   int irrigation_test_enable;
-  int thermostat_set_point;                // desired temperature when neither heating nor cooling 
-  int thermostat_heating_set_point;        // desired temperature when heating
-  int thermostat_cooling_set_point;        // desired temperature when cooling 
+  int thermostat_set_point;                // desired temperature
+  int thermostat_heating_set_point;        // target temperature when heating
+  int thermostat_cooling_set_point;        // target temperature when cooling 
   //int thermostat_hysteresis;
   int thermostat_day;              // used for rendering thermostat event web page -- making that page single user / session only
   int thermostat_period_row;
@@ -222,6 +223,8 @@ typedef struct WEB_VARIABLES
   int thermostat_temperature_moving_average;
   int thermostat_temperature_gradient;
   int thermostat_temperature_prediction;
+  THERMOSTAT_MODE_T thermostat_effective_mode;
+  int anemometer_wind_speed;
 } WEB_VARIABLES_T;                  //remember to add initialization code when adding to this structure !!!
 
 #endif
