@@ -228,6 +228,8 @@ int check_received_header(tsMSG_HDR *psMsg, SOCKADDR_IN sDest)
     {
         case LED_STRIP_RQST:
         case LED_STRIP_CNFM:
+        case WIND_SPEED_RQST:
+        case WIND_SPEED_CNFM:
             // TODO:  here we should detect retries and replay previous responses
             STRNCPY(web.led_last_request_ip, address, sizeof(web.led_last_request_ip));
             break;
