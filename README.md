@@ -14,9 +14,12 @@ A relay controlled by the Pico W is inserted into the common line that runs from
 Relays controlled by the Pico W are used to switch 24VAC to each irrigation zone. A device like "Waveshare Industrial 8-Channel Relay Module for Raspberry Pi Pico" can be used to control up to 8 irrigation zones.
 ![Screenshot from 2024-10-11 20-26-41](https://github.com/user-attachments/assets/6641408e-83aa-46b1-a006-ec8aa4d0b83c)
 
-## Installation on Ubuntu Linux
+## Installation of tools on Ubuntu Linux
 ```
 sudo apt install git build-essential cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+```
+## Installation on Ubuntu Linux
+```
 git clone --recurse-submodules https://github.com/NewmanIsTheStar/usurper.git 
 cd usurper
 mkdir build
@@ -26,7 +29,7 @@ make
 ```
 Upon completion of a successful build the file usurper.uf2 should be created.  This may be loaded onto the Pico2 W in the usual manner.
 
-**NB:** The default board target is Pico2_W.  If you wish to change the board then uncomment one of the following lines in CMakeLists.txt.
+**NB:** The default board target is Pico2_W.  If you wish to change the board then uncomment **one** of the following lines in CMakeLists.txt.
 ```
 #set(PICO_BOARD pico_w CACHE STRING "Board type")
 set(PICO_BOARD pico2_w CACHE STRING "Board type")
