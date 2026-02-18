@@ -96,6 +96,8 @@ int send_wind_speed_request(SOCKADDR_IN sDest);
 void initialize_remote_anemometer(void);
 int send_wind_speed_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction, u_int32_t sequence);
 void poll_remote_anemometer(void);
+int receive_wind_speed_request(tsWIND_SPEED_RQST *psMsg, SOCKADDR_IN sDest);
+int receive_wind_speed_confirm(tsWIND_SPEED_CNFM *psMsg, SOCKADDR_IN sDest);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -150,10 +152,10 @@ void message_task(__unused void *params)
                          receive_led_strip_confirm((tsLED_STRIP_CNFM *)&message_buffer, sClientAddress);
                         break;  
                     case WIND_SPEED_RQST:
-                        receive_led_strip_request((tsLED_STRIP_RQST *)&message_buffer, sClientAddress);
+                        receive_wind_speed_request((tsWIND_SPEED_RQST *)&message_buffer, sClientAddress);
                         break;
                     case WIND_SPEED_CNFM:
-                         receive_led_strip_confirm((tsLED_STRIP_CNFM *)&message_buffer, sClientAddress);
+                         receive_wind_speed_confirm((tsWIND_SPEED_CNFM *)&message_buffer, sClientAddress);
                         break;                                                
                     default:
                         printf("unrecognized Rx message ID (%lu)\n", htonl(((tsMSG_HDR *)&message_buffer)->message));
@@ -759,6 +761,7 @@ int send_wind_speed_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction
 
     sCnfm.iError = htonl(0);
     sCnfm.wind_speed = htonl(web.anemometer_wind_speed);
+    printf("sending wind speed = %d\n",  htonl(sCnfm.wind_speed));
 
     iNumBytes = udp_transmit (message_socket, (char *)&sCnfm, sizeof(tsWIND_SPEED_CNFM), sDest);
 
