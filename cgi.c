@@ -3369,7 +3369,7 @@ static const tCGI cgi_handlers[] = {
     {"/gpio_default.cgi",               cgi_gpio_default_handler},  
     {"/t_sensors.cgi",                  cgi_temperature_sensors},
     {"/t_advanced.cgi",                 cgi_advanced_settings},    
-    {"/t_anemometer.cgi",               cgi_anemometer_settings},     
+    {"/anemometer.cgi",                 cgi_anemometer_settings},     
      
 };
 

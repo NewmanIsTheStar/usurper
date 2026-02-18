@@ -95,6 +95,7 @@ void control_remote_led_strips(void);
 int send_wind_speed_request(SOCKADDR_IN sDest);
 void initialize_remote_anemometer(void);
 int send_wind_speed_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction, u_int32_t sequence);
+void poll_remote_anemometer(void);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -186,6 +187,7 @@ void message_task(__unused void *params)
             }
 
             control_remote_led_strips();
+            poll_remote_anemometer();
 
             // tell watchdog task that we are still alive
             watchdog_pulse((int *)params);    

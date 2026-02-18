@@ -2778,7 +2778,8 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
         case SSI_anip: // anemometer ip address           
         {
             printed = snprintf(pcInsert, iInsertLen, "%s", config.anemometer_remote_ip); 
-        }       
+        }
+        break;       
         case SSI_anen: // anemometer enable
         {
             printed = snprintf(pcInsert, iInsertLen, "%s", config.anemometer_remote_enable?"checked":""); 
