@@ -729,7 +729,7 @@ int receive_wind_speed_confirm(tsWIND_SPEED_CNFM *psMsg, SOCKADDR_IN sDest)
             }
 
             //TODO: consider checking IP here
-            remote_anemometer_state.wind_speed = psMsg->wind_speed;
+            remote_anemometer_state.wind_speed = htonl(psMsg->wind_speed);
             //CLIP(remote_anemometer_state.wind_speed, 0, 320);  //TODO archaic units
             web.anemometer_wind_speed = remote_anemometer_state.wind_speed;
         }              
@@ -755,7 +755,7 @@ int send_wind_speed_confirm(int iError, SOCKADDR_IN sDest, u_int32_t transaction
     int iNumBytes;
 
     sCnfm.sHeader.version = htonl(1);
-    sCnfm.sHeader.message = htonl(LED_STRIP_CNFM);
+    sCnfm.sHeader.message = htonl(WIND_SPEED_CNFM);
     sCnfm.sHeader.transaction = htonl(transaction);
     sCnfm.sHeader.sequence = htonl(sequence);
 

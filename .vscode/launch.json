@@ -5,8 +5,8 @@
         {
             "name": "Pico Debug (Cortex-Debug)",
             "cwd": "${userHome}/.pico-sdk/openocd/0.12.0+dev/scripts",
-            // "executable": "${command:raspberry-pi-pico.launchTargetPath}",
-            "executable": "/home/rbrown/pico/usurper/build/thermostat.elf",
+            "executable": "${command:raspberry-pi-pico.launchTargetPath}",
+            //"executable": "/home/rbrown/pico/usurper/build/usurper.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
@@ -32,8 +32,8 @@
         {
             "name": "Pico Debug (Cortex-Debug with external OpenOCD)",
             "cwd": "${workspaceRoot}",
-            // "executable": "${command:raspberry-pi-pico.launchTargetPath}",
-            "executable": "/home/rbrown/pico/usurper/build/thermostat.elf",            
+            "executable": "${command:raspberry-pi-pico.launchTargetPath}",
+            //"executable": "/home/rbrown/pico/usurper/build/usurper.elf",            
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "external",
@@ -46,8 +46,8 @@
             // Also works fine for flash binaries
             "overrideLaunchCommands": [
                 "monitor reset init",
-                // "load \"${command:raspberry-pi-pico.launchTargetPath}\""
-                "load \"/home/rbrown/pico/usurper/build/thermostat.elf\""                
+                "load \"${command:raspberry-pi-pico.launchTargetPath}\""
+                //"load \"/home/rbrown/pico/usurper/build/thermostat.elf\""                
             ]
         },
         {
