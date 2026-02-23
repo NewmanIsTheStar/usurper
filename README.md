@@ -18,7 +18,7 @@ Relays controlled by the Pico W are used to switch 24VAC to each irrigation zone
 ```
 sudo apt install git build-essential cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
 ```
-## Installation on Ubuntu Linux
+## Clone and build the code
 ```
 git clone --recurse-submodules https://github.com/NewmanIsTheStar/usurper.git 
 cd usurper
@@ -29,7 +29,7 @@ make
 ```
 Upon completion of a successful build the file usurper.uf2 should be created.  This may be loaded onto the Pico2 W in the usual manner.
 
-**NB:** The default board target is Pico2_W.  If you wish to change the board then uncomment **one** of the following lines in CMakeLists.txt.
+**NB:** The default board type is Pico2_W.  The board type is set by uncommenting **one** of the following lines in CMakeLists.txt.
 ```
 #set(PICO_BOARD pico_w CACHE STRING "Board type")
 set(PICO_BOARD pico2_w CACHE STRING "Board type")
