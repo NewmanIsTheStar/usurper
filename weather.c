@@ -1106,7 +1106,7 @@ bool terminate_irrigation_due_to_weather (void)
 
             if (wind_speed > config.wind_threshold)
             {
-                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Wind speed = %d.%d ft/s", wind_speed/10, wind_speed%10);
+                snprintf(reason+reason_index, sizeof(reason) - reason_index, "Wind speed = %d.%d ft//s", wind_speed/10, wind_speed%10);
                 reason_index = strlen(reason);
             } 
             
@@ -1235,13 +1235,22 @@ int syslog_report_weather (void)
     static int previous_rain_day = 0;
     static int previous_rain_week = 0;  
     static int previous_soil_moisture = 0;        
- 
+    int input_wind_speed = 0;
+
+    if (config.anemometer_remote_enable)
+    {
+        input_wind_speed = web.anemometer_wind_speed;
+    }
+    else
+    {
+        input_wind_speed = web.wind_speed;
+    }
     // convert current measurements to archaic units if necessary
     switch(config.use_archaic_units)
     {
     case true:
         outside_temp = (web.outside_temperature*9)/5 + 320;     // Fahrenheit
-        wind_speed = (web.wind_speed*3281 + 500)/1000;          // feet per second
+        wind_speed = (input_wind_speed*3281 + 500)/1000;        // feet per second
         rain_week = (10*web.weekly_rain + 127)/254;             // inches
         rain_day = (10*web.daily_rain + 127)/254;               // inches
         soil_moisture = web.soil_moisture[0];                   // percentage
@@ -1250,7 +1259,7 @@ int syslog_report_weather (void)
     default:
     case false:
         outside_temp = web.outside_temperature;                 // Celcius
-        wind_speed = web.wind_speed;                            // m/s
+        wind_speed = input_wind_speed;                          // m/s
         rain_week = web.weekly_rain;                            // mm   
         rain_day = web.daily_rain;                              // mm
         soil_moisture = web.soil_moisture[0];                   // percentage        
