@@ -21,6 +21,8 @@ int get_dow_and_mod_local_tz(int *dow, int *mod);
 int daylight_savings_active(datetime_t date);
 int get_timestamp(char *timestamp, int len, int isoformat, int localtime);
 int get_local_time_string(char *timestamp, int len);
+int8_t get_datetime_from_unix_time(uint32_t unixtime, datetime_t *date, int *effective_offset, int localtime);
+int get_timestamp_from_unix_time(uint32_t unixtime, char *timestamp, int len, int isoformat, int localtime);
 SCHEDULE_QUERY_STATUS_LT get_next_irrigation_period(int *start_mow, int *end_mow, int *delay_mins, int *zone);
 const char *day_name(int day);
 bool mow_between(int time_mow, int start_mow, int end_mow);
