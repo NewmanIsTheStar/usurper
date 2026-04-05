@@ -416,6 +416,71 @@ int daylight_savings_active(datetime_t date)
    return(daylight_savings);
 }
 
+// This is the original function that used the rtc on pico 1  -- now we always use fake rtc 
+// /*!
+//  * \brief Generate string containing time stamp from realtime clock
+//  *
+//  * \param[out]  timestamp   pointer to string to store the timestamp 
+//  * \param[in]   len         max length of timestamp string  
+//  * \param[in]   isoformat   use iso format
+//  * \param[in]   localtime   use local time
+//  * 
+//  * \return 0 on success, non-zero on error
+//  */
+// int get_timestamp(char *timestamp, int len, int isoformat, int localtime)
+// {
+//    int ok = 0;
+//    datetime_t t;
+//    char timezone_offset[12];
+
+// #ifdef FAKE_RTC
+//    if (localtime)
+//    {
+//       ok = get_datetime(&t, localtime);      
+//    }
+//    else
+// #endif
+//    {
+//       ok = rtc_get_datetime(&t);      
+//    }
+
+//    if (ok)
+//    {
+//       if (!localtime || (config.timezone_offset == 0)) 
+//       {
+//          // zulu time
+//          if (isoformat)
+//          {
+//             sprintf(timezone_offset, "Z");
+//          }
+//          else
+//          {
+//             sprintf(timezone_offset, "");
+//          }
+//       }
+//       else
+//       {
+//          sprintf(timezone_offset, "%c%02d:%02d", config.timezone_offset<0?'-':'+', abs(config.timezone_offset/60), abs(config.timezone_offset%60));
+//       }
+
+//       if (isoformat)
+//       {
+//          // iso format needed for syslog
+//          snprintf(timestamp, len, "%04d-%02d-%02dT%02d:%02d:%02d.000%s", t.year, t.month, t.day, t.hour, t.min, t.sec, timezone_offset);
+//       }
+//       else
+//       {
+//         // human readable format
+//         snprintf(timestamp, len, "%04d-%02d-%02d %02d:%02d:%02d UTC%s", t.year, t.month, t.day, t.hour, t.min, t.sec, timezone_offset);
+//       }
+//     }
+//     else
+//     {
+//         snprintf(timestamp, len, "1970-01-01T00:00:000.000Z");  //default to unix epoch
+//     }
+
+//     return !ok;
+// }
 
 /*!
  * \brief Generate string containing time stamp from realtime clock
@@ -429,58 +494,17 @@ int daylight_savings_active(datetime_t date)
  */
 int get_timestamp(char *timestamp, int len, int isoformat, int localtime)
 {
-   int ok = 0;
-   datetime_t t;
-   char timezone_offset[12];
+   int err;
 
-#ifdef FAKE_RTC
-   if (localtime)
-   {
-      ok = get_datetime(&t, localtime);      
-   }
-   else
-#endif
-   {
-      ok = rtc_get_datetime(&t);      
-   }
+   err = get_timestamp_from_unix_time(unix_time, timestamp, len, isoformat, localtime);
 
-   if (ok)
-   {
-      if (!localtime || (config.timezone_offset == 0)) 
-      {
-         // zulu time
-         if (isoformat)
-         {
-            sprintf(timezone_offset, "Z");
-         }
-         else
-         {
-            sprintf(timezone_offset, "");
-         }
-      }
-      else
-      {
-         sprintf(timezone_offset, "%c%02d:%02d", config.timezone_offset<0?'-':'+', abs(config.timezone_offset/60), abs(config.timezone_offset%60));
-      }
-
-      if (isoformat)
-      {
-         // iso format needed for syslog
-         snprintf(timestamp, len, "%04d-%02d-%02dT%02d:%02d:%02d.000%s", t.year, t.month, t.day, t.hour, t.min, t.sec, timezone_offset);
-      }
-      else
-      {
-        // human readable format
-        snprintf(timestamp, len, "%04d-%02d-%02d %02d:%02d:%02d UTC%s", t.year, t.month, t.day, t.hour, t.min, t.sec, timezone_offset);
-      }
-    }
-    else
-    {
-        snprintf(timestamp, len, "1970-01-01T00:00:000.000Z");  //default to unix epoch
-    }
-
-    return !ok;
+   return(err);
 }
+
+
+
+
+
 
 /*!
  * \brief Generate string containing local time in human readable format
@@ -1053,7 +1077,7 @@ int8_t get_datetime(datetime_t *date, int localtime)
    if (localtime)
    {
       // apply timezone offset
-      t += (config.timezone_offset * 60);
+      t += (config.timezone_offset * 60);  //TODO: this is probably wrong as it is already in minutes but this function is scheduled for removal
    }
 
 	timeinfo = gmtime(&t);
@@ -1074,10 +1098,11 @@ int8_t get_datetime(datetime_t *date, int localtime)
 /*!
  * \brief Get current time
  *  
- * \return 1
+ * \return 0 on success, non-zero on error
  */
 int8_t get_datetime_from_unix_time(uint32_t unixtime, datetime_t *date, int *effective_offset, int localtime)
 {
+   int err = 0;
    struct tm * timeinfo;
    time_t t;
 
@@ -1088,8 +1113,8 @@ int8_t get_datetime_from_unix_time(uint32_t unixtime, datetime_t *date, int *eff
    if (localtime)
    {
       // apply timezone offset
-      *effective_offset = (config.timezone_offset * 60);
-      t += *effective_offset;
+      *effective_offset = config.timezone_offset;
+      t += (*effective_offset * 60);
    }
 
 	timeinfo = gmtime(&t);
@@ -1112,8 +1137,8 @@ int8_t get_datetime_from_unix_time(uint32_t unixtime, datetime_t *date, int *eff
          ((date->month*31+date->day) < (daylight_saving_end_month*31+daylight_saving_end_day)))
       {
          // apply one hour daylight savings offset
-         *effective_offset += (60 * 60);
-         t += (60 * 60);         
+         *effective_offset += 60;
+         t += (60*60);         
 
          // recompute the datetime using the daylight savings offset
          timeinfo = gmtime(&t);
@@ -1130,7 +1155,7 @@ int8_t get_datetime_from_unix_time(uint32_t unixtime, datetime_t *date, int *eff
       }
    }
 
-   return(1);
+   return(err);
 }
 
 /*!
@@ -1146,15 +1171,15 @@ int8_t get_datetime_from_unix_time(uint32_t unixtime, datetime_t *date, int *eff
  */
 int get_timestamp_from_unix_time(uint32_t unixtime, char *timestamp, int len, int isoformat, int localtime)
 {
-   int ok = 0;
-   datetime_t t;
+   int err = 0;
+   datetime_t date;
    char offset_string[12];
    int effective_offset = 0;
 
 
-   ok = get_datetime_from_unix_time(unixtime, &t, &effective_offset, localtime);      
+   err = get_datetime_from_unix_time(unixtime, &date, &effective_offset, localtime);      
 
-   if (ok)
+   if (!err)
    {
       if (!localtime || (effective_offset == 0)) 
       {
@@ -1176,12 +1201,12 @@ int get_timestamp_from_unix_time(uint32_t unixtime, char *timestamp, int len, in
       if (isoformat)
       {
          // iso format needed for syslog
-         snprintf(timestamp, len, "%04d-%02d-%02dT%02d:%02d:%02d.000%s", t.year, t.month, t.day, t.hour, t.min, t.sec, offset_string);
+         snprintf(timestamp, len, "%04d-%02d-%02dT%02d:%02d:%02d.000%s", date.year, date.month, date.day, date.hour, date.min, date.sec, offset_string);
       }
       else
       {
         // human readable format
-        snprintf(timestamp, len, "%04d-%02d-%02d %02d:%02d:%02d UTC%s", t.year, t.month, t.day, t.hour, t.min, t.sec, offset_string);
+        snprintf(timestamp, len, "%04d-%02d-%02d %02d:%02d:%02d UTC%s", date.year, date.month, date.day, date.hour, date.min, date.sec, offset_string);
       }
     }
     else
@@ -1189,5 +1214,5 @@ int get_timestamp_from_unix_time(uint32_t unixtime, char *timestamp, int len, in
         snprintf(timestamp, len, "1970-01-01T00:00:000.000Z");  //default to unix epoch
     }
 
-    return !ok;
+    return(err);
 }

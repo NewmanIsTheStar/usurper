@@ -454,8 +454,8 @@ const char * cgi_time_handler(int iIndex, int iNumParams, char *pcParam[], char 
 
             if (strcasecmp("tz", param) == 0)
             {               
-                //skip escaped '+' if present  (%2B)  NB: won't work if lowercase B used
-                if ((value[0] == '%') && (value[1] == '2') && (value[2] == 'B')) value += 3;
+                //skip escaped '+' if present  (either %2B or %2b) 
+                if ((value[0] == '%') && (value[1] == '2') && ((value[2] == 'B') || (value[2] == 'b'))) value += 3;
 
                 sscanf(value, "%d", &hour);
                 sscanf(value, "%d%%3A%d", &hour, &minute);
