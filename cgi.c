@@ -1570,7 +1570,7 @@ const char * cgi_relay_handler(int iIndex, int iNumParams, char *pcParam[], char
             } 
 
             sscanf(param, "z%dgpio", &gpio_zone);
-            if ((gpio_zone >= 1) && (gpio_zone < 8))
+            if ((gpio_zone >= 1) && (gpio_zone <= 8))
             {
                 // adjust to zero base
                 gpio_zone--;
@@ -1868,7 +1868,7 @@ const char * cgi_led_pattern_handler(int iIndex, int iNumParams, char *pcParam[]
         i++;
     }
 
-    if ((new_pattern >= 0) && (new_pattern < 8))
+    if ((new_pattern >= 0) && (new_pattern <= 8))
     {
         printf("got a valid new pattern\n");
 
