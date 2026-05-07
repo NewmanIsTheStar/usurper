@@ -119,6 +119,7 @@ int pluto(void)
 #endif
 
     flash_get_program_size();
+    flash_get_config_size();
     printf("Compiled: %s %s\n",__DATE__,__TIME__);
     printf("Pico SDK Version: %s\n\n", PICO_SDK_VERSION_STRING);
 
@@ -372,7 +373,7 @@ int ap_mode(void)
     dhcp_server_t dhcp_server;
     dns_server_t dns_server;    
 
-    web.access_point_mode = true;
+
 
     printf("Initializing AP mode\n");
     cyw43_arch_enable_ap_mode("pluto", "",	CYW43_AUTH_OPEN); 
@@ -393,6 +394,8 @@ int ap_mode(void)
     httpd_init();
     ssi_init();
     cgi_init();	
+
+    web.access_point_mode = true;
 
     // flash the led fast to indicate AP mode
     while(true)

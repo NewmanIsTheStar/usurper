@@ -48,9 +48,15 @@ void flash_write_shim(void *ptr)
         // erase the last sector of the flash (4 KBytes)
         flash_range_erase((PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE), FLASH_SECTOR_SIZE);
 
-
-        // program the configuation in 256 Byte pages (range is rounded up to the nearest multiple of 256 Bytes)
-        flash_range_program((PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE), (uint8_t *)&config, ((sizeof(config)+255)/256)*256);
+        if (sizeof(config) < FLASH_SECTOR_SIZE)
+        {
+            // program the configuation in 256 Byte pages (range is rounded up to the nearest multiple of 256 Bytes)
+            flash_range_program((PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE), (uint8_t *)&config, ((sizeof(config)+255)/256)*256);
+        }
+        else
+        {
+            printf("Error: unable to save configuration because it is too large. flash sector size = %d config size = %d\n", FLASH_SECTOR_SIZE, sizeof(config));
+        }
 }
 
 /*!
@@ -100,8 +106,23 @@ void flash_get_program_size(void)
 
     uintptr_t start = (uintptr_t) &__flash_binary_start;
     uintptr_t end = (uintptr_t) &__flash_binary_end;
-    //printf("Binary starts at %08x and ends at %08x, size is %08x\n", start, end, end-start);
+    printf("Binary start: %08x\nBinary end:   %08x\nBinary size:  %08x\n", start, end, end-start);
     flash_percentage = ((end-start)*1000)/(PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE);
-    printf("Size: %d.%d%% of flash\n", flash_percentage/10, flash_percentage%10);
+    printf("Flash used:   %d.%d%%\n\n", flash_percentage/10, flash_percentage%10);
+}
+
+void flash_get_config_size(void)
+{
+    int flash_percentage = 0;
+    uintptr_t start = (uintptr_t)(PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE);
+    uintptr_t end = (uintptr_t)(PICO_FLASH_SIZE_BYTES - 1);
+
+    if (sizeof(config) > FLASH_SECTOR_SIZE)
+    {
+        printf("ERROR: Configuration is too large!\n\n");
+        printf("Config area start: %08x\nConfig area end:   %08x\nConfig area size:  %08x\n\n", start, end, end-start);
+        printf("Config data size:  %d bytes\n", sizeof(config));
+        printf("Config data free:  %d bytes\n\n", FLASH_SECTOR_SIZE - sizeof(config));
+    }
 }
 
