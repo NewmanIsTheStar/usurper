@@ -35,6 +35,7 @@
 #include "led_strip.h"
 #include "message.h"
 #include "pluto.h"
+#include "web.h"
 
 #define BUF_SIZE (900)
 #define RELAY_GPIO_PIN (3)
@@ -78,9 +79,9 @@ void irrigation_relay_test(void);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
+extern WEB_VARIABLES_T web;
 
 // global variables
-WEB_VARIABLES_T web;
 int irrigation_finished_mow = 0;
 int led_strip_sustain_until_mow = 0;
 bool led_strip_sustain_in_progress = false;
@@ -538,57 +539,57 @@ int accumulate_trailing_seven_day_total_rain(int daily_rain, int weekday)
 }
 
 
-/*!
- * \brief Initialize web interface variables
- *
- * \return 0 on success
- */
-int init_web_variables(void)
-{
-    // zero web structure
-    memset(&web, 0, sizeof(web));
+// /*!
+//  * \brief Initialize web interface variables
+//  *
+//  * \return 0 on success
+//  */
+// int init_web_variables(void)
+// {
+//     // zero web structure
+//     memset(&web, 0, sizeof(web));
 
-    web.access_point_mode = 0;
+//     web.access_point_mode = 0;
     
-    web.outside_temperature = 0;
-    web.wind_speed = 0;
-    web.daily_rain = 0;
-    web.weekly_rain = 0;
-    web.trailing_seven_days_rain = 0;
-    web.us_last_rx_packet = 0;  
-    web.soil_moisture[0] = 0; 
+//     web.outside_temperature = 0;
+//     web.wind_speed = 0;
+//     web.daily_rain = 0;
+//     web.weekly_rain = 0;
+//     web.trailing_seven_days_rain = 0;
+//     web.us_last_rx_packet = 0;  
+//     web.soil_moisture[0] = 0; 
 
-    web.irrigation_test_enable = 0; 
+//     web.irrigation_test_enable = 0; 
 
-    STRNCPY(web.last_usurped_timestring,"never", sizeof(web.last_usurped_timestring));
-    STRNCPY(web.last_completed_timestring,"never", sizeof(web.last_completed_timestring));    
-    STRNCPY(web.watchdog_timestring,"never", sizeof(web.watchdog_timestring));
+//     STRNCPY(web.last_usurped_timestring,"never", sizeof(web.last_usurped_timestring));
+//     STRNCPY(web.last_completed_timestring,"never", sizeof(web.last_completed_timestring));    
+//     STRNCPY(web.watchdog_timestring,"never", sizeof(web.watchdog_timestring));
 
-    web.status_message[0] = 0;
-    web.stack_message[0] = 0;
+//     web.status_message[0] = 0;
+//     web.stack_message[0] = 0;
 
-    web.socket_max = 0;
-    web.bind_failures = 0;
-    web.connect_failures = 0;  
-    web.syslog_transmit_failures = 0;
-    web.govee_transmit_failures = 0;
-    web.weather_station_transmit_failures = 0;
-    web.bind_failures = 0;
-    web.connect_failures = 0;   
+//     web.socket_max = 0;
+//     web.bind_failures = 0;
+//     web.connect_failures = 0;  
+//     web.syslog_transmit_failures = 0;
+//     web.govee_transmit_failures = 0;
+//     web.weather_station_transmit_failures = 0;
+//     web.bind_failures = 0;
+//     web.connect_failures = 0;   
 
-    web.led_current_pattern = 0;
-    web.led_current_transition_delay = 0;
-    web.led_last_request_ip[0] = 0;
+//     web.led_current_pattern = 0;
+//     web.led_current_transition_delay = 0;
+//     web.led_last_request_ip[0] = 0;
 
-    STRNCPY(web.software_server,"psycho.badnet", sizeof(web.software_server));
-    STRNCPY(web.software_url,"fileserver.psycho", sizeof(web.software_url));
-    STRNCPY(web.software_file,"/pluto.bin", sizeof(web.software_file));        
+//     STRNCPY(web.software_server,"psycho.badnet", sizeof(web.software_server));
+//     STRNCPY(web.software_url,"fileserver.psycho", sizeof(web.software_url));
+//     STRNCPY(web.software_file,"/pluto.bin", sizeof(web.software_file));        
 
-    // set default web page
-    set_calendar_html_page();
+//     // set default web page
+//     set_calendar_html_page();
 
-    return(0);
-}
+//     return(0);
+// }
 
 /*!
  * \brief Invalidate weather web interface variables

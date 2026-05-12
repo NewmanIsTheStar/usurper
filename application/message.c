@@ -54,6 +54,7 @@
 #include "udp.h"
 #include "message.h"
 #include "message_defs.h"
+#include "web.h"
 
 
 //#define DEBUG_UDP_MESSAGES

@@ -27,9 +27,10 @@
 #include "utility.h"
 #include "config.h"
 #include "led_strip.h"
-#include "thermostat.h"
+//#include "thermostat.h"
 #include "worker_tasks.h"
 #include "pluto.h"
+#include "web.h"
 
 
 extern NON_VOL_VARIABLES_T config;
@@ -2498,64 +2499,64 @@ const char * cgi_thermostat_period_delete_handler(int iIndex, int iNumParams, ch
     
 }
 
-/*!
- * \brief cgi handler
- *
- * \param[in]  iIndex       index of cgi handler in cgi_handlers table
- * \param[in]  iNumParams   number of parameters
- * \param[in]  pcParam      parameter name
- * \param[in]  pcValue      parameter value 
- * 
- * \return nothing
- */
-const char * cgi_thermostat_period_add_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
-{
-    int i = 0;
-    char *param = NULL;
-    char *value = NULL;
-    int new_relay_normally_open = 0; 
-    int new_irrigation_test_enable = 0;      
-    int new_gpio = 0;
-    int period_number = -1;  
-    int setpoint_index = -1;
-    int new_zone_max = 0;
-    int len = 0;
-    char *next_page = "/t_schedule.shtml";
+// /*!
+//  * \brief cgi handler
+//  *
+//  * \param[in]  iIndex       index of cgi handler in cgi_handlers table
+//  * \param[in]  iNumParams   number of parameters
+//  * \param[in]  pcParam      parameter name
+//  * \param[in]  pcValue      parameter value 
+//  * 
+//  * \return nothing
+//  */
+// const char * cgi_thermostat_period_add_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+// {
+//     int i = 0;
+//     char *param = NULL;
+//     char *value = NULL;
+//     int new_relay_normally_open = 0; 
+//     int new_irrigation_test_enable = 0;      
+//     int new_gpio = 0;
+//     int period_number = -1;  
+//     int setpoint_index = -1;
+//     int new_zone_max = 0;
+//     int len = 0;
+//     char *next_page = "/t_schedule.shtml";
        
 
 
-    printf("Got request to add thermostat period. row = %d\n", web.thermostat_period_row);
+//     printf("Got request to add thermostat period. row = %d\n", web.thermostat_period_row);
 
-    dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+//     dump_parameters(iIndex, iNumParams, pcParam, pcValue);
 
-    for(i=0; i < NUM_ROWS(config.setpoint_start_mow); i++)
-    {
-        if (config.setpoint_start_mow[i] < 0)  // TODO: should we use the setpoint valid function? slower
-        {
-            web.thermostat_period_row = i;
-            config.setpoint_start_mow[i] = web.thermostat_day*24*60;
-            if (config.use_archaic_units)
-            {
-                config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;
-                config.setpoint_heating_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;
-                config.setpoint_cooling_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;                                
-            }
-            else
-            {
-                config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;
-                config.setpoint_heating_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;
-                config.setpoint_cooling_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;                                
-            }
-            config.setpoint_mode[i] = HVAC_AUTO;
-            next_page = "/tp_edit.shtml";
-            break;
-        }
-    }
+//     for(i=0; i < NUM_ROWS(config.setpoint_start_mow); i++)
+//     {
+//         if (config.setpoint_start_mow[i] < 0)  // TODO: should we use the setpoint valid function? slower
+//         {
+//             web.thermostat_period_row = i;
+//             config.setpoint_start_mow[i] = web.thermostat_day*24*60;
+//             if (config.use_archaic_units)
+//             {
+//                 config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;
+//                 config.setpoint_heating_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;
+//                 config.setpoint_cooling_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_F;                                
+//             }
+//             else
+//             {
+//                 config.setpoint_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;
+//                 config.setpoint_heating_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;
+//                 config.setpoint_cooling_temperaturex10[i] = SETPOINT_TEMP_DEFAULT_C;                                
+//             }
+//             config.setpoint_mode[i] = HVAC_AUTO;
+//             next_page = "/tp_edit.shtml";
+//             break;
+//         }
+//     }
 
-    // Send the next page back to the user
-    return(next_page);
+//     // Send the next page back to the user
+//     return(next_page);
     
-}
+// }
 
 /*!
  * \brief cgi handler
@@ -3359,7 +3360,7 @@ static const tCGI cgi_handlers[] = {
     {"/periods.cgi",                    cgi_periods_handler},      
     {"/ts_change.cgi",                  cgi_thermostat_schedule_change_handler},   
     {"/tp_delete.cgi",                  cgi_thermostat_period_delete_handler},    
-    {"/tp_add.cgi",                     cgi_thermostat_period_add_handler}, 
+    // {"/tp_add.cgi",                     cgi_thermostat_period_add_handler}, 
     {"/tp_edit.cgi",                    cgi_thermostat_period_edit_handler},   
     {"/tp_cancel.cgi",                  cgi_thermostat_period_cancel_handler},    
     {"/t_schedule.cgi",                 cgi_thermostat_schedule_handler}, 

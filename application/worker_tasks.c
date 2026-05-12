@@ -18,9 +18,9 @@
 #include "weather.h"
 #include "led_strip.h"
 #include "message.h"
-#include "thermostat.h"
-#include "hc_task.h"
-#include "discovery_task.h"
+// #include "thermostat.h"
+// #include "hc_task.h"
+// #include "discovery_task.h"
 
 // worker tasks to launch and monitor
 WORKER_TASK_T worker_tasks[] =

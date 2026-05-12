@@ -42,6 +42,7 @@
 #include "watchdog.h"
 #include "pluto.h"
 #include "led_strip.h"
+#include "web.h"
 
 #define IS_RGBW config.led_rgbw
 #define NUM_PIXELS config.led_number
