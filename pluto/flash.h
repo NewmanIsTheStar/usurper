@@ -11,5 +11,6 @@ int flash_write_non_volatile_variables(void);
 int flash_dump(void);
 void flash_get_program_size(void);
 void flash_get_config_size(void);
+void *flash_get_config_location(void);
 
 #endif

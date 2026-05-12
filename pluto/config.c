@@ -26,17 +26,19 @@
 //#define DISABLE_CONFIG_UPGRADE (1)
 
 int config_validate(void);
-void config_v1_to_v2(void);
-void config_v2_to_v3(void);
-void config_v3_to_v4(void);
-void config_v4_to_v5(void);
-void config_v5_to_v6(void);
-void config_v6_to_v7(void);
-void config_v7_to_v8(void);
-void config_v8_to_v9(void);
-void config_v9_to_v10(void);
-void config_v10_to_v11(void);
-void config_v11_to_v12(void);
+void config_blank_to_v1(void *previous_config);
+void config_v1_to_v2(void *previous_config);
+void config_v2_to_v3(void *previous_config);
+void config_v3_to_v4(void *previous_config);
+void config_v4_to_v5(void *previous_config);
+void config_v5_to_v6(void *previous_config);
+void config_v6_to_v7(void *previous_config);
+void config_v7_to_v8(void *previous_config);
+void config_v8_to_v9(void *previous_config);
+void config_v9_to_v10(void *previous_config);
+void config_v10_to_v11(void *previous_config);
+void config_v11_to_v12(void *previous_config);
+void config_v12_to_v13(void *previous_config);
 
 NON_VOL_VARIABLES_T config;
 static int config_dirty_flag = 0;
@@ -53,7 +55,8 @@ static NON_VOL_CONVERSION_T config_info[] =
     {9,      offsetof(NON_VOL_VARIABLES_T_VERSION_9, version),   offsetof(NON_VOL_VARIABLES_T_VERSION_9, crc),   &config_v8_to_v9},    
     {10,     offsetof(NON_VOL_VARIABLES_T_VERSION_10, version),  offsetof(NON_VOL_VARIABLES_T_VERSION_10, crc),  &config_v9_to_v10},   
     {11,     offsetof(NON_VOL_VARIABLES_T_VERSION_11, version),  offsetof(NON_VOL_VARIABLES_T_VERSION_11, crc),  &config_v10_to_v11}, 
-    {12,     offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v11_to_v12},                             
+    {12,     offsetof(NON_VOL_VARIABLES_T_VERSION_12, version),  offsetof(NON_VOL_VARIABLES_T_VERSION_12, crc),  &config_v11_to_v12},    
+    {13,     offsetof(NON_VOL_VARIABLES_T, version),             offsetof(NON_VOL_VARIABLES_T, crc),             &config_v12_to_v13},
 };
 
 
@@ -63,7 +66,7 @@ static NON_VOL_CONVERSION_T config_info[] =
  * 
  * \return 0 on success, -1 on error
  */
-void config_blank_to_v1(void)
+void config_blank_to_v1(void *previous_config)
 {
     int i;
 
@@ -151,7 +154,7 @@ void config_blank_to_v1(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v1_to_v2(void)
+void config_v1_to_v2(void *previous_config)
 {
     int i = 0;
 
@@ -169,7 +172,7 @@ void config_v1_to_v2(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v2_to_v3(void)
+void config_v2_to_v3(void *previous_config)
 {
     int i = 0;
     int j = 0;
@@ -207,7 +210,7 @@ void config_v2_to_v3(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v3_to_v4(void)
+void config_v3_to_v4(void *previous_config)
 {
     int i = 0;
     int j = 0;
@@ -228,7 +231,7 @@ void config_v3_to_v4(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v4_to_v5(void)
+void config_v4_to_v5(void *previous_config)
 {
     int i = 0;
     int j = 0;
@@ -245,7 +248,7 @@ void config_v4_to_v5(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v5_to_v6(void)
+void config_v5_to_v6(void *previous_config)
 {
     int i = 0;
     int j = 0;
@@ -299,7 +302,7 @@ void config_v5_to_v6(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v6_to_v7(void)
+void config_v6_to_v7(void *previous_config)
 {
     int i = 0;
     int j = 0;
@@ -331,7 +334,7 @@ void config_v6_to_v7(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v7_to_v8(void)
+void config_v7_to_v8(void *previous_config)
 {
     int i = 0;
     int j = 0;
@@ -348,7 +351,7 @@ void config_v7_to_v8(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v8_to_v9(void)
+void config_v8_to_v9(void *previous_config)
 {
     printf("Converting configuration from version 8 to version 9\n"); 
     config.version = 9;     
@@ -361,7 +364,7 @@ void config_v8_to_v9(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v9_to_v10(void)
+void config_v9_to_v10(void *previous_config)
 {
     printf("Converting configuration from version 9 to version 10\n"); 
     config.version = 10;     
@@ -374,7 +377,7 @@ void config_v9_to_v10(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v10_to_v11(void)
+void config_v10_to_v11(void *previous_config)
 {
     int i;
 
@@ -395,7 +398,7 @@ void config_v10_to_v11(void)
  * 
  * \return 0 on success, -1 on error
  */
-void config_v11_to_v12(void)
+void config_v11_to_v12(void *previous_config)
 {
     int i;
 
@@ -404,6 +407,193 @@ void config_v11_to_v12(void)
 
     config.anemometer_remote_enable = 0;
     config.anemometer_remote_ip[0] = 0;
+}
+
+ /*!
+ * \brief Convert configuration from v12 to v13 and set default values for new parameters
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_v12_to_v13(void *previous_config)
+{
+    int i;
+    NON_VOL_VARIABLES_T_VERSION_12 *temp_config = NULL;
+    NON_VOL_VARIABLES_T_VERSION_12 *config_v12 = NULL;
+
+    printf("Attempting complex conversion. This may take some time.\n");
+
+    if (previous_config)
+    {
+        if (((NON_VOL_VARIABLES_T_VERSION_12 *)previous_config)->version == 12)
+        {
+            printf("Previous config version 12 is available in flash\n");
+        }
+        else
+        {
+            printf("Previous config is not available from flash. Allocating temporary RAM buffer.\n");
+            previous_config = NULL;
+
+            // allocate temporary buffer
+            temp_config = malloc(sizeof(NON_VOL_VARIABLES_T_VERSION_12));
+            if (temp_config)
+            {
+                previous_config = temp_config;
+            }
+            else
+            {
+                printf("Failed to allocate RAM.  Conversion in RAM not possible.  Buring flash with v12.\n");
+                if (!flash_write_non_volatile_variables())
+                {
+                    previous_config = flash_get_config_location();
+
+                    if (((NON_VOL_VARIABLES_T_VERSION_12 *)previous_config)->version != 12)
+                    {
+                        printf("Unexpected version found in flash %d\n", ((NON_VOL_VARIABLES_T_VERSION_12 *)previous_config)->version);
+                        previous_config = NULL;
+                    }
+                }
+                
+                if (previous_config == NULL)
+                {
+                    printf("Unable to perform conversion using either flash or ram\n");
+                }
+            }
+
+        }
+    }
+
+    if (previous_config)
+    {
+        config_v12 = (NON_VOL_VARIABLES_T_VERSION_12 *)previous_config;
+
+        printf("Converting configuration from version 12 to version 13\n"); 
+        config.version = 13; 
+
+        // ***system config start ***
+        //int version;
+        config.personality = config_v12->personality;
+        memcpy(config.wifi_ssid, config_v12->wifi_ssid, sizeof(config.wifi_ssid));
+        memcpy(config.wifi_password, config_v12->wifi_password, sizeof(config.wifi_password));
+        memcpy(config.wifi_country, config_v12->wifi_country, sizeof(config.wifi_country));                
+        config.dhcp_enable = config_v12->dhcp_enable;
+        //memcpy(config.host_name, config_v12->host_name, sizeof(config.host_name)); 
+        STRNCPY(config.host_name, "usurper", sizeof(config.host_name));          
+        memcpy(config.ip_address, config_v12->ip_address, sizeof(config.ip_address));   
+        memcpy(config.network_mask, config_v12->network_mask, sizeof(config.network_mask));   
+        memcpy(config.gateway, config_v12->gateway, sizeof(config.gateway));   
+        config.timezone_offset = config_v12->timezone_offset;
+        config.daylightsaving_enable = config_v12->daylightsaving_enable;     
+        memcpy(config.daylightsaving_start, config_v12->daylightsaving_start, sizeof(config.daylightsaving_start)); 
+        memcpy(config.daylightsaving_end, config_v12->daylightsaving_end, sizeof(config.daylightsaving_end)); 
+        memcpy(config.time_server, config_v12->time_server, sizeof(config.time_server));                 
+        config.syslog_enable = config_v12->syslog_enable; 
+        memcpy(config.syslog_server_ip, config_v12->syslog_server_ip, sizeof(config.syslog_server_ip)); 
+        config.use_archaic_units = config_v12->use_archaic_units; 
+        config.use_simplified_english = config_v12->use_simplified_english; 
+        config.use_monday_as_week_start = config_v12->use_monday_as_week_start; 
+        memcpy(config.gpio_default, config_v12->gpio_default, sizeof(config.gpio_default)); 
+        // memcpy(config.mqtt_user, config_v12->mqtt_user, sizeof(config.mqtt_user)); 
+        // memcpy(config.mqtt_password, config_v12->mqtt_password, sizeof(config.mqtt_password)); 
+        // memcpy(config.mqtt_broker_address, config_v12->mqtt_broker_address, sizeof(config.mqtt_broker_address));   
+        config.mqtt_user[0] = 0;
+        config.mqtt_password[0] = 0;        
+        config.mqtt_broker_address[0] = 0;
+        //uint16_t system_crc;
+
+        // ***application config start*** 
+        config.irrigation_enable = config_v12->irrigation_enable; 
+        memcpy(config.day_schedule_enable, config_v12->day_schedule_enable, sizeof(config.day_schedule_enable));          
+        memcpy(config.day_start, config_v12->day_start, sizeof(config.day_start));          
+        memcpy(config.day_duration, config_v12->day_duration, sizeof(config.day_duration));          
+        memcpy(config.day_start_alternate, config_v12->day_start_alternate, sizeof(config.day_start_alternate));          
+        memcpy(config.day_duration_alternate, config_v12->day_duration_alternate, sizeof(config.day_duration_alternate));          
+        memcpy(config.schedule_opportunity_start, config_v12->schedule_opportunity_start, sizeof(config.schedule_opportunity_start));          
+        memcpy(config.schedule_opportunity_duration, config_v12->schedule_opportunity_duration, sizeof(config.schedule_opportunity_duration));          
+
+
+        // TODO -- complete conversion, calculate size, add padding
+        // int weather_station_enable;
+        // char weather_station_ip[32];
+        // int wind_threshold;
+        // int rain_week_threshold;
+        // int rain_day_threshold;
+        // int relay_normally_open;
+        // int gpio_number;
+        // int led_pattern;
+        // int led_speed;
+        // int led_number;
+        // int led_pin;
+        // int led_rgbw;
+        // int use_led_strip_to_indicate_irrigation_status;
+        // int led_pattern_when_irrigation_active;
+        // int led_pattern_when_irrigation_terminated;
+        // int led_sustain_duration; 
+        // int led_strip_remote_enable;  
+        // char led_strip_remote_ip[6][32];  
+        // char govee_light_ip[32]; 
+        // int use_govee_to_indicate_irrigation_status;
+        // int govee_irrigation_active_red;
+        // int govee_irrigation_active_green; 
+        // int govee_irrigation_active_blue;    
+        // int govee_irrigation_usurped_red;
+        // int govee_irrigation_usurped_green;
+        // int govee_irrigation_usurped_blue;
+        // int govee_sustain_duration;
+        // int soil_moisture_threshold[16];
+        // int zone_max;
+        // int zone_gpio[16];
+        // char zone_name[16][32];
+        // char zone_enable[16];    
+        // int zone_duration[16][7];
+        // int thermostat_enable;
+        // int heating_gpio;
+        // int cooling_gpio;
+        // int fan_gpio;
+        // int heating_to_cooling_lockout_mins;
+        // int minimum_heating_on_mins;
+        // int minimum_cooling_on_mins;
+        // int minimum_heating_off_mins;
+        // int minimum_cooling_off_mins;
+        // int thermostat_mode;   
+        // int max_cycles_per_hour;
+        // int setpoint_number;
+        // char setpoint_name[16][32];     // obsolete
+        // int setpoint_temperaturex10[32];  
+        // int thermostat_hysteresis; 
+        // int setpoint_start_mow[32];  
+        // int setpoint_mode[32];  
+        // char powerwall_ip[32];
+        // char powerwall_hostname[32];  
+        // char powerwall_password[32];
+        // int grid_down_heating_setpoint_decrease;
+        // int grid_down_cooling_setpoint_increase;
+        // int grid_down_heating_disable_battery_level;
+        // int grid_down_heating_enable_battery_level;
+        // int grid_down_cooling_disable_battery_level;
+        // int grid_down_cooling_enable_battery_level;    
+        // char temperature_sensor_remote_ip[6][32]; 
+        // int thermostat_mode_button_gpio;
+        // int thermostat_increase_button_gpio;
+        // int thermostat_decrease_button_gpio;
+        // int thermostat_temperature_sensor_clock_gpio;
+        // int thermostat_temperature_sensor_data_gpio;
+        // int thermostat_seven_segment_display_clock_gpio;
+        // int thermostat_seven_segment_display_data_gpio; 
+        // int outside_temperature_threshold;
+        // int thermostat_display_brightness;
+        // int thermostat_display_num_digits;
+        // int setpoint_heating_temperaturex10[32]; 
+        // int setpoint_cooling_temperaturex10[32];    
+        // int anemometer_remote_enable;
+        // char anemometer_remote_ip[32];     
+        // uint16_t crc;
+    }
+
+
+    if (temp_config)
+    {
+      free(temp_config);
+    }    
 }
 
 // ************************************************************************************************************************
@@ -553,6 +743,7 @@ int config_validate(void)
     uint16_t crc_from_flash = 0;
     uint16_t calculated_crc = 0;
     int latest_valid_config_version = 0;
+    void *previous_config = NULL;
 
     // read configuration into RAM
     flash_read_non_volatile_variables(); 
@@ -572,13 +763,20 @@ int config_validate(void)
         }
     }
 
-#ifndef DISABLE_CONFIG_UPGRADE    
+#ifndef DISABLE_CONFIG_UPGRADE   
+
+    // obtain pointer to previous config if available
+    if (version_from_flash > 0)
+    {
+        previous_config = flash_get_config_location();
+    }
+
     // upgrade configuration sequentially to latest version 
     for(i=0; i < NUM_ROWS(config_info); i++)
     {
         if (latest_valid_config_version < config_info[i].version)
         {
-            config_info[i].upgrade_function();
+            config_info[i].upgrade_function(previous_config);
         }
     }
 #else

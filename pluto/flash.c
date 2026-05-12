@@ -126,3 +126,7 @@ void flash_get_config_size(void)
     }
 }
 
+void *flash_get_config_location(void)
+{
+    return((void *)(PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE));
+}
