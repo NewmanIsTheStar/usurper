@@ -63,7 +63,7 @@ body {
 
 <div class="main">
 
-  <h2>Network Settings</h2>  
+  <h2>Network Settings</h2>
   <label for="dsstart">WiFi Country is <!--#wific--></label><br>
   <a href="/wifi_country.shtml" style="text-decoration:none"><small>Change WiFi Country &#8594</small></a><br><br>
   <table>
@@ -75,7 +75,11 @@ body {
           <tr>
               <td><label for="dsstart">WiFi Password</label></td>
               <td><input type="password" onfocus=this.value='' id="wpass" name="wpass" value="<!--#wpass-->"></td>
-          </tr>         
+          </tr>
+          <tr>
+              <td><label for="hostn">Host Name</label></td>
+              <td><input type="text" id="hostn" name="hostn" value="<!--#hostn-->"></td>
+          </tr>                   
           <tr>
               <td><label for="dsenable">Use DHCP</label></td>
               <td><input type="checkbox" id="dhcp" name="dhcp" value="on" style="height:20px; width:20px; vertical-align: middle;" onclick="this.form.submit()" <!--#dhcp-->></td>
@@ -104,8 +108,9 @@ body {
   <label>WiFi changes will be applied after reboot</label>
   <form action="/reboot.cgi" method="get">
       <input type="submit" value="Reboot" name="reboot" id="reboot" style="font-size: 25px;">
-  </form>   
+  </form> 
+    <br><p style="font-size: x-small;">MAC <!--#macadr--></p><br>  
 </div>
-   
+ 
 </body>
 </html> 

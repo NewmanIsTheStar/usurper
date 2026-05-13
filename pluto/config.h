@@ -131,6 +131,11 @@ typedef struct
     char zone_name[16][32];
     char zone_enable[16];    
     int zone_duration[16][7];
+    int outside_temperature_threshold;    
+    int anemometer_remote_enable;
+    char anemometer_remote_ip[32]; 
+
+    // junk   
     int thermostat_enable;
     int heating_gpio;
     int cooling_gpio;
@@ -165,13 +170,10 @@ typedef struct
     int thermostat_temperature_sensor_data_gpio;
     int thermostat_seven_segment_display_clock_gpio;
     int thermostat_seven_segment_display_data_gpio; 
-    int outside_temperature_threshold;
     int thermostat_display_brightness;
     int thermostat_display_num_digits;
     int setpoint_heating_temperaturex10[32]; 
-    int setpoint_cooling_temperaturex10[32];    
-    int anemometer_remote_enable;
-    char anemometer_remote_ip[32];     
+    int setpoint_cooling_temperaturex10[32];       
     uint16_t crc;
 } NON_VOL_VARIABLES_T;
 

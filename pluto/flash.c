@@ -119,6 +119,7 @@ void flash_get_config_size(void)
 
     if (sizeof(config) > FLASH_SECTOR_SIZE)
     {
+        // NB start and end here are with respect to the beginning of flash *not* the cpu address space
         printf("ERROR: Configuration is too large!\n\n");
         printf("Config area start: %08x\nConfig area end:   %08x\nConfig area size:  %08x\n\n", start, end, end-start);
         printf("Config data size:  %d bytes\n", sizeof(config));
@@ -128,5 +129,5 @@ void flash_get_config_size(void)
 
 void *flash_get_config_location(void)
 {
-    return((void *)(PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE));
+    return((void *)(XIP_BASE +  FLASH_TARGET_OFFSET));
 }

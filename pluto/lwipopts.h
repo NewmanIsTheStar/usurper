@@ -19,6 +19,7 @@ void setTimeSec(uint32_t sec);
 #define MEMP_NUM_SYS_TIMEOUT        (LWIP_NUM_SYS_TIMEOUT_INTERNAL+1)
 #define LWIP_DHCP_MAX_NTP_SERVERS   (4)
 //#define HTTPD_FSDATA_FILE           "htmldata.c"
+#define HTTPD_FSDATA_FILE "pico_fsdata.inc"
 #define LWIP_HTTPD_SSI_INCLUDE_TAG  (0)
 #define LWIP_HTTPD_SSI              (1)
 #define LWIP_HTTPD_CGI              (1)

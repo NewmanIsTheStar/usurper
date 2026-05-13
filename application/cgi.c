@@ -541,77 +541,77 @@ const char * cgi_time_handler(int iIndex, int iNumParams, char *pcParam[], char 
  * 
  * \return nothing
  */
-const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
-{
-    int i = 0;
-    char *param = NULL;
-    char *value = NULL; 
+// const char * cgi_ecowitt_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+// {
+//     int i = 0;
+//     char *param = NULL;
+//     char *value = NULL; 
 
-    // despicable but necessary as we only receive parameter when checked
-    config.weather_station_enable = 0;
+//     // despicable but necessary as we only receive parameter when checked
+//     config.weather_station_enable = 0;
        
-    //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
+//     //dump_parameters(iIndex, iNumParams, pcParam, pcValue);
  
-    i = 0;
-    while (i < iNumParams)
-    {
-        param = pcParam[i];
-        value = pcValue[i];
+//     i = 0;
+//     while (i < iNumParams)
+//     {
+//         param = pcParam[i];
+//         value = pcValue[i];
 
-        if (param && value)
-        {
-            //printf("Parameter: %s has Value: %s\n", param, value);
+//         if (param && value)
+//         {
+//             //printf("Parameter: %s has Value: %s\n", param, value);
 
-            if (strcasecmp("wse", param) == 0)
-            {
-                if (value[0])
-                {
-                    config.weather_station_enable = 1;
-                } 
-                else
-                {
-                    config.weather_station_enable = 0;  // should never happen
-                }                             
-            } 
+//             if (strcasecmp("wse", param) == 0)
+//             {
+//                 if (value[0])
+//                 {
+//                     config.weather_station_enable = 1;
+//                 } 
+//                 else
+//                 {
+//                     config.weather_station_enable = 0;  // should never happen
+//                 }                             
+//             } 
 
-            if (strcasecmp("ecoip", param) == 0)
-            {
-                STRNCPY(config.weather_station_ip, value, sizeof(config.weather_station_ip));
-            }
+//             if (strcasecmp("ecoip", param) == 0)
+//             {
+//                 STRNCPY(config.weather_station_ip, value, sizeof(config.weather_station_ip));
+//             }
 
-            if (strcasecmp("wkrn", param) == 0)
-            {
-                config.rain_week_threshold = get_int_with_tenths_from_string(value);  
-            }
+//             if (strcasecmp("wkrn", param) == 0)
+//             {
+//                 config.rain_week_threshold = get_int_with_tenths_from_string(value);  
+//             }
 
-            if (strcasecmp("dyrn", param) == 0)
-            {
-                config.rain_day_threshold = get_int_with_tenths_from_string(value); 
-            }
+//             if (strcasecmp("dyrn", param) == 0)
+//             {
+//                 config.rain_day_threshold = get_int_with_tenths_from_string(value); 
+//             }
 
-            if (strcasecmp("soilt1", param) == 0)
-            {
-                sscanf(value, "%d", &config.soil_moisture_threshold[0]); 
-            }                                     
+//             if (strcasecmp("soilt1", param) == 0)
+//             {
+//                 sscanf(value, "%d", &config.soil_moisture_threshold[0]); 
+//             }                                     
     
-            if (strcasecmp("wndt", param) == 0)
-            {
-                config.wind_threshold = get_int_with_tenths_from_string(value);                
-            }     
+//             if (strcasecmp("wndt", param) == 0)
+//             {
+//                 config.wind_threshold = get_int_with_tenths_from_string(value);                
+//             }     
 
-            if (strcasecmp("tempth", param) == 0)
-            {
-                config.outside_temperature_threshold= get_int_with_tenths_from_string(value);                
-            }               
-        }
+//             if (strcasecmp("tempth", param) == 0)
+//             {
+//                 config.outside_temperature_threshold= get_int_with_tenths_from_string(value);                
+//             }               
+//         }
 
-        i++;
-    }
+//         i++;
+//     }
 
-    // Send the next page back to the user
-    config_changed();
-    return "/weather.shtml";
-}
+//     // Send the next page back to the user
+//     config_changed();
+//     return "/weather.shtml";
+// }
 
 
 /*!
@@ -3338,7 +3338,7 @@ static const tCGI cgi_handlers[] = {
     {"/hrdec.cgi",                      cgi_dec_hour_handler}, 
     {"/mindec.cgi",                     cgi_dec_minute_handler}, 
     {"/time.cgi",                       cgi_time_handler},      
-    {"/ecowitt.cgi",                    cgi_ecowitt_handler},   
+    // {"/ecowitt.cgi",                    cgi_ecowitt_handler},   
     {"/network.cgi",                    cgi_network_handler},    
     {"/reboot.cgi",                     cgi_reboot_handler},    
     {"/aled.cgi",                       cgi_led_handler},   

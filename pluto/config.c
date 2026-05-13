@@ -24,8 +24,10 @@
 #define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 //#define DISABLE_CONFIG_VALIDATION (1)
 //#define DISABLE_CONFIG_UPGRADE (1)
+//#define DISABLE_CONFIG_WRITE [1]
 
 int config_validate(void);
+void config_system_variable_initialize(void);
 void config_blank_to_v1(void *previous_config);
 void config_v1_to_v2(void *previous_config);
 void config_v2_to_v3(void *previous_config);
@@ -491,14 +493,10 @@ void config_v12_to_v13(void *previous_config)
         config.use_archaic_units = config_v12->use_archaic_units; 
         config.use_simplified_english = config_v12->use_simplified_english; 
         config.use_monday_as_week_start = config_v12->use_monday_as_week_start; 
-        memcpy(config.gpio_default, config_v12->gpio_default, sizeof(config.gpio_default)); 
-        // memcpy(config.mqtt_user, config_v12->mqtt_user, sizeof(config.mqtt_user)); 
-        // memcpy(config.mqtt_password, config_v12->mqtt_password, sizeof(config.mqtt_password)); 
-        // memcpy(config.mqtt_broker_address, config_v12->mqtt_broker_address, sizeof(config.mqtt_broker_address));   
+        memcpy(config.gpio_default, config_v12->gpio_default, sizeof(config.gpio_default));   
         config.mqtt_user[0] = 0;
         config.mqtt_password[0] = 0;        
         config.mqtt_broker_address[0] = 0;
-        //uint16_t system_crc;
 
         // ***application config start*** 
         config.irrigation_enable = config_v12->irrigation_enable; 
@@ -509,42 +507,45 @@ void config_v12_to_v13(void *previous_config)
         memcpy(config.day_duration_alternate, config_v12->day_duration_alternate, sizeof(config.day_duration_alternate));          
         memcpy(config.schedule_opportunity_start, config_v12->schedule_opportunity_start, sizeof(config.schedule_opportunity_start));          
         memcpy(config.schedule_opportunity_duration, config_v12->schedule_opportunity_duration, sizeof(config.schedule_opportunity_duration));          
+        config.weather_station_enable = config_v12->weather_station_enable; 
+        memcpy(config.weather_station_ip, config_v12->weather_station_ip, sizeof(config.weather_station_ip));  
+        config.weather_station_enable = config_v12->weather_station_enable; 
+        config.wind_threshold = config_v12->wind_threshold; 
+        config.rain_week_threshold = config_v12->rain_week_threshold; 
+        config.rain_day_threshold = config_v12->rain_day_threshold; 
+        config.relay_normally_open = config_v12->relay_normally_open; 
+        config.gpio_number = config_v12->gpio_number; 
+        config.led_pattern = config_v12->led_pattern; 
+        config.led_speed = config_v12->led_speed; 
+        config.led_number = config_v12->led_number; 
+        config.led_pin = config_v12->led_pin; 
+        config.led_rgbw = config_v12->led_rgbw; 
+        config.use_led_strip_to_indicate_irrigation_status = config_v12->use_led_strip_to_indicate_irrigation_status; 
+        config.led_pattern_when_irrigation_active = config_v12->led_pattern_when_irrigation_active; 
+        config.led_pattern_when_irrigation_terminated = config_v12->led_pattern_when_irrigation_terminated; 
+        config.led_sustain_duration = config_v12->led_sustain_duration; 
+        config.led_strip_remote_enable = config_v12->led_strip_remote_enable; 
+        memcpy(config.led_strip_remote_ip, config_v12->led_strip_remote_ip, sizeof(config.led_strip_remote_ip));          
+        memcpy(config.govee_light_ip, config_v12->govee_light_ip, sizeof(config.govee_light_ip));     
+        config.use_govee_to_indicate_irrigation_status = config_v12->use_govee_to_indicate_irrigation_status; 
+        config.govee_irrigation_active_red = config_v12->govee_irrigation_active_red; 
+        config.govee_irrigation_active_green = config_v12->govee_irrigation_active_green; 
+        config.govee_irrigation_active_blue = config_v12->govee_irrigation_active_blue; 
+        config.govee_irrigation_usurped_red = config_v12->govee_irrigation_usurped_red; 
+        config.govee_irrigation_usurped_green = config_v12->govee_irrigation_usurped_green; 
+        config.govee_irrigation_usurped_blue = config_v12->govee_irrigation_usurped_blue; 
+        config.govee_sustain_duration = config_v12->govee_sustain_duration; 
+        memcpy(config.soil_moisture_threshold, config_v12->soil_moisture_threshold, sizeof(config.soil_moisture_threshold)); 
+        config.zone_max = config_v12->zone_max; 
+        memcpy(config.zone_gpio, config_v12->zone_gpio, sizeof(config.zone_gpio)); 
+        memcpy(config.zone_name, config_v12->zone_name, sizeof(config.zone_name)); 
+        memcpy(config.zone_enable, config_v12->zone_enable, sizeof(config.zone_enable)); 
+        memcpy(config.zone_duration, config_v12->zone_duration, sizeof(config.zone_duration)); 
+        config.outside_temperature_threshold = config_v12->outside_temperature_threshold; 
+        config.anemometer_remote_enable = config_v12->anemometer_remote_enable; 
+        memcpy(config.anemometer_remote_ip, config_v12->anemometer_remote_ip, sizeof(config.anemometer_remote_ip)); 
+ 
 
-
-        // TODO -- complete conversion, calculate size, add padding
-        // int weather_station_enable;
-        // char weather_station_ip[32];
-        // int wind_threshold;
-        // int rain_week_threshold;
-        // int rain_day_threshold;
-        // int relay_normally_open;
-        // int gpio_number;
-        // int led_pattern;
-        // int led_speed;
-        // int led_number;
-        // int led_pin;
-        // int led_rgbw;
-        // int use_led_strip_to_indicate_irrigation_status;
-        // int led_pattern_when_irrigation_active;
-        // int led_pattern_when_irrigation_terminated;
-        // int led_sustain_duration; 
-        // int led_strip_remote_enable;  
-        // char led_strip_remote_ip[6][32];  
-        // char govee_light_ip[32]; 
-        // int use_govee_to_indicate_irrigation_status;
-        // int govee_irrigation_active_red;
-        // int govee_irrigation_active_green; 
-        // int govee_irrigation_active_blue;    
-        // int govee_irrigation_usurped_red;
-        // int govee_irrigation_usurped_green;
-        // int govee_irrigation_usurped_blue;
-        // int govee_sustain_duration;
-        // int soil_moisture_threshold[16];
-        // int zone_max;
-        // int zone_gpio[16];
-        // char zone_name[16][32];
-        // char zone_enable[16];    
-        // int zone_duration[16][7];
         // int thermostat_enable;
         // int heating_gpio;
         // int cooling_gpio;
@@ -584,9 +585,6 @@ void config_v12_to_v13(void *previous_config)
         // int thermostat_display_num_digits;
         // int setpoint_heating_temperaturex10[32]; 
         // int setpoint_cooling_temperaturex10[32];    
-        // int anemometer_remote_enable;
-        // char anemometer_remote_ip[32];     
-        // uint16_t crc;
     }
 
 
@@ -662,6 +660,9 @@ int config_write(void)
 {
     int err = 0;
 
+    #ifdef DISABLE_CONFIG_WRITE
+    printf("Configuration Writes are disabled!\n");
+    #else
     // write configuration to flash if altered recently
     if (config_dirty(true))
     {
@@ -672,14 +673,15 @@ int config_write(void)
         } while (config_dirty(true));
 
         // update crc
-        config.crc = crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, crc));  
-
+        config.system_crc = crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, system_crc));         
+        config.crc = crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, crc)); 
+         
         // compare ram and flash copies
         if (memcmp((char *)(XIP_BASE +  FLASH_TARGET_OFFSET), ((char *)&config), sizeof(config)))
         {
             printf("Writing configuration to flash\n");
-            flash_write_non_volatile_variables();
-        }
+            flash_write_non_volatile_variables(); 
+        }           
         else
         {
             printf("Refusing to write configuration to flash as RAM and flash copies are identical\n");
@@ -690,15 +692,13 @@ int config_write(void)
         {
             // config was updated by another task after we computed the crc and possibly before we wrote to flash
             printf("Config update occured while writing to flash, will retry\n");
-
-            // printf("config.crc = %d\n", config.crc);
-            // printf("calculated crc = %d\n", crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, crc)));
             
             config_changed();
 
             err = -1;
         }          
     }  
+    #endif
 
     return(err);
 }
@@ -763,7 +763,25 @@ int config_validate(void)
         }
     }
 
-#ifndef DISABLE_CONFIG_UPGRADE   
+    // check if we did not find valid config version
+    if (latest_valid_config_version == 0)
+    {
+        // no valid config --- try to fallback to system config only
+        crc_from_flash = *((uint16_t *)((uint8_t *)&config + offsetof(NON_VOL_VARIABLES_T, system_crc)));
+        calculated_crc = crc_buffer((uint8_t *)&config, offsetof(NON_VOL_VARIABLES_T, system_crc));
+
+        if(crc_from_flash == calculated_crc)
+        {
+            printf("Found valid system configuration variables (e.g. network config).  These will be preserved.\n");
+        }
+        else
+        {
+            printf("Initializing system configuration variables\n");
+            config_system_variable_initialize();
+        }
+    }
+
+#ifndef DISABLE_CONFIG_UPGRADE
 
     // obtain pointer to previous config if available
     if (version_from_flash > 0)
@@ -812,4 +830,58 @@ int config_timeserver_failsafe(void)
     }
 
     return(0);
+}
+
+/*!
+ * \brief Set default values for system variables
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_system_variable_initialize(void)
+{
+    int i;
+
+    printf("Initializing configuration system variables\n");
+
+    // personality
+    config.personality = NO_PERSONALITY;
+
+    // network
+    STRNCPY(config.wifi_country, "World Wide", sizeof(config.wifi_country));      
+    config.wifi_ssid[0] = 0;
+    config.wifi_password[0] = 0;
+    config.dhcp_enable = 1;
+    STRNCPY(config.host_name, APP_NAME, sizeof(config.host_name));
+    config.ip_address[0] = 0;
+    config.network_mask[0] = 0;
+    
+    // time
+    config.timezone_offset = -6*60;
+    config.daylightsaving_enable = 1;  
+    STRNCPY(config.daylightsaving_start, "Second Sunday in March", sizeof(config.daylightsaving_start));
+    STRNCPY(config.daylightsaving_end, "First Sunday in November", sizeof(config.daylightsaving_end));
+    STRNCPY(config.time_server[0], "pool.ntp.org", sizeof(config.time_server[0]));
+    STRNCPY(config.time_server[1], "time.google.com", sizeof(config.time_server[1]));
+    STRNCPY(config.time_server[2], "time.facebook.com", sizeof(config.time_server[2]));
+    STRNCPY(config.time_server[3], "time.windows.com", sizeof(config.time_server[3]));        
+
+    // syslog
+    STRNCPY(config.syslog_server_ip, "spud.badnet", sizeof(config.syslog_server_ip));         
+    config.syslog_enable = 0;
+    
+    // foibles
+    config.use_archaic_units = 1;
+    config.use_simplified_english = 1;
+    config.use_monday_as_week_start = 0;
+
+    // gpio
+    for(i=0; i<NUM_ROWS(config.gpio_default); i++)
+    {
+        config.gpio_default[i] = GP_UNINITIALIZED;
+    } 
+    
+    // mqtt
+    config.mqtt_user[0] = 0;
+    config.mqtt_password[0] = 0;
+    config.mqtt_broker_address[0] = 0;
 }
