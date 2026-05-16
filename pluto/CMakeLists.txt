@@ -60,10 +60,17 @@ endif()
 target_link_libraries(${PROJECT_NAME} ${pluto_link_libraries})
 
 # create githash used instead of APP_VERSION for debug builds
-message("Creating githash.h")
-execute_process(COMMAND
-        ./create_githash_h
-        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-        )
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/githash.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/githash.h
+    @ONLY
+)
+
         
 
