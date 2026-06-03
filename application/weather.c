@@ -36,10 +36,12 @@
 #include "message.h"
 #include "pluto.h"
 #include "web.h"
+#include "mqtt.h"
 
 #define BUF_SIZE (900)
 #define RELAY_GPIO_PIN (3)
 #define MAX_WINDSPEED (50)
+#define OVERRIDE_DURATION_MAX (60*60*24*7)
 
 typedef enum
 {
@@ -75,7 +77,7 @@ int control_led_strip(IRRIGATION_STATE_T irrigation_state, bool reset);
 int schedule_change_affecting_active_irrigation(int start_mow, int end_mow, bool reset);
 int syslog_report_weather (void);
 int set_led_strips(int pattern, int speed);
-void irrigation_relay_test(void);
+void irrigation_relay_override(void);
 
 // external variables
 extern NON_VOL_VARIABLES_T config;
@@ -88,6 +90,7 @@ bool led_strip_sustain_in_progress = false;
 int govee_sustain_until_mow = 0;
 bool govee_sustain_in_progress = false;
 static int test_zone = -1;
+static int test_duration_sec = -1;
 
 
 //ecowitt request messages                 HDR   HDR   CMD                  LEN   CHECKSUM
@@ -226,7 +229,7 @@ void weather_task(void *params)
                 }
             }
 
-            if (!web.irrigation_test_enable)
+            if (!web.irrigation_override_enable)
             {
                 // normal irrigation
                 irrigation_state = control_irrigation_relays();
@@ -242,18 +245,18 @@ void weather_task(void *params)
                     {
                         control_led_strip(irrigation_state, false);
                     }
-
-                    // sleep until start of next minute
-                    delay_seconds = (60 - get_real_time_clock_seconds());
-                    CLIP(delay_seconds, 1, 60);
-                    ulTaskNotifyTakeIndexed(0, pdTRUE, pdMS_TO_TICKS(delay_seconds*1000));
                 }
             }
             else
             {
-                // irrigation relay test
-                irrigation_relay_test();
+                // either web ui or mqtt temporarily overriding scheduled operation
+                irrigation_relay_override();
             }
+
+            // sleep until start of next minute or someone sends us a notification (web ui or mqtt)
+            delay_seconds = (60 - get_real_time_clock_seconds());
+            CLIP(delay_seconds, 1, 60);
+            ulTaskNotifyTakeIndexed(0, pdTRUE, pdMS_TO_TICKS(delay_seconds*1000));
         }  
         else
         {
@@ -738,6 +741,7 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
                 if (gpio_valid(config.zone_gpio[i]))
                 {
                     gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
+                    web.rmtsw_relay_desired_state[i] = false;
                 }
             }
             //printf("IRRIGATION OFF\n"); 
@@ -749,6 +753,7 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
                 if ((i != zone) && gpio_valid(config.zone_gpio[i]))
                 {
                     gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
+                    web.rmtsw_relay_desired_state[i] = false;
                 }
             }
 
@@ -757,11 +762,14 @@ IRRIGATION_STATE_T control_irrigation_relays(void)
             // turn on relay for desired zone
             if ((zone >= 0) && (zone < config.zone_max) && gpio_valid(config.zone_gpio[zone]))
             {
-                gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0); 
+                gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0);
+                web.rmtsw_relay_desired_state[i] = true; 
             } 
             //printf("IRRIGATION ON, Zone = %d\n", zone+1);
             break;
-        } 
+        }
+        
+        mqttsu_relay_refresh();
     }
 
     return(irrigation_state);
@@ -1315,16 +1323,16 @@ int set_led_strips(int pattern, int speed)
 }
 
 /*!
- * \brief Run one minute test of irrigation relay
+ * \brief Temporary override of schedule to directly control an irrigation  relay
  * 
  * \return nothing
  */
-void irrigation_relay_test(void)
+void irrigation_relay_override(void)
 {
     int i = 0;
     int zone = 0;
 
-    if (web.irrigation_test_enable)
+    if (web.irrigation_override_enable)
     {
         // make local copy to avoid corruption by another task TODO: proper intertask communication
         zone = test_zone;
@@ -1338,6 +1346,10 @@ void irrigation_relay_test(void)
                 if ((i != zone) && gpio_valid(config.zone_gpio[i]))
                 {
                     gpio_put(config.zone_gpio[i], config.relay_normally_open?0:1);
+                    if (i < 8)  // MQTT currently only handles up to 8 relays
+                    {
+                        web.rmtsw_relay_desired_state[i] = false; 
+                    }
                 }
             }
 
@@ -1346,11 +1358,16 @@ void irrigation_relay_test(void)
             // turn on relay for desired zone
             if ((zone >= 0) && (zone < config.zone_max) && gpio_valid(config.zone_gpio[zone]))
             {
-                gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0); 
+                gpio_put(config.zone_gpio[zone], config.relay_normally_open?1:0);
+                web.rmtsw_relay_desired_state[zone] = true;
+                mqttsu_relay_refresh();   
                 
-                printf("Testing Zone %d for 1 minute\n", zone+1);
-                snprintf(web.status_message, sizeof(web.status_message), "Zone %d test in progress", zone+1); 
-                ulTaskNotifyTakeIndexed(0, pdTRUE, pdMS_TO_TICKS(60000));                          
+                if ((test_duration_sec > 0) && (test_duration_sec < OVERRIDE_DURATION_MAX))
+                {
+                    printf("Testing Zone %d for %d seconds\n", zone+1, test_duration_sec);
+                    snprintf(web.status_message, sizeof(web.status_message), "Zone %d test in progress for %d seconds", zone+1, test_duration_sec); 
+                    ulTaskNotifyTakeIndexed(0, pdTRUE, pdMS_TO_TICKS(test_duration_sec*1000));                          
+                }
             }
             else
             {
@@ -1361,20 +1378,47 @@ void irrigation_relay_test(void)
         if (test_zone == -1 )
         {
             snprintf(web.status_message, sizeof(web.status_message), "Irrigation test stopped");
-            printf("%s\n", web.status_message); 
+            printf("%s\n", web.status_message);
+
+            for (i=0; i<8; i++)
+            {
+                web.rmtsw_relay_desired_state[i] = false; 
+            }
+            mqttsu_relay_refresh(); 
         } 
         else if (zone == test_zone)
         {
-            snprintf(web.status_message, sizeof(web.status_message), "Irrigation test completed");
-            printf("%s\n", web.status_message);
-            web.irrigation_test_enable = 0;
-            zone = -1;
+            if ((test_duration_sec > 0) && (test_duration_sec < OVERRIDE_DURATION_MAX))
+            {            
+                snprintf(web.status_message, sizeof(web.status_message), "Irrigation test completed");
+                printf("%s\n", web.status_message);
+                
+                for (i=0; i<8; i++)
+                {
+                    web.rmtsw_relay_desired_state[i] = false; 
+                }
+                mqttsu_relay_refresh();          
+                
+                web.irrigation_override_enable = 0;
+                zone = -1;
+            }
         }
         else
         {
             zone = test_zone;
-            snprintf(web.status_message, sizeof(web.status_message), "Irrigation test altered to use Zone %d", zone+1);
-            printf("%s\n", web.status_message);
+            if ((test_duration_sec > 0) && (test_duration_sec < OVERRIDE_DURATION_MAX))
+            {             
+                snprintf(web.status_message, sizeof(web.status_message), "Irrigation test altered to use Zone %d", zone+1);
+                printf("%s\n", web.status_message);
+
+                for (i=0; i<8; i++)
+                {
+                    web.rmtsw_relay_desired_state[i] = false; 
+                }
+                            
+                web.rmtsw_relay_desired_state[zone] = true; 
+                mqttsu_relay_refresh();                 
+            }
         }
     }
 
@@ -1386,11 +1430,13 @@ void irrigation_relay_test(void)
  * 
  * \return nothing
  */
-void set_irrigation_relay_test_zone(int zone)
+void set_irrigation_relay_test_zone(int zone, int duration_sec)
 {
     CLIP(zone, -1, config.zone_max);
+    CLIP(duration_sec, -1, OVERRIDE_DURATION_MAX);
 
     test_zone = zone;
+    test_duration_sec = duration_sec;
 }
 
 /*!

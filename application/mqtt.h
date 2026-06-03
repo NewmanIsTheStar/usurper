@@ -22,8 +22,8 @@ typedef enum
 
 // mqtt_task.c
 void mqtt_task(__unused void *params);
-void mqttrs_relay_refresh(void);
-void mqttrs_relay_config_change(void);
+void mqttsu_relay_refresh(void);
+void mqttsu_relay_config_change(void);
 
 
 #endif

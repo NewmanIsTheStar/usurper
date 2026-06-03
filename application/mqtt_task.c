@@ -31,18 +31,14 @@
 #include "stdarg.h"
 
 #include "watchdog.h"
-//#include "weather.h"
+#include "worker_tasks.h"
+#include "weather.h"
 #include "mqtt.h"
 #include "flash.h"
 #include "calendar.h"
 #include "utility.h"
 #include "config.h"
-//#include "led_strip.h"
-//#include "message.h"
-//#include "altcp_tls_mbedtls_structs.h"
-//#include "powerwall.h"
 #include "pluto.h"
-//#include "tm1637.h"
 
 #define DISCOVERY_PAYLOAD_BUFFER_SIZE (2400)   // large payload sent to home assistant for automatic device discovery
 #define ALL_RELAYS (8)                         // message indicating all relay states need to be published
@@ -69,47 +65,50 @@ typedef enum
     NUM_MQTT_REASONS = 8
 } MQTT_REASON_T;
 
-// prototypes -- mqttrs_ prefix is used for local functions, whereas lwip functions use mqtt_ 
-int mqttrs_sanitize_user_config(void);
-int mqttrs_initialize(void);
-int mqttrs_deinitialize(int (*subsytem_init_func)(void));
-int mqttrs_initialize_connection(void);
-void mqttrs_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
-void mqttrs_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len); 
-void mqttrs_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags);
-void mqttrs_sub_request_cb(void *arg, err_t result);
-void mqttrs_start_sub(mqtt_client_t *client);
-void mqttrs_pub_request_cb(void *arg, err_t result);
-void mqttrs_publish_discovery(mqtt_client_t *client, void *arg);
-int mqttrs_initialize_subscription(void);
-int mqttrs_initialize_ha_discovery(void);
-int mqttrs_initialize_ha_states(void);
-void mqttrs_publish_state(int relay, mqtt_client_t *client, void *arg);
-int mqttrs_construct_discovery_topic(char *buffer, size_t len);
-int mqttrs_construct_discovery_payload(char *buffer, size_t len);
-void mqttrs_publish_all_relay_states(mqtt_client_t *client, void *arg);
-int mqttrs_wait(TickType_t timeout);
-void mqttrs_queue_send(uint8_t message);
-int mqttrs_initialize_queue(void);
-void mqttrs_publish_relay_state(int relay, mqtt_client_t *client, void *arg);
-void mqttrs_tear_down(void);
-void mqttrs_request_connection_restart(MQTT_REASON_T reason);
-void mqttrs_end_sub(mqtt_client_t *client);
-int mqttrs_keep_alive(void);
+// prototypes -- mqttsu_ prefix is used for local functions, whereas lwip functions use mqtt_ 
+int mqttsu_sanitize_user_config(void);
+int mqttsu_initialize(void);
+int mqttsu_deinitialize(int (*subsytem_init_func)(void));
+int mqttsu_initialize_connection(void);
+void mqttsu_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
+void mqttsu_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len); 
+void mqttsu_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags);
+void mqttsu_sub_request_cb(void *arg, err_t result);
+void mqttsu_start_sub(mqtt_client_t *client);
+void mqttsu_pub_request_cb(void *arg, err_t result);
+void mqttsu_publish_discovery(mqtt_client_t *client, void *arg);
+int mqttsu_initialize_subscription(void);
+int mqttsu_initialize_ha_discovery(void);
+int mqttsu_initialize_ha_states(void);
+void mqttsu_publish_state(int relay, mqtt_client_t *client, void *arg);
+int mqttsu_construct_discovery_topic(char *buffer, size_t len);
+int mqttsu_construct_discovery_payload(char *buffer, size_t len);
+void mqttsu_publish_all_relay_states(mqtt_client_t *client, void *arg);
+int mqttsu_wait(TickType_t timeout);
+void mqttsu_queue_send(uint8_t message);
+int mqttsu_initialize_queue(void);
+void mqttsu_publish_relay_state(int relay, mqtt_client_t *client, void *arg);
+void mqttsu_tear_down(void);
+void mqttsu_request_connection_restart(MQTT_REASON_T reason);
+void mqttsu_end_sub(mqtt_client_t *client);
+int mqttsu_keep_alive(void);
+void mqttsu_sprinkler_override_begin(int zone);
+void mqttsu_sprinkler_override_end(void);
 
 // external variables
 extern uint32_t unix_time;
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
+extern WORKER_TASK_T worker_tasks[];
 
 // global variables
 static MQTT_INITIALIZATION_T mqtt_initialization_table[] =
 {
-    {mqttrs_initialize_queue,                     false},     
-    {mqttrs_initialize_connection,                false}, 
-    {mqttrs_initialize_subscription,              false},  
-    {mqttrs_initialize_ha_discovery,              false}, 
-    {mqttrs_initialize_ha_states,                 false},                 
+    {mqttsu_initialize_queue,                     false},     
+    {mqttsu_initialize_connection,                false}, 
+    {mqttsu_initialize_subscription,              false},  
+    {mqttsu_initialize_ha_discovery,              false}, 
+    {mqttsu_initialize_ha_states,                 false},                 
 };
 static bool connection_process_started = false;
 static bool discovery_process_started = false;
@@ -132,6 +131,7 @@ static char *homeassistant_discovery_payload = NULL;
 static int connection_backoff_ms = CONNECTION_BACKOFF_MS_DEFAULT;
 static MQTT_REASON_T connection_restart_reason = MQTT_REASON_UNKNOWN;
 static int published_number_of_relays = 0;
+static int mqtt_irrigation_override_zone = -1;
 
 /*!
  * \brief Support relay control and monitoring via MQTT
@@ -147,15 +147,15 @@ void mqtt_task(void *params)
     printf("MQTT task started!\n");
 
     // check and correct critical user configuration settings
-    mqttrs_sanitize_user_config();
+    mqttsu_sanitize_user_config();
      
     while (true)
     {         
         // initialize all subsystems that are not already up
-        mqttrs_initialize();
+        mqttsu_initialize();
 
         // wait for timeout period but abort immediately if a relay changes state
-        relay_changed = mqttrs_wait(MQTT_TASK_LOOP_DELAY);
+        relay_changed = mqttsu_wait(MQTT_TASK_LOOP_DELAY);
 
         if (relay_changed) 
         {
@@ -164,17 +164,17 @@ void mqtt_task(void *params)
                 // if a specific relay has changed then publish it first
                 if ((mqtt_message >=0) && (mqtt_message < config.zone_max))
                 {
-                    mqttrs_publish_relay_state(mqtt_message, mqtt_client, NULL);
+                    mqttsu_publish_relay_state(mqtt_message, mqtt_client, NULL);
                 }
 
                 // publish all relay states
-                mqttrs_publish_all_relay_states(mqtt_client, NULL);
+                mqttsu_publish_all_relay_states(mqtt_client, NULL);
             }
         }
         else
         {
             // keep broker connection alive
-            mqttrs_keep_alive();
+            mqttsu_keep_alive();
         }
 
         if (connection_restart_request)
@@ -182,7 +182,7 @@ void mqtt_task(void *params)
             printf("performing teardown reason=%d\n", connection_restart_reason);
             send_syslog_message("mqtt", "Performing teardown reason=%d", connection_restart_reason);
 
-            mqttrs_tear_down();
+            mqttsu_tear_down();
             connection_restart_request = false;
         }
         // tell watchdog task that we are still alive
@@ -199,7 +199,7 @@ void mqtt_task(void *params)
  * 
  * \return 0 on success
  */
-int mqttrs_initialize(void)
+int mqttsu_initialize(void)
 {
     static bool init_complete = false;
     static int  attempt = 0;
@@ -244,7 +244,7 @@ int mqttrs_initialize(void)
  * 
  * \return 0 on success
  */
-int mqttrs_deinitialize(int (*subsytem_init_func)(void))
+int mqttsu_deinitialize(int (*subsytem_init_func)(void))
 {
     int err = 1;
     int i;
@@ -270,7 +270,7 @@ int mqttrs_deinitialize(int (*subsytem_init_func)(void))
  * 
  * \return 0 on success
  */
-int mqttrs_sanitize_user_config(void)
+int mqttsu_sanitize_user_config(void)
 {   
     // force zero termination
     config.mqtt_user[sizeof(config.mqtt_user)- 1] = 0;
@@ -287,7 +287,7 @@ int mqttrs_sanitize_user_config(void)
  * 
  * \return 0 on success
  */
-int mqttrs_initialize_connection(void)
+int mqttsu_initialize_connection(void)
 {
     int err = -1;
     static struct mqtt_connect_client_info_t ci;
@@ -314,7 +314,7 @@ int mqttrs_initialize_connection(void)
             if (mqtt_client != NULL) 
             {
                 cyw43_arch_lwip_begin();
-                err = mqtt_client_connect(mqtt_client, &broker_ip, MQTT_PORT, mqttrs_connection_cb, NULL, &ci);
+                err = mqtt_client_connect(mqtt_client, &broker_ip, MQTT_PORT, mqttsu_connection_cb, NULL, &ci);
                 cyw43_arch_lwip_end();
 
                 //printf("mqtt connect returned %d\n", err);
@@ -345,7 +345,7 @@ int mqttrs_initialize_connection(void)
  * 
  * \return 0 on success
  */
-int mqttrs_initialize_subscription(void)
+int mqttsu_initialize_subscription(void)
 {
     int err = -1;
     struct mqtt_connect_client_info_t ci;
@@ -353,7 +353,7 @@ int mqttrs_initialize_subscription(void)
     if (connection_completed)
     {
         // Subscribe to a topic here
-        mqttrs_start_sub(mqtt_client);
+        mqttsu_start_sub(mqtt_client);
         err = 0;
     }
 
@@ -367,7 +367,7 @@ int mqttrs_initialize_subscription(void)
  * 
  * \return 0 on success
  */
-int mqttrs_initialize_ha_discovery(void)
+int mqttsu_initialize_ha_discovery(void)
 {
     int err = -1;
 
@@ -376,7 +376,7 @@ int mqttrs_initialize_ha_discovery(void)
         printf("sending home assitant discovery packet\n");
         send_syslog_message("mqtt", "Sending home assistant discovery packet");        
 
-        mqttrs_publish_discovery(mqtt_client, NULL);
+        mqttsu_publish_discovery(mqtt_client, NULL);
         
         discovery_process_started = true;
 
@@ -395,7 +395,7 @@ int mqttrs_initialize_ha_discovery(void)
  * 
  * \return 0 on success
  */
-int mqttrs_initialize_ha_states(void)
+int mqttsu_initialize_ha_states(void)
 {
     int err = -1;
     int j = 0;
@@ -410,7 +410,7 @@ int mqttrs_initialize_ha_states(void)
     {
         //printf("about to call publish all states\n");
 
-        mqttrs_publish_all_relay_states(mqtt_client, NULL);
+        mqttsu_publish_all_relay_states(mqtt_client, NULL);
         
         states_initialized = true;
 
@@ -428,7 +428,7 @@ int mqttrs_initialize_ha_states(void)
  * 
  * \return nothing
  */
-void mqttrs_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
+void mqttsu_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
 {
     switch(status)
     {
@@ -440,11 +440,11 @@ void mqttrs_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_stat
         disconnect_completed = true;
         if (!connection_restart_request)
         {
-            mqttrs_request_connection_restart(MQTT_REASON_DISCONNECT);
+            mqttsu_request_connection_restart(MQTT_REASON_DISCONNECT);
         }
         break;
     case MQTT_CONNECT_TIMEOUT:
-        mqttrs_request_connection_restart(MQTT_REASON_TIMEOUT);
+        mqttsu_request_connection_restart(MQTT_REASON_TIMEOUT);
         break;
     default:
         printf("MQTT Connection failed: %d\n", status);
@@ -456,7 +456,7 @@ void mqttrs_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_stat
         }
         else
         {
-           mqttrs_request_connection_restart(MQTT_REASON_UNKNOWN);
+           mqttsu_request_connection_restart(MQTT_REASON_UNKNOWN);
         }     
         break;                        
     }
@@ -469,7 +469,7 @@ void mqttrs_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_stat
  * 
  * \return nothing
  */
-void mqttrs_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len) 
+void mqttsu_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len) 
 {
     char expected_domain[32];
     
@@ -500,25 +500,23 @@ void mqttrs_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
  * 
  * \return nothing
  */
-void mqttrs_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags) 
+void mqttsu_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags) 
 {
     if (flags & MQTT_DATA_FLAG_LAST)  // TODO: make this accept and aggregate data received in multiple chunks
     {
-        //printf("Final message received: %.*s AND relay to switch = %d\n", len, (const char*)data, relay_to_switch);
-
         if ((relay_to_switch >=0) && (relay_to_switch < config.zone_max))
         {
             if (strncasecmp(data, "ON", 2) == 0)
             {
                 web.rmtsw_relay_desired_state[relay_to_switch] = true;
-                //rmtsw_queue_send((uint8_t)relay_to_switch);
-                mqttrs_queue_send((uint8_t)relay_to_switch);                    
+                mqttsu_sprinkler_override_begin(relay_to_switch);
+                mqttsu_queue_send((uint8_t)relay_to_switch);                    
             }
             else if (strncasecmp(data, "OFF", 3) == 0)
             {
                 web.rmtsw_relay_desired_state[relay_to_switch] = false;
-                //rmtsw_queue_send((uint8_t)relay_to_switch);
-                mqttrs_queue_send((uint8_t)relay_to_switch);  
+                mqttsu_sprinkler_override_end();
+                mqttsu_queue_send((uint8_t)relay_to_switch);  
             }
             
             relay_to_switch = -1;
@@ -539,7 +537,7 @@ void mqttrs_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
  * 
  * \return nothing
  */
-void mqttrs_sub_request_cb(void *arg, err_t result) 
+void mqttsu_sub_request_cb(void *arg, err_t result) 
 {
     if (result == ERR_OK)
     {
@@ -559,20 +557,20 @@ void mqttrs_sub_request_cb(void *arg, err_t result)
  * 
  * \return nothing
  */
-void mqttrs_start_sub(mqtt_client_t *client)
+void mqttsu_start_sub(mqtt_client_t *client)
 {
     int err;
     static char topic[32];
 
     // Set callbacks
     cyw43_arch_lwip_begin();
-    mqtt_set_inpub_callback(client, mqttrs_incoming_publish_cb, mqttrs_incoming_data_cb, NULL);
+    mqtt_set_inpub_callback(client, mqttsu_incoming_publish_cb, mqttsu_incoming_data_cb, NULL);
     cyw43_arch_lwip_end();
 
     // Subscribe
     sprintf(topic, "relay-c-%02x-%02x-%02x-%02x-%02x-%02x/#", web.mac[0], web.mac[1], web.mac[2], web.mac[3], web.mac[4], web.mac[5]); 
     cyw43_arch_lwip_begin();   
-    err = mqtt_subscribe(client, topic, 1, mqttrs_sub_request_cb, NULL);    
+    err = mqtt_subscribe(client, topic, 1, mqttsu_sub_request_cb, NULL);    
     cyw43_arch_lwip_end();
 
     //printf("subscribe result = %d\n", err);
@@ -585,13 +583,13 @@ void mqttrs_start_sub(mqtt_client_t *client)
  * 
  * \return nothing
  */
-void mqttrs_pub_request_cb(void *arg, err_t result) 
+void mqttsu_pub_request_cb(void *arg, err_t result) 
 {
     if(result != ERR_OK) 
     {
         printf("Publish failed: %d\n", result);
         //send_syslog_message("mqtt", "publish failed");
-        mqttrs_request_connection_restart(MQTT_REASON_PUBLISH_FAILED_CB);
+        mqttsu_request_connection_restart(MQTT_REASON_PUBLISH_FAILED_CB);
     } else 
     {
         //printf("Publish success\n");
@@ -631,7 +629,7 @@ void mqttrs_pub_request_cb(void *arg, err_t result)
  * 
  * \return nothing
  */
-void mqttrs_publish_discovery(mqtt_client_t *client, void *arg)
+void mqttsu_publish_discovery(mqtt_client_t *client, void *arg)
 {
     //const char *pub_payload = "Pico2W Hello!";
     err_t err;
@@ -641,7 +639,7 @@ void mqttrs_publish_discovery(mqtt_client_t *client, void *arg)
     static char discovery_topic[60];
     static MQTT_CALLBACK_ID_T discovery_arg = MQTT_CALLBACK_DISCOVERY_ID;
     
-    mqttrs_construct_discovery_topic(discovery_topic, sizeof(discovery_topic));
+    mqttsu_construct_discovery_topic(discovery_topic, sizeof(discovery_topic));
    
     if (!homeassistant_discovery_payload)
     {
@@ -650,14 +648,14 @@ void mqttrs_publish_discovery(mqtt_client_t *client, void *arg)
 
     if (homeassistant_discovery_payload)
     {    
-        mqttrs_construct_discovery_payload(homeassistant_discovery_payload, DISCOVERY_PAYLOAD_BUFFER_SIZE);
+        mqttsu_construct_discovery_payload(homeassistant_discovery_payload, DISCOVERY_PAYLOAD_BUFFER_SIZE);
 
         if (published_number_of_relays != config.zone_max)
         {
             // remove device from home assistant
             retain = 1;
             cyw43_arch_lwip_begin();
-            err = mqtt_publish(client, discovery_topic, "", 0, qos, retain, mqttrs_pub_request_cb, arg);
+            err = mqtt_publish(client, discovery_topic, "", 0, qos, retain, mqttsu_pub_request_cb, arg);
             cyw43_arch_lwip_end();
 
             if(err != ERR_OK) 
@@ -671,7 +669,7 @@ void mqttrs_publish_discovery(mqtt_client_t *client, void *arg)
         // add device to home assistant
         retain = 1;
         cyw43_arch_lwip_begin();
-        err = mqtt_publish(client, discovery_topic, homeassistant_discovery_payload, strlen(homeassistant_discovery_payload), qos, retain, mqttrs_pub_request_cb, &discovery_arg);
+        err = mqtt_publish(client, discovery_topic, homeassistant_discovery_payload, strlen(homeassistant_discovery_payload), qos, retain, mqttsu_pub_request_cb, &discovery_arg);
         cyw43_arch_lwip_end();;
 
         if(err != ERR_OK) 
@@ -692,7 +690,7 @@ void mqttrs_publish_discovery(mqtt_client_t *client, void *arg)
  * 
  * \return nothing
  */
-void mqttrs_publish_state(int relay, mqtt_client_t *client, void *arg)
+void mqttsu_publish_state(int relay, mqtt_client_t *client, void *arg)
 {
     const char *pub_payload = "Pico2W Hello!";
     err_t err;
@@ -718,14 +716,14 @@ void mqttrs_publish_state(int relay, mqtt_client_t *client, void *arg)
     // send state
     retain = 0;
     cyw43_arch_lwip_begin();
-    err = mqtt_publish(client, state, state_payload, strlen(state_payload), qos, retain, mqttrs_pub_request_cb, &state_arg);
+    err = mqtt_publish(client, state, state_payload, strlen(state_payload), qos, retain, mqttsu_pub_request_cb, &state_arg);
     cyw43_arch_lwip_end();
 
     if(err != ERR_OK) 
     {
         printf("Publish state error: %d\n", err);
         //send_syslog_message("mqtt", "publish state error %d", err);
-        mqttrs_request_connection_restart(MQTT_PUBLISH_FAILED_CALL);
+        mqttsu_request_connection_restart(MQTT_PUBLISH_FAILED_CALL);
     }
 
     //printf("published new state. %s = %s\n", state, state_payload);
@@ -738,7 +736,7 @@ void mqttrs_publish_state(int relay, mqtt_client_t *client, void *arg)
  * 
  * \return nothing
  */
-int mqttrs_construct_discovery_payload(char *buffer, size_t len)
+int mqttsu_construct_discovery_payload(char *buffer, size_t len)
 {
     int err = 0;
     int i; 
@@ -792,7 +790,7 @@ int mqttrs_construct_discovery_payload(char *buffer, size_t len)
  * 
  * \return nothing
  */
-int mqttrs_construct_discovery_topic(char *buffer, size_t len)
+int mqttsu_construct_discovery_topic(char *buffer, size_t len)
 {
     int err = 0;
     int i; 
@@ -815,7 +813,7 @@ int mqttrs_construct_discovery_topic(char *buffer, size_t len)
  * 
  * \return nothing
  */
-void mqttrs_publish_all_relay_states(mqtt_client_t *client, void *arg)
+void mqttsu_publish_all_relay_states(mqtt_client_t *client, void *arg)
 {
     int i = 0;
     int j = 0;
@@ -825,7 +823,7 @@ void mqttrs_publish_all_relay_states(mqtt_client_t *client, void *arg)
     for(i=0; i<config.zone_max; i++)
     {
         states_outstanding++;
-        mqttrs_publish_state(i, client, arg);
+        mqttsu_publish_state(i, client, arg);
 
         // sleep until callback decrements states_outstanding to 0 or 5 seconds elapse
         for(j=0; (j < 100) && states_outstanding; j++) 
@@ -845,14 +843,14 @@ void mqttrs_publish_all_relay_states(mqtt_client_t *client, void *arg)
  * 
  * \return nothing
  */
-void mqttrs_publish_relay_state(int relay, mqtt_client_t *client, void *arg)
+void mqttsu_publish_relay_state(int relay, mqtt_client_t *client, void *arg)
 {
     int j = 0;
 
     if ((relay >= 0) && (relay < config.zone_max))
     {
         states_outstanding = 1;
-        mqttrs_publish_state(relay, client, arg);
+        mqttsu_publish_state(relay, client, arg);
 
         // sleep until callback decrements states_outstanding to 0 or 5 seconds elapse
         for(j=0; (j < 100) && states_outstanding; j++)
@@ -867,10 +865,10 @@ void mqttrs_publish_relay_state(int relay, mqtt_client_t *client, void *arg)
  * 
  * \return nothing
  */
-void mqttrs_relay_refresh(void)
+void mqttsu_relay_refresh(void)
 {
     // relay states have changed
-    mqttrs_queue_send(ALL_RELAYS);
+    mqttsu_queue_send(ALL_RELAYS);
 }
 
 /*!
@@ -878,7 +876,7 @@ void mqttrs_relay_refresh(void)
  * 
  * \return true if timeout preempted
  */
-int mqttrs_wait(TickType_t timeout)
+int mqttsu_wait(TickType_t timeout)
 {
     int err = 0;
 
@@ -898,7 +896,7 @@ int mqttrs_wait(TickType_t timeout)
  * 
  * \return nothing
  */
-void mqttrs_queue_send(uint8_t message)
+void mqttsu_queue_send(uint8_t message)
 {
     static uint8_t message_store = 0;
 
@@ -916,7 +914,7 @@ void mqttrs_queue_send(uint8_t message)
  * 
  * \return nothing
  */
-int mqttrs_initialize_queue(void)
+int mqttsu_initialize_queue(void)
 {
     int err = 0;
 
@@ -933,7 +931,7 @@ int mqttrs_initialize_queue(void)
  * 
  * \return nothing
  */
-void mqttrs_tear_down(void)
+void mqttsu_tear_down(void)
 {
     u8_t connection_up = 0;
     int j = 0;
@@ -948,7 +946,7 @@ void mqttrs_tear_down(void)
         {
             // unsubscribe
             cyw43_arch_lwip_begin();
-            mqttrs_end_sub(mqtt_client);
+            mqttsu_end_sub(mqtt_client);
             cyw43_arch_lwip_end(); 
 
             // disconnect
@@ -978,10 +976,10 @@ void mqttrs_tear_down(void)
     connection_backoff_ms = CONNECTION_BACKOFF_MS_DEFAULT;
 
     // deinitialize connection related functions (so that they will be rerun)
-    mqttrs_deinitialize(mqttrs_initialize_ha_states);
-    mqttrs_deinitialize(mqttrs_initialize_ha_discovery);
-    mqttrs_deinitialize(mqttrs_initialize_subscription);
-    mqttrs_deinitialize(mqttrs_initialize_connection);
+    mqttsu_deinitialize(mqttsu_initialize_ha_states);
+    mqttsu_deinitialize(mqttsu_initialize_ha_discovery);
+    mqttsu_deinitialize(mqttsu_initialize_subscription);
+    mqttsu_deinitialize(mqttsu_initialize_connection);
 
     SLEEP_MS(connection_backoff_ms);
 }
@@ -991,7 +989,7 @@ void mqttrs_tear_down(void)
  * 
  * \return nothing
  */
-void mqttrs_request_connection_restart(MQTT_REASON_T reason)
+void mqttsu_request_connection_restart(MQTT_REASON_T reason)
 {
     connection_restart_reason = reason;
     connection_restart_request = true;
@@ -1004,7 +1002,7 @@ void mqttrs_request_connection_restart(MQTT_REASON_T reason)
  * 
  * \return nothing
  */
-void mqttrs_end_sub(mqtt_client_t *client)
+void mqttsu_end_sub(mqtt_client_t *client)
 {
     int err;
     static char topic[32];
@@ -1023,7 +1021,7 @@ void mqttrs_end_sub(mqtt_client_t *client)
  * 
  * \return true if timeout preempted
  */
-int mqttrs_keep_alive(void)
+int mqttsu_keep_alive(void)
  {
     int err = 0;
     static uint32_t last_publication = 0;
@@ -1033,7 +1031,7 @@ int mqttrs_keep_alive(void)
         if (connection_completed)
         {
             last_publication = unix_time;
-            mqttrs_publish_all_relay_states(mqtt_client, NULL); 
+            mqttsu_publish_all_relay_states(mqtt_client, NULL); 
         }
     }
 
@@ -1045,10 +1043,61 @@ int mqttrs_keep_alive(void)
  * 
  * \return nothing
  */
-void mqttrs_relay_config_change(void)
+void mqttsu_relay_config_change(void)
 {
     // trigger republication of discovery
     published_number_of_relays = 0;
 
-    mqttrs_request_connection_restart(MQTT_REASON_CONFIG_CHANGE);
+    mqttsu_request_connection_restart(MQTT_REASON_CONFIG_CHANGE);
 }
+
+
+
+ /*!
+ * \brief command weather task to begin irrigation of specified zone
+ * 
+ * \return nothing
+ */
+void mqttsu_sprinkler_override_begin(int zone)
+{
+    int i;
+
+    if ((zone >= 0) && (zone < config.zone_max))
+    {
+
+        snprintf(web.status_message, sizeof(web.status_message), "MQTT started irrigation of zone %d", zone+1);
+        printf("%s\n", web.status_message);  
+        mqtt_irrigation_override_zone = zone;    
+        set_irrigation_relay_test_zone(zone, -1);
+        web.irrigation_override_enable = 1;
+
+        // ensure all other zones are off
+        for(i=0; i < config.zone_max; i++)
+        {
+            if (i != zone)
+            {
+                web.rmtsw_relay_desired_state[i] = false;
+            }
+        }
+
+        xTaskNotifyGiveIndexed(worker_tasks[0].task_handle, 0);
+    }
+}
+
+ /*!
+ * \brief command weather task to end irrigation override
+ * 
+ * \return nothing
+ */
+void mqttsu_sprinkler_override_end(void)
+{
+    snprintf(web.status_message, sizeof(web.status_message), "MQTT ended irrigation of zone %d", mqtt_irrigation_override_zone+1);
+    printf("%s\n", web.status_message);    
+    mqtt_irrigation_override_zone = -1;    
+    web.irrigation_override_enable = 0;
+    set_irrigation_relay_test_zone(-1, -1); 
+
+    xTaskNotifyGiveIndexed(worker_tasks[0].task_handle, 0);
+}
+
+

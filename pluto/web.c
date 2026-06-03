@@ -64,7 +64,7 @@ int init_web_variables(void)   //TODO: need to initialize all web variables !!!
     web.us_last_rx_packet = 0;  
     web.soil_moisture[0] = 0; 
 
-    web.irrigation_test_enable = 0; 
+    web.irrigation_override_enable = 0; 
 
     STRNCPY(web.last_usurped_timestring,"never", sizeof(web.last_usurped_timestring));
     STRNCPY(web.last_completed_timestring,"never", sizeof(web.last_completed_timestring));    
