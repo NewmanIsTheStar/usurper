@@ -6,7 +6,8 @@ target_sources(${PROJECT_NAME} PRIVATE
         message.c
         json_parser.c
         ssi.c
-        cgi.c        
+        cgi.c 
+        mqtt_task.c       
 )
 
 set(WEB_FILES)

@@ -21,7 +21,6 @@
 #include "config.h"
 #include "flash.h"
 
-#define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 
 extern NON_VOL_VARIABLES_T config;
 
@@ -31,9 +30,18 @@ extern NON_VOL_VARIABLES_T config;
  * 
  * \return 0 on success, -1 on error
  */
-int flash_read_non_volatile_variables(void)
+int flash_read_non_volatile_variables(CONFIG_TYPE_T config_type)
 {
-    memcpy((char *)&config, (char *)(XIP_BASE +  FLASH_TARGET_OFFSET), sizeof(config));
+    switch(config_type)
+    {
+    default:
+    case CONFIG_STANDARD:
+        memcpy((char *)&config, (char *)(XIP_BASE +  FLASH_TARGET_OFFSET), sizeof(config));
+        break;        
+    case CONFIG_LEGACY:  // config was originally stored in the last sector of flash -- this now gets overwritten due to RP2350-E10 errata for the Raspberry Pi Pico 2
+        memcpy((char *)&config, (char *)(XIP_BASE +  FLASH_LEGACY_OFFSET), sizeof(config));
+        break;
+    }
     
     return(0);
 }
@@ -46,12 +54,12 @@ int flash_read_non_volatile_variables(void)
 void flash_write_shim(void *ptr)
 {
         // erase the last sector of the flash (4 KBytes)
-        flash_range_erase((PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE), FLASH_SECTOR_SIZE);
+        flash_range_erase(FLASH_TARGET_OFFSET, FLASH_SECTOR_SIZE);
 
         if (sizeof(config) < FLASH_SECTOR_SIZE)
         {
             // program the configuation in 256 Byte pages (range is rounded up to the nearest multiple of 256 Bytes)
-            flash_range_program((PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE), (uint8_t *)&config, ((sizeof(config)+255)/256)*256);
+            flash_range_program(FLASH_TARGET_OFFSET, (uint8_t *)&config, ((sizeof(config)+255)/256)*256);
         }
         else
         {
@@ -114,8 +122,8 @@ void flash_get_program_size(void)
 void flash_get_config_size(void)
 {
     int flash_percentage = 0;
-    uintptr_t start = (uintptr_t)(PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE);
-    uintptr_t end = (uintptr_t)(PICO_FLASH_SIZE_BYTES - 1);
+    uintptr_t start = (uintptr_t)(FLASH_TARGET_OFFSET);
+    uintptr_t end = (uintptr_t)(FLASH_TARGET_OFFSET + FLASH_SECTOR_SIZE - 1);
 
     if (sizeof(config) > FLASH_SECTOR_SIZE)
     {
@@ -127,7 +135,20 @@ void flash_get_config_size(void)
     }
 }
 
-void *flash_get_config_location(void)
+void *flash_get_config_location(CONFIG_TYPE_T config_type)
 {
-    return((void *)(XIP_BASE +  FLASH_TARGET_OFFSET));
+    void *location;
+
+    switch(config_type)
+    {
+    default:
+    case CONFIG_STANDARD:
+        location = (void *)(XIP_BASE +  FLASH_TARGET_OFFSET);
+        break;        
+    case CONFIG_LEGACY:  // config was originally stored in the last sector of flash -- this now gets overwritten due to RP2350-E10 errata for the Raspberry Pi Pico 2
+        location = (void *)(XIP_BASE +  FLASH_LEGACY_OFFSET);
+        break;
+    }
+
+    return(location);
 }

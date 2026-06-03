@@ -48,7 +48,7 @@ body {
 </head>
 <body>
 
-    <div class="sidenav">
+  <div class="sidenav">
     <a href="/network.shtml">Network</a>   
     <a href="/time.shtml">Time</a>
     <a href="<!--#rpage-->">Relay</a>
@@ -60,28 +60,36 @@ body {
     <a href="/units.shtml">Foibles</a>     
     <a href="/status.shtml">Status</a>   
     <p><a href="/index.shtml">&#8629</a></p>    
-    <br> 
-    <br> 
-    <br> 
-    <br> 
-    <br> 
-    <br> 
-    <a href="/personality.shtml">&#9786</a> 
   </div>
 
+
 <div class="main">
-  <h2>Foibles</h2>     
-  <form action="/units.cgi">             
-    <label for="wind">&#127482&#127480 Use archaic measurement units</label>
-    <input type="checkbox" id="uau" name="uau" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#uau-->><br><br>    
-    <label for="wind">&#127482&#127480 Use simplified English spelling</label>
-    <input type="checkbox" id="simpe" name="simpe" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#simpe-->><br><br>   
-    <label for="wind">&#127466&#127482 Start week on Monday</label>
-    <input type="checkbox" id="mweek" name="mweek" value="on" style="height:20px; width:20px; vertical-align: middle;" <!--#mweek-->><br><br>                                               
-      <br>
-      <input type="submit" value="Save" style="font-size: 25px;">
-  </form>  
+
+  <h2>MQTT Settings</h2>
+  <table>
+      <form action="/mqtt.cgi">
+          <tr>
+              <td><label for="mqpass">MQTT User Name</label></td>
+              <td><input type="text" id="mquser" name="mquser" value="<!--#mquser-->"></td>
+          </tr>
+          <tr>
+              <td><label for="dsstart">MQTT Password</label></td>
+              <td><input type="password" onfocus=this.value='' id="mqpass" name="mqpass" value="<!--#mqpass-->"></td>
+          </tr>
+          <tr>
+              <td><label for="hostn">MQTT Broker Address</label></td>
+              <td><input type="text" id="mqaddr" name="mqaddr" value="<!--#mqaddr-->"></td>
+          </tr>                                                                    
+          <tr>            
+              <td>
+                  <button type="submit" style="font-size: 25px;">Save</button>
+              </td>
+          </tr>
+      </form>
+  </table>
 </div>
    
 </body>
 </html> 
+
+  

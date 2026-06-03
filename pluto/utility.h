@@ -37,5 +37,7 @@ int indent(int num_spaces);
 bool gpio_valid(int gpio_number);
 bool gpio_conflict(int *gpio_list, int len);
 i2c_inst_t *gpio_get_i2c(int gpio_clock, int gpio_data);
+void urldecode(char *dst, const char *src);
+uint32_t address_string_to_ip(char *address_string);
 
 #endif

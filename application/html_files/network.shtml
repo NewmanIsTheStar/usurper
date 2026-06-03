@@ -55,7 +55,8 @@ body {
     <a href="/weather.shtml">Weather</a>
     <a href="/moodlight.shtml">Moodlight</a>     
     <a href="/addressable_led.shtml">LED strip</a>
-    <a href="/syslog.shtml">Syslog</a>    
+    <a href="/syslog.shtml">Syslog</a>
+    <a href="/mqtt.shtml">MQTT</a>       
     <a href="/units.shtml">Foibles</a>     
     <a href="/status.shtml">Status</a>   
     <p><a href="/index.shtml">&#8629</a></p>    

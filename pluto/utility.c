@@ -35,7 +35,6 @@
 #include "pluto.h"
 
 
-#define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 
 //prototype
 //void establish_socket_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg);
@@ -1058,3 +1057,65 @@ int establish_socket(char *address_string, /*struct sockaddr_in *ipv4_address,*/
     return(socket);
 }
 #endif
+
+void urldecode(char *dst, const char *src) 
+{
+    char a, b;
+    while (*src) 
+    {
+        if ((*src == '%') &&
+            ((a = src[1]) && (b = src[2])) &&
+            (isxdigit(a) && isxdigit(b))) 
+        {
+            if (a >= 'a') a -= 'a'-'A';
+            if (a >= 'A') a -= ('A' - 10);
+            else a -= '0';
+            if (b >= 'a') b -= 'a'-'A';
+            if (b >= 'A') b -= ('A' - 10);
+            else b -= '0';
+            *dst++ = 16*a + b;
+            src += 3;
+        } else if (*src == '+') 
+        {
+            *dst++ = ' ';
+            src++;
+        } else 
+        {
+            *dst++ = *src++;
+        }
+    }
+    *dst++ = '\0';
+}
+
+/*!
+ * \brief convert ascii string to 32 bit IP address
+ *
+ * \param[in]   address_string         IPv4 address or hostname in ascii e.g. "192.168.1.1" or "google.com"   
+ * 
+ * \return 32 bit number representing IPv4 address
+ */
+uint32_t address_string_to_ip(char *address_string)
+{
+    struct addrinfo hints, *res;
+    struct sockaddr_in *saddr;
+    uint32_t ip_raw = 0;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET; // IPv4 only
+    
+    if (getaddrinfo(address_string, NULL, &hints, &res) == 0) 
+    {
+        // cast to sockaddr_in
+        saddr = (struct sockaddr_in *)res->ai_addr;
+        
+        // extract 32-bit raw IP (Network Byte Order)
+        ip_raw = saddr->sin_addr.s_addr;
+        
+        // printf("Raw 32-bit (Network Order): %08x\n", ip_raw);
+        // printf("Raw 32-bit (Host Order):    %08x\n", ntohl(ip_raw));
+        
+        freeaddrinfo(res);
+    }
+
+    return (ip_raw);
+}
