@@ -66,6 +66,7 @@ REBOOT_REASON_T __uninitialized_ram(reboot_reason);
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
 extern WORKER_TASK_T worker_tasks[];
+extern uint32_t unix_time;
 
 // static variables
 static bool restart_requested = false;
@@ -247,6 +248,7 @@ void boss_task(__unused void *params)
 #endif    
 
     // initialize the ip info used in the web interface
+    init_web_variables();    
     set_web_ip_network_info();
 
     printf("Address = %s\n", web.ip_address_string);  
@@ -257,7 +259,6 @@ void boss_task(__unused void *params)
     set_realtime_clock(); 
 
     // start web server
-    init_web_variables();
     httpd_init();
     ssi_init();
     cgi_init();
@@ -531,6 +532,8 @@ int set_realtime_clock(void)
     }
     printf("\n");
 #endif    
+
+    web.boot_time = unix_time;
 
     return(0);
 }

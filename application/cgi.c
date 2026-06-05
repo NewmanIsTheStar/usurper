@@ -661,6 +661,11 @@ const char * cgi_network_handler(int iIndex, int iNumParams, char *pcParam[], ch
                     STRNCPY(config.wifi_password, value, sizeof(config.wifi_password));
                 }
             }        
+            
+            if (strcasecmp("hostn", param) == 0)
+            {
+                STRNCPY(config.host_name, value, sizeof(config.host_name));
+            }
 
             if (strcasecmp("ipad", param) == 0)
             {

@@ -11,6 +11,7 @@
 
 typedef struct WEB_VARIABLES
 {
+  uint32_t boot_time;
   uint8_t mac[6];
   int access_point_mode;
   char last_completed_timestring[50];

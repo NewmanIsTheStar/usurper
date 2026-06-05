@@ -123,6 +123,10 @@ body {
       <td><!--#dogtme--></td>
     </tr> 
     <tr>
+      <td>Up time:</td>
+      <td><!--#uptme--></td>
+    </tr>     
+    <tr>
       <td colspan="2">&nbsp;</td> 
     </tr>          
     <tr>

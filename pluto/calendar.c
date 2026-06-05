@@ -1216,3 +1216,97 @@ int get_timestamp_from_unix_time(uint32_t unixtime, char *timestamp, int len, in
 
     return(err);
 }
+
+/*!
+ * \brief Generate string containing time delta in human readable format from integer delta in seconds
+ *
+ * \param[in]   string        output buffer  
+ * \param[out]  len           size of output buffer 
+ * \param[in]   delta_seconds delta in seconds  
+ * 
+ * \return number of characters written to output buffer
+ */
+int get_delta_string_from_delta_seconds(char *string, int len, uint32_t delta_seconds)
+{
+   int years = 0;
+   int months = 0;
+   int weeks = 0;
+   int days = 0;
+   int hours = 0;
+   int minutes = 0;
+   int seconds = 0;
+   int remaining = 0;
+   char temp_string[32];
+   int printed = 0;
+
+   if (string && len)
+   {
+      // terminate
+      string[0] = 0;
+
+      // initialize remaining seconds
+      remaining = delta_seconds;
+      
+      // years
+      years = remaining/31556926;
+      remaining -= years*31556926;
+
+      // months
+      months = remaining/2629800;
+      remaining -= months*2629800;
+
+      // days
+      days = remaining/86400;
+      remaining -= days*86400;
+
+      // hours
+      hours = remaining/3600;
+      remaining -= hours*3600;
+
+      // minutes
+      minutes = remaining/60;
+      remaining -= minutes*60;
+
+      // seconds
+      seconds = remaining;
+
+      if (years)
+      {
+         printed += snprintf(temp_string, sizeof(temp_string), "%d year%c", years, years==1?'\0':'s');
+         STRNCAT(string, temp_string, len);
+      }
+
+      if (years || months)
+      {
+         printed += snprintf(temp_string, sizeof(temp_string), " %d month%c", months, months==1?'\0':'s');
+         STRNCAT(string, temp_string, len);
+      }   
+      
+      if (years || months || days)
+      {
+         printed += snprintf(temp_string, sizeof(temp_string), " %d day%c", days, days==1?'\0':'s');
+         STRNCAT(string, temp_string, len);
+      }        
+
+      if (years || months || days || hours)
+      {
+         printed += snprintf(temp_string, sizeof(temp_string), " %d hour%c", hours, hours==1?'\0':'s');
+         STRNCAT(string, temp_string, len);
+      }
+
+      if (years || months || days || hours || minutes)
+      {
+         printed += snprintf(temp_string, sizeof(temp_string), " %d minute%c", minutes, minutes==1?'\0':'s');
+         STRNCAT(string, temp_string, len);
+      }   
+      
+      if (years || months || days || hours || minutes || seconds)
+      {
+         printed += snprintf(temp_string, sizeof(temp_string), " %d second%c", seconds, seconds==1?'\0':'s');
+         STRNCAT(string, temp_string, len);
+      }       
+   }   
+
+    return(printed);
+}
+
