@@ -26,7 +26,7 @@
 
 #include "stdarg.h"
 
-#include "weather.h"
+//#include "weather.h"
 #include "flash.h"
 #include "calendar.h"
 #include "utility.h"
@@ -35,6 +35,9 @@
 #include "pluto.h"
 
 
+//#define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
+
+//extern REBOOT_REASON_T reboot_reason;
 
 //prototype
 //void establish_socket_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg);
@@ -266,7 +269,7 @@ int check_watchdog_reboot(void)
     if (watchdog_reset && config.syslog_enable && !syslog_sent)
     {
         // log watchdog event
-        if ((send_syslog_message("usurper", "REBOOT @ %s", web.watchdog_timestring)) > 0)   //currently using watchdog to initiate all reboots, so misleading to mention watchdog in message
+        if ((send_syslog_message("usurper", "REBOOT @ %s [reason = %lu]", web.watchdog_timestring, get_reboot_reason())) > 0)   
         {
             syslog_sent = true;
         }
@@ -275,6 +278,7 @@ int check_watchdog_reboot(void)
     return(0);
 }
 
+//#ifdef USURPER  TODO: move to app specific file
 /*!
  * \brief Send a govee command
  *
@@ -389,6 +393,8 @@ int send_govee_command(int on, int red, int green, int blue)
     return(sent_bytes);
 }
 
+
+
 /*!
  * \brief Send a govee command
  *
@@ -424,6 +430,7 @@ int check_govee_state(void)
 
     return(sent_bytes);
 }
+//#endif
 
 /*!
  * \brief Create a TCP or UDP socket to receive multicast packets. NB Receive only!
@@ -1119,3 +1126,35 @@ uint32_t address_string_to_ip(char *address_string)
 
     return (ip_raw);
 }
+
+int ip_string_to_int_array_pton(const char* ip_str, unsigned char* ip_array) 
+{
+    int err = 0;
+    struct in_addr sa;
+    
+    // Use inet_pton to convert the IP string to a network address structure
+    if (inet_pton(AF_INET, ip_str, &sa) == 1) 
+    {
+        // sa.s_addr is a uint32_t in network byte order.
+        // Copy the bytes into the array.
+        memcpy(ip_array, &sa.s_addr, 4);
+
+        // Note: On little-endian systems, the bytes in ip_array will be reversed
+        // unless a byte-swap is performed to get the 'human-readable' order of octets
+        // in the array. For most network operations, keeping it in network order is correct.
+        // To get the octets in the order 192, 168, 1, 1:
+        ip_array[0] = (sa.s_addr >> 24) & 0xFF;
+        ip_array[1] = (sa.s_addr >> 16) & 0xFF;
+        ip_array[2] = (sa.s_addr >> 8) & 0xFF;
+        ip_array[3] = sa.s_addr & 0xFF;
+    }
+    else    
+    {
+        perror("inet_pton failed");
+        err = -1;
+    }
+
+    return(err);
+}
+
+

@@ -472,3 +472,6 @@ ping_init(const ip_addr_t* ping_addr)
 }
 
 #endif /* LWIP_RAW */
+
+
+

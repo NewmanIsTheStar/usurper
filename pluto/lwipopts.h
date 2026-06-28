@@ -1,16 +1,16 @@
 #ifndef _LWIPOPTS_H
 #define _LWIPOPTS_H
 
-#include "pico/stdlib.h"  // RB Added
+#include "pico/stdlib.h"                     // Newman added
 
 //pluto specific
 #define NO_SYS                      (0)
 #define LWIP_SOCKET                 (1)
-#define PING_USE_SOCKETS            (1)      // newman added for ping test
-//#define LWIP_PROVIDE_ERRNO          (1)    //was commented out
+#define PING_USE_SOCKETS            (1)      // Newman added for ping test
+//#define LWIP_PROVIDE_ERRNO          (1)    // was commented out
 #define RECV_BUFSIZE_DEFAULT        (256)
-#define DEFAULT_TCP_RECVMBOX_SIZE   (8)   //original 8 - newman set to 50
-#define DEFAULT_UDP_RECVMBOX_SIZE   (8)   //original 8 - newman set to 50
+#define DEFAULT_TCP_RECVMBOX_SIZE   (8)      //original 8 - Newman set to 50
+#define DEFAULT_UDP_RECVMBOX_SIZE   (8)      //original 8 - Newman set to 50
 #define SNTP_SUPPORT                (1)
 #define SNTP_SERVER_DNS             (1)
 #define SNTP_UPDATE_DELAY           (3600000)
@@ -23,7 +23,7 @@ void setTimeSec(uint32_t sec);
 #define LWIP_HTTPD_SSI_INCLUDE_TAG  (0)
 #define LWIP_HTTPD_SSI              (1)
 #define LWIP_HTTPD_CGI              (1)
-#define DNS_TABLE_SIZE              (16)   // newman added
+#define DNS_TABLE_SIZE              (16)   // Newman added
 
 // generic
 #if PICO_CYW43_ARCH_POLL
@@ -33,16 +33,16 @@ void setTimeSec(uint32_t sec);
 #define MEM_LIBC_MALLOC             0
 #endif
 #define MEM_ALIGNMENT               4
-#define MEM_SIZE                    12288 //4000  // newman set to 4000
+#define MEM_SIZE                    12288 //4000  // Newman set to 4000
 #define MEMP_NUM_TCP_SEG            32
 #define MEMP_NUM_ARP_QUEUE          10
-#define MEMP_NUM_UDP_PCB            (16)  // newman added
-#define PBUF_POOL_SIZE              48    // original 24
+#define MEMP_NUM_UDP_PCB            (16)  // Newman added
+#define PBUF_POOL_SIZE              48    // original 24 - Newman set to 48
 #define LWIP_ARP                    1
 #define LWIP_ETHERNET               1
 #define LWIP_ICMP                   1
 #define LWIP_RAW                    1
-#define TCP_WND                     16384 // newman increased for TLS (8 * TCP_MSS) 
+#define TCP_WND                     16384 // Newman increased for TLS (8 * TCP_MSS) 
 #define TCP_MSS                     1460
 #define TCP_SND_BUF                 (8 * TCP_MSS)
 #define TCP_SND_QUEUELEN            ((4 * (TCP_SND_BUF) + (TCP_MSS - 1)) / (TCP_MSS))
@@ -62,7 +62,7 @@ void setTimeSec(uint32_t sec);
 #define LWIP_UDP                    1
 #define LWIP_DNS                    1
 #define LWIP_TCP_KEEPALIVE          1
-// newman found these suggestions on the internet to use with keepalive
+// Newman found these suggestions on the internet to use with keepalive
 #define TCP_KEEPIDLE_DEFAULT    1000 // keep_idle : dont' send keep-alive until keep_idle after connecting
 #define TCP_KEEPCNT_DEFAULT     9U // keep_cnt : increase when no response after sending keep-alive every keep_intvl
 
@@ -71,8 +71,8 @@ void setTimeSec(uint32_t sec);
 #define LWIP_DHCP_DOES_ACD_CHECK    0
 #define LWIP_IGMP                   1 // Newman added this row and enabled
 
-// TODO Why is this conditional???
-#if defined(INCORPORATE_THERMOSTAT) || defined(INCORPORATE_HOME_CONTROLLER)
+// Newman added these for apps that make https reqests 
+#if defined(INCORPORATE_THERMOSTAT) || defined(INCORPORATE_HOME_CONTROLLER) //|| defined(INCORPORATE_REMOTE_SWITCH)
 #define LWIP_ALTCP               1  // Newman used for TLS testing
 #define LWIP_ALTCP_TLS           1  // Newman used for TLS testing 
 #define LWIP_ALTCP_TLS_MBEDTLS   1  // Newman used for TLS testing
@@ -127,10 +127,10 @@ void setTimeSec(uint32_t sec);
 #define DEFAULT_RAW_RECVMBOX_SIZE 8
 #define TCPIP_MBOX_SIZE 8
 #define LWIP_TIMEVAL_PRIVATE 0
-#define LWIP_TCP_CLOSE_TIMEOUT_MS_DEFAULT   2000 // newman added
+#define LWIP_TCP_CLOSE_TIMEOUT_MS_DEFAULT   2000 // Newman added
 
 // not necessary, can be done either way
-#define LWIP_TCPIP_CORE_LOCKING_INPUT 0  // newman changed to zero
+#define LWIP_TCPIP_CORE_LOCKING_INPUT 0  // Newman changed to zero
 
 // ping_thread sets socket receive timeout, so enable this feature
 #define LWIP_SO_RCVTIMEO 1
@@ -147,7 +147,7 @@ void setTimeSec(uint32_t sec);
 // // Enable Mbed TLS debugging
 // #define ALTCP_MBEDTLS_LIB_DEBUG     LWIP_DBG_ON
 
-// //newman debug options
+// //Newman debug options
 // #define MEM_DEBUG                   LWIP_DBG_ON
 // #define TCP_DEBUG                   LWIP_DBG_ON
 
@@ -168,5 +168,15 @@ Increase MQTT_REQ_MAX_IN_FLIGHT: This defines how many MQTT messages (subscripti
 Increase MQTT_VAR_HEADER_BUFFER_LEN: This buffer must hold the topic string and payload. If subscribing to multiple topics, this needs to be larger to avoid incoming publication fragmentation.
 Increase MQTT_OUTPUT_RINGBUF_SIZE: If sending multiple subscription requests in rapid succession, increase this to prevent overflowing the output buffer. 
 */
+
+// This stuff is used to enable shell, basic program editor and picofs
+// #define LWIP_HTTPD_SUPPORT_POST 1
+// #define LWIP_HTTPD_CUSTOM_FILES 1
+
+// // Newman turned on for shell
+// #define LWIP_HTTPD_DYNAMIC_HEADERS  1
+
+// // Newman turned on for websocket shell
+// #define LWIP_HTTPD_SUPPORT_WEBSOCKET 1
 
 #endif

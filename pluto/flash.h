@@ -22,7 +22,7 @@ typedef enum
     CONFIG_STANDARD     = 0,
     CONFIG_LEGACY       = 1,
 
-    NUM_CONFIG_TYPES    = 3
+    NUM_CONFIG_TYPES    = 2
 } CONFIG_TYPE_T;
 
 int flash_read_non_volatile_variables(CONFIG_TYPE_T config_type);
@@ -31,5 +31,6 @@ int flash_dump(void);
 void flash_get_program_size(void);
 void flash_get_config_size(void);
 void *flash_get_config_location(CONFIG_TYPE_T config_type);
+int flash_dump_config(CONFIG_TYPE_T config_type);
 
 #endif

@@ -12,7 +12,7 @@
 #include "FreeRTOSConfig.h"
 
 #include "udp.h"
-#include "weather.h"
+// #include "weather.h"
 #include "web.h"
 
 //#define DEBUG_UDP_MESSAGES

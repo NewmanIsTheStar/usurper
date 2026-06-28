@@ -26,6 +26,7 @@
 //#define DISABLE_CONFIG_UPGRADE (1)
 //#define DISABLE_CONFIG_WRITE [1]
 
+bool config_compare_flash_ram(bool stop_at_first_difference);
 int config_validate(void);
 void config_system_variable_initialize(void);
 void config_blank_to_v1(void *previous_config);
@@ -591,7 +592,7 @@ void config_v12_to_v13(void *previous_config)
     if (temp_config)
     {
       free(temp_config);
-    }    
+    }  
 }
 
 // ************************************************************************************************************************
@@ -630,7 +631,7 @@ bool config_dirty(bool clear_flag)
 }
 
 /*!
- * \brief Copy the configuration from flash into RAM.  Set default values if flash is corrupt.
+ * \brief Copy the configuation from flash into RAM.  Set default values if flash is corrupt.
  * 
  * \return 0 on success, -1 on error
  */
@@ -680,7 +681,15 @@ int config_write(void)
         if (memcmp((char *)(XIP_BASE +  FLASH_TARGET_OFFSET), ((char *)&config), sizeof(config)))
         {
             printf("Writing configuration to flash\n");
-            flash_write_non_volatile_variables(); 
+
+            if (err = flash_write_non_volatile_variables())
+            {
+                printf("Failed to write configuraiton to flash (%d)\n", err);                
+            } 
+            else if (config_compare_flash_ram(false))
+            {
+                flash_dump_config(CONFIG_STANDARD);
+            }          
         }           
         else
         {
@@ -703,12 +712,13 @@ int config_write(void)
     return(err);
 }
 
+
 /*!
  * \brief Compare flash and RAM copies of configuration
  * 
  * \return 0 = no difference, 1 = difference
  */
-bool config_compare_flash_ram(void)
+bool config_compare_flash_ram(bool stop_at_first_difference)
 {
     NON_VOL_VARIABLES_T *non_vol;
     int i;
@@ -721,9 +731,21 @@ bool config_compare_flash_ram(void)
     {
         if (((char *)(XIP_BASE +  FLASH_TARGET_OFFSET))[i] != ((char *)&config)[i])
         {
-            printf("Found byte difference at offset %d so will write flash\n", i);
+            if (!difference_found)
+            {
+                // printf headings
+                printf("     offset\tflash\tram\n");
+            }
+
+            // print difference
+            printf("%08x:\t%02x \t%02x\n", i, ((char *)(XIP_BASE +  FLASH_TARGET_OFFSET))[i], ((char *)&config)[i]);
+            
             difference_found = true;
-            break;
+
+            if (stop_at_first_difference)
+            {
+                break;
+            }
         }
     }
     
@@ -823,6 +845,7 @@ int config_validate(void)
     return(err);
 }
 
+
 /*!
  * \brief Set a default time server in config if all four time server entries are blank
  * 
@@ -851,7 +874,7 @@ void config_system_variable_initialize(void)
 {
     int i;
 
-    printf("Initializing configuration system variables\n");
+    printf("Initializing configuration system variables in RAM\n");
 
     // personality
     config.personality = NO_PERSONALITY;
@@ -894,4 +917,53 @@ void config_system_variable_initialize(void)
     config.mqtt_user[0] = 0;
     config.mqtt_password[0] = 0;
     config.mqtt_broker_address[0] = 0;
+}
+
+ /*!
+ * \brief Copy system settings from unrecognized configuration version to v1
+ * 
+ * \return 0 on success, -1 on error
+ */
+void config_system_to_v1(void *previous_config)
+{
+    int i;
+    // NON_VOL_VARIABLES_T_VERSION_11 *temp_config = NULL;
+    NON_VOL_VARIABLES_T_VERSION_1 *config_v1 = NULL;
+    NON_VOL_VARIABLES_T *config_unrecognized = NULL;
+
+    printf("Attempting to preserve system settings.\n");
+
+    if (previous_config)
+    {
+        config_unrecognized = (NON_VOL_VARIABLES_T *)previous_config;
+        config_v1 = (NON_VOL_VARIABLES_T_VERSION_1 *)&config;
+
+        // ***system config start ***
+        //int version;
+        config_v1->personality = config_unrecognized->personality;
+        memcpy(config_v1->wifi_ssid, config_unrecognized->wifi_ssid, sizeof(config_v1->wifi_ssid));
+        memcpy(config_v1->wifi_password, config_unrecognized->wifi_password, sizeof(config_v1->wifi_password));
+        memcpy(config_v1->wifi_country, config_unrecognized->wifi_country, sizeof(config_v1->wifi_country));                
+        config_v1->dhcp_enable = config_unrecognized->dhcp_enable;
+        //memcpy(config_v1->host_name, config_unrecognized->host_name, sizeof(config_v1->host_name)); 
+        //STRNCPY(config_v1->host_name, "thermostat", sizeof(config_v1->host_name));          
+        memcpy(config_v1->ip_address, config_unrecognized->ip_address, sizeof(config_v1->ip_address));   
+        memcpy(config_v1->network_mask, config_unrecognized->network_mask, sizeof(config_v1->network_mask));   
+        memcpy(config_v1->gateway, config_unrecognized->gateway, sizeof(config_v1->gateway));   
+        config_v1->timezone_offset = config_unrecognized->timezone_offset;
+        config_v1->daylightsaving_enable = config_unrecognized->daylightsaving_enable;     
+        memcpy(config_v1->daylightsaving_start, config_unrecognized->daylightsaving_start, sizeof(config_v1->daylightsaving_start)); 
+        memcpy(config_v1->daylightsaving_end, config_unrecognized->daylightsaving_end, sizeof(config_v1->daylightsaving_end)); 
+        memcpy(config_v1->time_server, config_unrecognized->time_server, sizeof(config_v1->time_server));                 
+        config_v1->syslog_enable = config_unrecognized->syslog_enable; 
+        memcpy(config_v1->syslog_server_ip, config_unrecognized->syslog_server_ip, sizeof(config_v1->syslog_server_ip)); 
+        config_v1->use_archaic_units = config_unrecognized->use_archaic_units; 
+        config_v1->use_simplified_english = config_unrecognized->use_simplified_english; 
+        config_v1->use_monday_as_week_start = config_unrecognized->use_monday_as_week_start; 
+        //memcpy(config_v1->gpio_default, config_unrecognized->gpio_default, sizeof(config_v1->gpio_default));   
+        // config_v1->mqtt_user[0] = 0;
+        // config_v1->mqtt_password[0] = 0;        
+        // config_v1->mqtt_broker_address[0] = 0;
+
+    }
 }

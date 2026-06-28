@@ -4,12 +4,21 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+ #include "lwip/opt.h"
+// #if !LWIP_HTTPD_SUPPORT_WEBSOCKET
+// #error "LWIP_HTTPD_SUPPORT_WEBSOCKET must be enabled in lwipopts.h to use this file!"
+// #endif
+
 #include "pico/cyw43_arch.h"
 #include "pico/types.h"
 #include "pico/stdlib.h"
 //#include "hardware/rtc.h"
 #include "pico/util/datetime.h"
 #include "hardware/watchdog.h"
+#if defined(PICO_BOARD_PICO2) || defined(PICO_BOARD_PICO2W)
+#include "hardware/structs/powman.h"
+#include "hardware/regs/powman.h"
+#endif
 
 #include "lwip/netif.h"
 #include "lwip/ip4_addr.h"
@@ -26,8 +35,6 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 
-#include "weather.h"
-// #include "led_strip.h"
 #include "cgi.h"
 #include "flash.h"
 #include "utility.h"
@@ -36,10 +43,9 @@
 #include "worker_tasks.h"
 #include "wifi.h"
 #include "calendar.h"
-// #include "powerwall.h"
-// #include "shelly.h"
-// #include  "usurper_ping.h"
 #include "pluto.h"
+//#include "shell.h"
+//#include "picofs.h"
 
 #include "ssi.h"
 #ifdef USE_GIT_HASH_AS_VERSION
@@ -54,7 +60,7 @@
 #define RUN_FREERTOS_ON_CORE 0
 #endif
 
-#define BOSS_TASK_PRIORITY              ( 0 + 2UL )
+#define BOSS_TASK_PRIORITY              ( 0 + 1UL )
 #define WATCHDOG_TASK_PRIORITY          ( 0 + 1UL )
 #define PAUSE_FOR_INITIAL_SNTP_RESPONSE (1)
 //#define LOG_CLOCK_SLEW                  (1) 
@@ -63,10 +69,10 @@
 REBOOT_REASON_T __uninitialized_ram(reboot_reason);
 
 // external variables
+extern u32_t unix_time;
 extern NON_VOL_VARIABLES_T config;
 extern WEB_VARIABLES_T web;
 extern WORKER_TASK_T worker_tasks[];
-extern uint32_t unix_time;
 
 // static variables
 static bool restart_requested = false;
@@ -85,7 +91,15 @@ int test_ap_mode(void);
 void atomic_write_task(__unused void *params);
 void atomic_read_task(__unused void *params);
 int set_gpio_defaults(void);
+void print_reset_reason(void);
+void print_tasks_list(void);
+int test_myfilesystem(void);
 
+// TODO -- put in header file
+//void init_websocket_subsystem(void);
+
+//TODO put in header file
+//void init_shell_backend(void);
 
 /*********************************************************
  * THIS MUST BE THE FIRST FUNCTION DEFINED IN THIS FILE!!!
@@ -110,6 +124,9 @@ int pluto(void)
     TaskHandle_t task;
 
     stdio_init_all();
+
+    //print_reset_reason();
+    print_reset_reason();
 
     printf("\n%s version ", APP_NAME);
 
@@ -194,6 +211,8 @@ void boss_task(__unused void *params)
     ip_addr_t gw = {0};
     BaseType_t task_creation_status = 0;
     uint32_t clock_ahead_error = 0;
+    u8_t *free_flash = NULL;
+
     
     // start watchdog
     xTaskCreate(watchdog_task, "Watchdog Task", configMINIMAL_STACK_SIZE, NULL, WATCHDOG_TASK_PRIORITY, NULL);
@@ -248,7 +267,7 @@ void boss_task(__unused void *params)
 #endif    
 
     // initialize the ip info used in the web interface
-    init_web_variables();    
+    init_web_variables();
     set_web_ip_network_info();
 
     printf("Address = %s\n", web.ip_address_string);  
@@ -262,6 +281,29 @@ void boss_task(__unused void *params)
     httpd_init();
     ssi_init();
     cgi_init();
+    // init_websocket_subsystem();
+
+    // for the long poll shell test
+    //init_shell_backend(); // <-- Registers standard CGI endpoints safely
+
+    // TEST TEST TEST 
+    // picofs_find_page_status(PFS_DISPLAY_PAGE_NUMBERS);
+    // picofs_find_page_status(PFS_DISPLAY_PAGE_MAP);
+    // picofs_find_page_status(PFS_DISPLAY_QUIET);
+    // picofs_find_contiguous_free_area(8000, &free_flash);
+    // picofs_list_all_files();
+    //picofs_load_test_data();
+    //test_myfilesystem();
+        
+    //SLEEP_MS(60000);
+    // {
+    //     int found_file = -1;
+    //     char *file_ptr = NULL;
+    //     found_file = picofs_find_by_name("elephant", &file_ptr);
+
+    //     printf("found_file = %d file_ptr = %p\n", found_file, file_ptr);
+    //     SLEEP_MS(60000);
+    // }
 
     // start worker tasks
     printf("Starting worker tasks\n");       
@@ -276,6 +318,8 @@ void boss_task(__unused void *params)
 
         SLEEP_MS(1000);
     }    
+
+    print_tasks_list();
 
     // flash the led for attention while doing no actual work (like a boss!)
     while(true) 
@@ -304,6 +348,9 @@ void boss_task(__unused void *params)
         }
         #endif
         #endif
+
+        // update daylight savings start and end dates  TODO: make this less frequent only needed once per year
+        set_daylight_saving_dates(); 
 
         // report watchdog reboot to syslog server
         check_watchdog_reboot();         
@@ -532,6 +579,9 @@ int set_realtime_clock(void)
     }
     printf("\n");
 #endif    
+
+    // determine daylight savings dates for the current year
+    set_daylight_saving_dates(); 
 
     web.boot_time = unix_time;
 
@@ -913,6 +963,15 @@ int get_int_with_tenths_from_string(char *value_string)
     return(new_value);
 }
 
+/*!
+ * \brief convert string to integer times ten plus tenths e.g. "78.32" => 783
+ *
+ * \param[in]   unix_timestamp   seconds since 1970
+ * \param[out]  iso_string       output buffer
+ * \param[in]   buffer_size      length of output buffer
+ * 
+ * \return nothing
+ */
 void unix_to_iso8601(time_t unix_timestamp, char *iso_string, size_t buffer_size)
 {
     struct tm *timeinfo;
@@ -925,7 +984,97 @@ void unix_to_iso8601(time_t unix_timestamp, char *iso_string, size_t buffer_size
     strftime(iso_string, buffer_size, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 }
 
+/*!
+ * \brief get reboot reason stored in RAM by the application prior to reboot
+ * 
+ * \return integer = value x 10
+ */
 uint32_t get_reboot_reason(void)
 {
     return(reboot_reason);
+}
+
+/*!
+ * \brief print reason for reset based on hardware register(s)
+ * 
+ * \return nothing
+ */
+void print_reset_reason(void)   // TODO: solve for pico_w
+{
+#if defined(PICO_BOARD_PICO2) || defined(PICO_BOARD_PICO2W)
+    // Read the current live status flags from the RP2350 power manager
+    uint32_t reset_reason = powman_hw->chip_reset;
+
+    // Check for Power-On Reset / Brown-out (Bit 16)
+    if (reset_reason & POWMAN_CHIP_RESET_HAD_POR_BITS) {
+        printf("Reset Source: Power-On Reset / Voltage Brown-out\n");
+    }
+
+    // Check for physical RUN/RSTn pin (Bit 18)
+    if (reset_reason & POWMAN_CHIP_RESET_HAD_RUN_LOW_BITS) {
+        printf("Reset Source: Physical RUN/RSTn pin pressed\n");
+    }
+
+    // Check for external debugger reset request (Bit 21)
+    if (reset_reason & POWMAN_CHIP_RESET_HAD_DP_RESET_REQ_BITS) {
+        printf("Reset Source: Debugger Request (SWD/SYSRESETREQ)\n");
+    }
+
+    // Check for Switched Core Powerdown (Bit 25)
+    if (reset_reason & POWMAN_CHIP_RESET_HAD_SWCORE_PD_BITS) {
+        printf("Reset Source: Core Powerdown / Deep Sleep Wakeup\n");
+    }
+
+    // CRITICAL: Clear the sticky bits so future warm resets don't inherit them.
+    // In POWMAN, writing the bits back clears them.
+    powman_hw->chip_reset = reset_reason; 
+#endif
+}
+
+/*!
+ * \brief Dump list of running tasks including priorities
+ *
+ * \return nothing
+ */
+void print_tasks_list(void) 
+{
+    // Allocate a buffer large enough to hold the text table 
+    // (Roughly 40 bytes per task is safe)
+    char buffer[512]; 
+    
+    printf("Task Name\tState\tPrio\tStack\tNum\n");
+    printf("-------------------------------------------\n");
+    
+    // Generate the list
+    vTaskList(buffer);
+    
+    // Print the formatted string
+    printf("%s\n", buffer);
+}
+
+
+int test_myfilesystem(void)
+{
+    FILE *filePointer;
+    char buffer[256];
+
+    // 1. Open the file in read mode ("r")
+    filePointer = fopen("monkey", "r");
+
+    // 2. Check if the file exists and opened successfully
+    if (filePointer == NULL) {
+        printf("Error: Could not open file.\n");
+        return 1; 
+    }
+
+    // 3. Read and print the file line-by-line
+    while (fgets(buffer, sizeof(buffer), filePointer) != NULL)
+    {
+        printf("%s", buffer);
+    }
+
+    // 4. Close the file to free up system resources
+    fclose(filePointer);
+
+    return 0;
 }

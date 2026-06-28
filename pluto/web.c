@@ -35,7 +35,7 @@
 // #include "led_strip.h"
 // #include "message.h"
 #include "pluto.h"
-#include "web.h"
+
 
 
 // global variables
@@ -46,7 +46,7 @@ WEB_VARIABLES_T web;
  *
  * \return 0 on success
  */
-int init_web_variables(void)   //TODO: need to initialize all web variables !!!
+int init_web_variables(void)
 {
     // zero web structure
     memset(&web, 0, sizeof(web));

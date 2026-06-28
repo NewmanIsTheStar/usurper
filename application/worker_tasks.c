@@ -24,10 +24,10 @@
 WORKER_TASK_T worker_tasks[] =
 {
     //  function        name                    stack   priority        
-    {   weather_task,   "Weather Task",         1024,   3},
-    {   led_strip_task, "LED Strip Task",       1024,   4},  
+    {   weather_task,   "Weather Task",         1024,   1},
+    {   led_strip_task, "LED Strip Task",       1024,   1},  
     {   message_task,   "Message Task",         1024,   1},  
-    {   mqtt_task,      "MQTT Task",            8096,   10},     
+    {   mqtt_task,      "MQTT Task",            8096,   1},     
 
     // end of table
     {   NULL,           NULL,                   0,      0}

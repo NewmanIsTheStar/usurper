@@ -59,7 +59,7 @@
 #define configQUEUE_REGISTRY_SIZE               8
 #define configUSE_QUEUE_SETS                    1
 #define configUSE_TIME_SLICING                  1
-#define configUSE_NEWLIB_REENTRANT              0
+#define configUSE_NEWLIB_REENTRANT              1   // Newman changed to 1 while debugging brownout
 #define configENABLE_BACKWARD_COMPATIBILITY     1   // Newman added as apparently required for lwip FreeRTOS sys_arch to compile
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
 
@@ -81,7 +81,7 @@
 /* Run time and task stats gathering related definitions. */
 #define configGENERATE_RUN_TIME_STATS           0
 #define configUSE_TRACE_FACILITY                1
-#define configUSE_STATS_FORMATTING_FUNCTIONS    0
+#define configUSE_STATS_FORMATTING_FUNCTIONS    1  // Newman enabled to print list of tasks
 
 #define configUSE_CO_ROUTINES                   0  // Newman copied from older file
 #define configMAX_CO_ROUTINE_PRIORITIES         1  // Newman copied from older file
@@ -160,6 +160,7 @@ to exclude the API function. */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY    16
 #define configCPU_CLOCK_HZ                      150000000
 #endif
+
 
 #endif /* FREERTOS_CONFIG_H */
 

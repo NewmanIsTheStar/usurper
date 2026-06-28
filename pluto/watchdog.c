@@ -24,8 +24,8 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 
-#include "weather.h"
-#include "led_strip.h"
+//#include "weather.h"
+//#include "led_strip.h"
 #include "cgi.h"
 #include "ssi.h"
 #include "flash.h"
@@ -102,6 +102,10 @@ void watchdog_task(void *params)
         if (!reset_required)
         {
             watchdog_update();
+        }
+        else
+        {
+            application_restart(REBOOT_WATCHDOG);
         }
 #endif
         SLEEP_MS(1000);

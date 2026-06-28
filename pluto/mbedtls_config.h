@@ -22,7 +22,8 @@
 /* System ********************************************************************/
 
 #define MBEDTLS_HAVE_TIME
-
+#define MBEDTLS_PLATFORM_MS_TIME_ALT
+#define MBEDTLS_ALLOW_PRIVATE_ACCESS
 
 
 /* Mbed TLS features *********************************************************/
@@ -83,7 +84,7 @@
 #define MBEDTLS_SSL_EXTENDED_MASTER_SECRET          // TLS extension (RFC 7627)
 #define MBEDTLS_SSL_MAX_FRAGMENT_LENGTH             // TLS extension (RFC 6066)
 #define MBEDTLS_SSL_SERVER_NAME_INDICATION          // TLS extension (RFC 6066)
-#define MBEDTLS_SSL_TRUNCATED_HMAC                  // TLS extension (RFC 6066)
+//#define MBEDTLS_SSL_TRUNCATED_HMAC                  // TLS extension (RFC 6066)  // deprecated
 
 // Protocols
 #define MBEDTLS_SSL_PROTO_TLS1_2                    // Enable TLS version 1.2
@@ -99,7 +100,7 @@
 // Ciphers
 #define MBEDTLS_CIPHER_C                            // Symmetric cipher generic code
 #define MBEDTLS_AES_C                               // AES
-#define MBEDTLS_GCM_C                               // Galois/Counter mode
+#define MBEDTLS_GCM_C                               // Galois/Counter mode  // TODO: reportedly not working
 
 // Parsers
 #define MBEDTLS_ASN1_PARSE_C                        // ASN1

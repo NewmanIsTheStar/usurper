@@ -29,7 +29,7 @@ typedef struct WEB_VARIABLES
   char ip_address_string[50];
   char network_mask_string[50];
   char gateway_string[50];
-  char mqtt_client_name[64];  
+  char mqtt_client_name[64];
   int socket_max;
   int bind_failures;
   int connect_failures;  

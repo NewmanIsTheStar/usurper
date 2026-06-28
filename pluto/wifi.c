@@ -9,7 +9,7 @@
 #include "lwip/sockets.h"
 
 #include "flash.h"
-#include "weather.h"
+//#include "weather.h"
 #include "calendar.h"
 #include "utility.h"
 #include "config.h"
