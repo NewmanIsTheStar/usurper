@@ -26,7 +26,7 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 
-#include "weather.h"
+//#include "weather.h"
 #include "calendar.h"
 #include "cgi.h"
 
@@ -416,71 +416,6 @@ int daylight_savings_active(datetime_t date)
    return(daylight_savings);
 }
 
-// This is the original function that used the rtc on pico 1  -- now we always use fake rtc 
-// /*!
-//  * \brief Generate string containing time stamp from realtime clock
-//  *
-//  * \param[out]  timestamp   pointer to string to store the timestamp 
-//  * \param[in]   len         max length of timestamp string  
-//  * \param[in]   isoformat   use iso format
-//  * \param[in]   localtime   use local time
-//  * 
-//  * \return 0 on success, non-zero on error
-//  */
-// int get_timestamp(char *timestamp, int len, int isoformat, int localtime)
-// {
-//    int ok = 0;
-//    datetime_t t;
-//    char timezone_offset[12];
-
-// #ifdef FAKE_RTC
-//    if (localtime)
-//    {
-//       ok = get_datetime(&t, localtime);      
-//    }
-//    else
-// #endif
-//    {
-//       ok = rtc_get_datetime(&t);      
-//    }
-
-//    if (ok)
-//    {
-//       if (!localtime || (config.timezone_offset == 0)) 
-//       {
-//          // zulu time
-//          if (isoformat)
-//          {
-//             sprintf(timezone_offset, "Z");
-//          }
-//          else
-//          {
-//             sprintf(timezone_offset, "");
-//          }
-//       }
-//       else
-//       {
-//          sprintf(timezone_offset, "%c%02d:%02d", config.timezone_offset<0?'-':'+', abs(config.timezone_offset/60), abs(config.timezone_offset%60));
-//       }
-
-//       if (isoformat)
-//       {
-//          // iso format needed for syslog
-//          snprintf(timestamp, len, "%04d-%02d-%02dT%02d:%02d:%02d.000%s", t.year, t.month, t.day, t.hour, t.min, t.sec, timezone_offset);
-//       }
-//       else
-//       {
-//         // human readable format
-//         snprintf(timestamp, len, "%04d-%02d-%02d %02d:%02d:%02d UTC%s", t.year, t.month, t.day, t.hour, t.min, t.sec, timezone_offset);
-//       }
-//     }
-//     else
-//     {
-//         snprintf(timestamp, len, "1970-01-01T00:00:000.000Z");  //default to unix epoch
-//     }
-
-//     return !ok;
-// }
 
 /*!
  * \brief Generate string containing time stamp from realtime clock
@@ -509,44 +444,51 @@ int get_timestamp(char *timestamp, int len, int isoformat, int localtime)
 /*!
  * \brief Generate string containing local time in human readable format
  *
- * \param[out]  timestamp   pointer to string to store the timestamp 
+ * \param[out]  time_string   pointer to string to store the timestamp 
  * \param[in]   len         max length of timestamp string  
  * 
  * \return number of characters in the timestamp
  */
-int get_local_time_string(char *timestamp, int len)
+int get_local_time_string(char *time_string, int len)
 {
-    int printed = 0;
-    int min_now = 0;
-    datetime_t date;
+   //  int printed = 0;
+   //  int min_now = 0;
+   //  datetime_t date;
 
-    rtc_get_datetime(&date);
+   //  rtc_get_datetime(&date);
 
-    min_now = date.hour*MINUTES_IN_HOUR + date.min + config.timezone_offset;
+   //  min_now = date.hour*MINUTES_IN_HOUR + date.min + config.timezone_offset;
 
-    // check for daylight savings
-    if (daylight_savings_active(date))
-    {
-        min_now += MINUTES_IN_HOUR;
-    }
+   //  // check for daylight savings
+   //  if (daylight_savings_active(date))
+   //  {
+   //      min_now += MINUTES_IN_HOUR;
+   //  }
 
-    // correct for wrap to previous day
-    if (min_now < 0)
-    {
-        min_now += HOURS_IN_DAY*MINUTES_IN_HOUR;
-    }
+   //  // correct for wrap to previous day
+   //  if (min_now < 0)
+   //  {
+   //      min_now += HOURS_IN_DAY*MINUTES_IN_HOUR;
+   //  }
 
-    // correct for wrap to next day
-    if (min_now > HOURS_IN_DAY*MINUTES_IN_HOUR)
-    {
-        min_now -= HOURS_IN_DAY*MINUTES_IN_HOUR;
-    } 
+   //  // correct for wrap to next day
+   //  if (min_now > HOURS_IN_DAY*MINUTES_IN_HOUR)
+   //  {
+   //      min_now -= HOURS_IN_DAY*MINUTES_IN_HOUR;
+   //  } 
  
-    printed = snprintf(timestamp, len, "%02d:%02d", min_now/MINUTES_IN_HOUR, min_now%MINUTES_IN_HOUR);                   
+   //  printed = snprintf(timestamp, len, "%02d:%02d", min_now/MINUTES_IN_HOUR, min_now%MINUTES_IN_HOUR);                   
 
-    return(printed);
+   //  return(printed);
+   int printed = 0;
+
+    printed = get_time_string_from_unix_time(unix_time, time_string, len, 0, 1);                
+
+    return(printed);   
+   
 }
 
+//#ifdef USURPER  TODO Move to a app specific file
 /*!
  * \brief Get start and stop times for next irrigation period
  *
@@ -618,7 +560,7 @@ SCHEDULE_QUERY_STATUS_LT get_next_irrigation_period(int *start_mow, int *end_mow
 
    return (irrigate_now);
 }
-
+//#endif
 
 /*!
  * \brief Check if time is between start and end dealing with wrap around 
@@ -1026,7 +968,7 @@ int time_string_to_mow(char *string, int length, int day)
    sscanf(string,"%d:%d", &hour, &minute);
    sscanf(string,"%d%%3A%d", &hour, &minute);   
 
-   printf(">>>>>AFTER SCANF %d %d\n", hour, minute);
+   //printf(">>>>>AFTER SCANF %d %d\n", hour, minute);
 
    CLIP(day, 0, 6);
    CLIP(hour, 0, 23);
@@ -1047,6 +989,8 @@ bool sntp_alive(void)
    static long int poll_counter = 0;
    static long int last_sntp_update_counter= 0;
    
+   poll_counter++;
+
    if (sntp_update_counter != last_sntp_update_counter)
    {
       printf("sntp updates: %d @ poll number %d\n", sntp_update_counter, poll_counter);
@@ -1063,7 +1007,7 @@ bool sntp_alive(void)
 }
 
 /*!
- * \brief Get current time
+ * \brief DO NOT USE! Get current time  --obsolete and does not account for daylight savings--
  *  
  * \return 1
  */
@@ -1077,7 +1021,7 @@ int8_t get_datetime(datetime_t *date, int localtime)
    if (localtime)
    {
       // apply timezone offset
-      t += (config.timezone_offset * 60);  //TODO: this is probably wrong as it is already in minutes but this function is scheduled for removal
+      t += (config.timezone_offset * 60); 
    }
 
 	timeinfo = gmtime(&t);
@@ -1106,53 +1050,60 @@ int8_t get_datetime_from_unix_time(uint32_t unixtime, datetime_t *date, int *eff
    struct tm * timeinfo;
    time_t t;
 
-   *effective_offset = 0;
-
-   t = unixtime;
-
-   if (localtime)
+   if (date && effective_offset)
    {
-      // apply timezone offset
-      *effective_offset = config.timezone_offset;
-      t += (*effective_offset * 60);
-   }
+      *effective_offset = 0;
 
-	timeinfo = gmtime(&t);
+      t = unixtime;
 
-	memset(date, 0, sizeof(datetime_t));
-	date->sec = timeinfo->tm_sec;
-	date->min = timeinfo->tm_min;
-	date->hour = timeinfo->tm_hour;
-	date->day = timeinfo->tm_mday;
-	date->month = timeinfo->tm_mon + 1;
-	date->year = timeinfo->tm_year + 1900;
-
-   date->dotw = get_day_of_week(date->month, date->day, date->year);
-
-   if (localtime)  // TODO: rather than compute if daylight savings is active use a global flag set by fake rtc
-   {
-      // check for daylight savings
-      if (config.daylightsaving_enable                                                             &&
-         ((date->month*31+date->day) >= (daylight_saving_start_month*31+daylight_saving_start_day)) &&
-         ((date->month*31+date->day) < (daylight_saving_end_month*31+daylight_saving_end_day)))
+      if (localtime)
       {
-         // apply one hour daylight savings offset
-         *effective_offset += 60;
-         t += (60*60);         
-
-         // recompute the datetime using the daylight savings offset
-         timeinfo = gmtime(&t);
-
-         memset(date, 0, sizeof(datetime_t));
-         date->sec = timeinfo->tm_sec;
-         date->min = timeinfo->tm_min;
-         date->hour = timeinfo->tm_hour;
-         date->day = timeinfo->tm_mday;
-         date->month = timeinfo->tm_mon + 1;
-         date->year = timeinfo->tm_year + 1900;
-
-         date->dotw = get_day_of_week(date->month, date->day, date->year);         
+         // apply timezone offset
+         *effective_offset = config.timezone_offset;
+         t += (*effective_offset * 60);
       }
+
+      timeinfo = gmtime(&t);
+
+      memset(date, 0, sizeof(datetime_t));
+      date->sec = timeinfo->tm_sec;
+      date->min = timeinfo->tm_min;
+      date->hour = timeinfo->tm_hour;
+      date->day = timeinfo->tm_mday;
+      date->month = timeinfo->tm_mon + 1;
+      date->year = timeinfo->tm_year + 1900;
+
+      date->dotw = get_day_of_week(date->month, date->day, date->year);
+
+      if (localtime)  // TODO: rather than compute if daylight savings is active use a global flag set by fake rtc
+      {
+         // check for daylight savings
+         if (config.daylightsaving_enable                                                             &&
+            ((date->month*31+date->day) >= (daylight_saving_start_month*31+daylight_saving_start_day)) &&
+            ((date->month*31+date->day) < (daylight_saving_end_month*31+daylight_saving_end_day)))
+         {
+            // apply one hour daylight savings offset
+            *effective_offset += 60;
+            t += (60*60);         
+
+            // recompute the datetime using the daylight savings offset
+            timeinfo = gmtime(&t);
+
+            memset(date, 0, sizeof(datetime_t));
+            date->sec = timeinfo->tm_sec;
+            date->min = timeinfo->tm_min;
+            date->hour = timeinfo->tm_hour;
+            date->day = timeinfo->tm_mday;
+            date->month = timeinfo->tm_mon + 1;
+            date->year = timeinfo->tm_year + 1900;
+
+            date->dotw = get_day_of_week(date->month, date->day, date->year);         
+         }
+      }
+   }
+   else
+   {
+      err = -1;
    }
 
    return(err);
@@ -1310,3 +1261,156 @@ int get_delta_string_from_delta_seconds(char *string, int len, uint32_t delta_se
     return(printed);
 }
 
+
+/*!
+ * \brief Generate string containing date from unix time
+ *
+ * \param[in]   unixtime    unix time  
+ * \param[out]  date_string pointer to string to store the date 
+ * \param[in]   len         max length of date_string  
+ * \param[in]   isoformat   use iso format
+ * \param[in]   localtime   use local time
+ * 
+ * \return 0 on success, non-zero on error
+ */
+int get_date_string_from_unix_time(uint32_t unixtime, char *date_string, int len, int isoformat, int localtime)
+{
+   int err = 0;
+   datetime_t date;
+   char offset_string[12];
+   int effective_offset = 0;
+
+
+   err = get_datetime_from_unix_time(unixtime, &date, &effective_offset, localtime);      
+
+   if (!err)
+   {
+      if (isoformat)
+      {
+         snprintf(date_string, len, "%04d-%02d-%02d", date.year, date.month, date.day);            
+      }
+      else if (config.use_archaic_units)
+      {
+         snprintf(date_string, len, "%02d/%02d/%04d", date.month, date.day, date.year);         
+      }
+      else
+      {
+         snprintf(date_string, len, "%02d/%02d/%04d", date.day, date.month, date.year);  
+      }
+    }
+    else
+    {
+        snprintf(date_string, len, "1970-01-01T00:00:000.000Z");  //default to unix epoch
+    }
+
+    return(err);
+}
+
+/*!
+ * \brief Generate string containing local date in human readable format
+ *
+ * \param[out]  timestamp   pointer to string to store the timestamp 
+ * \param[in]   len         max length of timestamp string  
+ * 
+ * \return number of characters in the timestamp
+ */
+int get_local_date_string(char *date_string, int len)
+{
+   int err = 0;
+
+    err = get_date_string_from_unix_time(unix_time, date_string, len, 0, 1);                   
+
+    return(err);
+}
+
+/*!
+ * \brief Generate string containing date from unix time
+ *
+ * \param[in]   unixtime    unix time  
+ * \param[out]  day_string  pointer to string to store the day 
+ * \param[in]   len         max length of date_string  
+ * \param[in]   isoformat   use iso format
+ * \param[in]   localtime   use local time
+ * 
+ * \return 0 on success, non-zero on error
+ */
+int get_day_string_from_unix_time(uint32_t unixtime, char *day_string, int len, int isoformat, int localtime)
+{
+   int err = 0;
+   datetime_t date;
+   char offset_string[12];
+   int effective_offset = 0;
+   int day = 0;
+
+
+   err = get_datetime_from_unix_time(unixtime, &date, &effective_offset, localtime);      
+
+   if (!err)
+   {
+      day = get_day_of_week(date.month, date.day, date.year);
+
+      snprintf(day_string, len, "%s", day_name(day));
+   }
+
+    return(err);
+}
+
+/*!
+ * \brief Generate string containing local date in human readable format
+ *
+ * \param[out]  timestamp   pointer to string to store the timestamp 
+ * \param[in]   len         max length of timestamp string  
+ * 
+ * \return number of characters in the timestamp
+ */
+int get_local_day_string(char *day_string, int len)
+{
+   int err = 0;
+
+    err = get_day_string_from_unix_time(unix_time, day_string, len, 0, 1);                   
+
+    return(err);
+}
+
+/*!
+ * \brief Generate string containing date from unix time
+ *
+ * \param[in]   unixtime    unix time  
+ * \param[out]  date_string pointer to string to store the date 
+ * \param[in]   len         max length of date_string  
+ * \param[in]   isoformat   use iso format
+ * \param[in]   localtime   use local time
+ * 
+ * \return number of characters ouput
+ */
+int get_time_string_from_unix_time(uint32_t unixtime, char *time_string, int len, int isoformat, int localtime)
+{
+   int err = 0;
+   int printed = 0;
+   datetime_t date;
+   int effective_offset = 0;
+
+   err = get_datetime_from_unix_time(unixtime, &date, &effective_offset, localtime);      
+
+   if (!err)
+   {
+      if (localtime)
+      {
+         // time only
+         //snprintf(time_string, len, "%02d:%02d:%02d", date.hour, date.min, date.sec);
+         printed = snprintf(time_string, len, "%02d:%02d", date.hour, date.min);         
+      }
+      else
+      {
+        // add UTC
+        //snprintf(time_string, len, "%02d:%02d:%02d UTC", date.hour, date.min, date.sec);
+        printed = snprintf(time_string, len, "%02d:%02d UTC", date.hour, date.min);        
+      }
+    }
+    else
+    {
+        printed = snprintf(time_string, len, "1970-01-01T00:00:000.000Z");  //default to unix epoch
+    }
+
+    return(printed);
+}
